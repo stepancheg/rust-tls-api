@@ -1,7 +1,7 @@
 # Rust TLS API and implementations
 
 Three crates:
-* tls-api — TLS API without any dependencies
+* tls-api — TLS API without any implementation and without dependencies
 * tls-api-native-tls — implementation of TLS API over
   [native-tls](https://github.com/sfackler/rust-native-tls) crate
 * tls-api-openssl — implementation of TLS API over
