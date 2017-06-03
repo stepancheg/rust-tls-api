@@ -165,17 +165,9 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
-
-    fn build(self) -> Result<TlsAcceptor> {
-        Ok(TlsAcceptor(self.0.build()))
-    }
-}
-
-impl tls_api::TlsAcceptor for TlsAcceptor {
     type Pkcs12 = Pkcs12;
-    type Builder = TlsAcceptorBuilder;
 
-    fn builder(pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
+    fn new(pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
         openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
             openssl::ssl::SslMethod::tls(),
             &pkcs12.0.pkey,
@@ -184,6 +176,13 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
                 .map(TlsAcceptorBuilder)
                 .map_err(map_error_stack)
     }
+
+    fn build(self) -> Result<TlsAcceptor> {
+        Ok(TlsAcceptor(self.0.build()))
+    }
+}
+
+impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>

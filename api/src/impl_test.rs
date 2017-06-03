@@ -40,10 +40,10 @@ pub fn connect_bad_hostname_ignored<C : TlsConnectorBuilder>() {
         .expect("tls");
 }
 
-pub fn server<C : TlsConnectorBuilder, A : TlsAcceptor>() {
+pub fn server<C : TlsConnectorBuilder, A : TlsAcceptorBuilder>() {
     let buf = include_bytes!("../test/identity.p12");
     let pkcs12 = A::Pkcs12::from_der(buf, "mypass").expect("pkcs12");
-    let acceptor: A = A::builder(pkcs12).expect("acceptor builder")
+    let acceptor: A::Acceptor = A::new(pkcs12).expect("acceptor builder")
         .build().expect("acceptor build");
 
     let listener = TcpListener::bind("[::1]:0").expect("bind");
