@@ -7,7 +7,7 @@ Three crates:
 * tls-api-native-tls — implementation of TLS API over
   [native-tls](https://github.com/sfackler/rust-native-tls) crate
 * tls-api-openssl — implementation of TLS API over
-  [openssl](https://github.com/sfackler/rust-openssl) crate (not yet)
+  [openssl](https://github.com/sfackler/rust-openssl) crate
 * tokio-tls-api — fork of [tokio-tls](https://github.com/tokio-rs/tokio-tls)
   which uses tls-api instead of native-tls
 
