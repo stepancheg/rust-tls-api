@@ -1,3 +1,5 @@
+[![Build Status](https://img.shields.io/travis/stepancheg/rust-tls-api.svg)](https://travis-ci.org/stepancheg/rust-tls-api)
+
 # Rust TLS API and implementations
 
 Three crates:
