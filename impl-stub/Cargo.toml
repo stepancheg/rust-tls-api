@@ -1,0 +1,10 @@
+[package]
+name = "tls-api-stub"
+version = "0.1.4"
+authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+description = "TLS API implementation that returns error on any operation"
+license = "MIT/Apache-2.0"
+
+[dependencies]
+tls-api = { version = "0.1.4", path = "../api" }
+void    = "1"
