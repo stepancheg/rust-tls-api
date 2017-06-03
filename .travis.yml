@@ -1,0 +1,21 @@
+sudo: false
+dist: trusty
+
+language: rust
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+script:
+  - rustc --version
+  - RUST_BACKTRACE=1 cargo test --all
+  # `cargo test --benches` and `#[feature(test)]` only works on nightly
+  #- test "$TRAVIS_RUST_VERSION" != "nightly" || RUST_BACKTRACE=1 cargo test --benches
+
+notifications:
+  email:
+    on_success: never
+
+# vim: set ts=2 sw=2 et:
