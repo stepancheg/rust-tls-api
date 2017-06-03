@@ -60,7 +60,10 @@ pub trait TlsConnectorBuilder : Sized {
 
 
 
-pub trait TlsStreamImpl: io::Read + io::Write + fmt::Debug {
+pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug {
+    fn shutdown(&mut self) -> io::Result<()>;
+
+    fn get_mut(&mut self) -> &mut S;
 }
 
 /// Since Rust has no HKT, it is not possible to declare something like
@@ -71,21 +74,29 @@ pub trait TlsStreamImpl: io::Read + io::Write + fmt::Debug {
 /// }
 /// ```
 #[derive(Debug)]
-pub struct TlsStream(Box<TlsStreamImpl>);
+pub struct TlsStream<S>(Box<TlsStreamImpl<S>>);
 
-impl TlsStream {
-    pub fn new<S : TlsStreamImpl + 'static>(stream: S) -> TlsStream {
-        TlsStream(Box::new(stream))
+impl<S> TlsStream<S> {
+    pub fn new<I: TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
+        TlsStream(Box::new(imp))
+    }
+
+    pub fn shutdown(&mut self) -> io::Result<()> {
+        self.0.shutdown()
+    }
+
+    pub fn get_mut(&mut self) -> &mut S {
+        self.0.get_mut()
     }
 }
 
-impl io::Read for TlsStream {
+impl<S> io::Read for TlsStream<S> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.read(buf)
     }
 }
 
-impl io::Write for TlsStream {
+impl<S> io::Write for TlsStream<S> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.0.write(buf)
     }
@@ -97,19 +108,19 @@ impl io::Write for TlsStream {
 
 
 
-pub trait MidHandshakeTlsStreamImpl : fmt::Debug {
-    fn handshake(&mut self) -> result::Result<TlsStream, HandshakeError>;
+pub trait MidHandshakeTlsStreamImpl<S> : fmt::Debug {
+    fn handshake(&mut self) -> result::Result<TlsStream<S>, HandshakeError<S>>;
 }
 
 #[derive(Debug)]
-pub struct MidHandshakeTlsStream(Box<MidHandshakeTlsStreamImpl>);
+pub struct MidHandshakeTlsStream<S>(Box<MidHandshakeTlsStreamImpl<S>>);
 
-impl MidHandshakeTlsStream {
-    pub fn new<S : MidHandshakeTlsStreamImpl + 'static>(stream: S) -> MidHandshakeTlsStream {
+impl<S> MidHandshakeTlsStream<S> {
+    pub fn new<I : MidHandshakeTlsStreamImpl<S> + 'static>(stream: I) -> MidHandshakeTlsStream<S> {
         MidHandshakeTlsStream(Box::new(stream))
     }
 
-    pub fn handshake(mut self) -> result::Result<TlsStream, HandshakeError> {
+    pub fn handshake(mut self) -> result::Result<TlsStream<S>, HandshakeError<S>> {
         self.0.handshake()
     }
 }
@@ -118,7 +129,7 @@ impl MidHandshakeTlsStream {
 
 /// An error returned from `ClientBuilder::handshake`.
 #[derive(Debug)]
-pub enum HandshakeError {
+pub enum HandshakeError<S> {
     /// A fatal error.
     Failure(Error),
 
@@ -128,14 +139,13 @@ pub enum HandshakeError {
     /// Note that this is not a fatal error and it should be safe to call
     /// `handshake` at a later time once the stream is ready to perform I/O
     /// again.
-    Interrupted(MidHandshakeTlsStream),
+    Interrupted(MidHandshakeTlsStream<S>),
 }
 
 
 pub trait TlsConnector : Sized + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
-    type Pkcs12 : Pkcs12;
 
     fn builder() -> Result<Self::Builder>;
 
@@ -143,13 +153,13 @@ pub trait TlsConnector : Sized + Send + 'static {
         &self,
         domain: &str,
         stream: S)
-            -> result::Result<TlsStream, HandshakeError>
+            -> result::Result<TlsStream<S>, HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + 'static;
 
     fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
         &self,
         stream: S)
-            -> result::Result<TlsStream, HandshakeError>
+            -> result::Result<TlsStream<S>, HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + 'static;
 }
 
@@ -166,6 +176,6 @@ pub trait TlsAcceptor : Sized + Send + 'static {
     fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
 
     fn accept<S>(&self, stream: S)
-            -> result::Result<TlsStream, HandshakeError>
+            -> result::Result<TlsStream<S>, HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + 'static;
 }

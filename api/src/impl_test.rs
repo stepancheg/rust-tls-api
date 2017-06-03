@@ -16,7 +16,7 @@ use TlsStream;
 pub fn test_google<C : TlsConnector>() {
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
-    let mut tls_stream: TlsStream = connector.connect("google.com", tcp_stream).expect("tls");
+    let mut tls_stream: TlsStream<_> = connector.connect("google.com", tcp_stream).expect("tls");
 
     tls_stream.write_all(b"GET / HTTP/1.0\r\n\r\n").expect("write");
     let mut result = vec![];

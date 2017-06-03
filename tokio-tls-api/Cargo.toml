@@ -1,0 +1,39 @@
+[package]
+name = "tokio-tls-api"
+version = "0.1.0"
+authors = ["Carl Lerche <me@carllerche.com>",
+           "Alex Crichton <alex@alexcrichton.com>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/tokio-rs/tokio-tls"
+homepage = "https://github.com/tokio-rs/tokio-tls"
+documentation = "https://docs.rs/tokio-tls"
+description = """
+An implementation of TLS/SSL streams for Tokio giving an implementation of TLS
+for nonblocking I/O streams.
+"""
+categories = ["asynchronous", "network-programming"]
+
+[dependencies]
+futures = "0.*"
+tls-api = { version = "0.*", path = "../api" }
+tokio-core = "0.*"
+tokio-io = "0.1"
+tokio-proto = { version = "0.1", optional = true }
+
+[dev-dependencies]
+env_logger = { version = "0.3", default-features = false }
+cfg-if = "0.1"
+
+[target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]
+openssl = "0.9"
+
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dev-dependencies]
+security-framework = "0.1"
+
+[target.'cfg(windows)'.dev-dependencies]
+advapi32-sys = "0.2"
+crypt32-sys = "0.2"
+kernel32-sys = "0.2"
+schannel = "0.1"
+winapi = "0.2"
