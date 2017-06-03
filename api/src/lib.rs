@@ -160,15 +160,17 @@ pub trait TlsConnector : Send + 'static {
 }
 
 pub trait TlsAcceptorBuilder : Sized {
-    type Pkcs12 : Pkcs12;
     type Acceptor : TlsAcceptor;
-
-    fn new(pkcs12: Self::Pkcs12) -> Result<Self>;
 
     fn build(self) -> Result<Self::Acceptor>;
 }
 
 pub trait TlsAcceptor : Sized + Send + 'static {
+    type Pkcs12 : Pkcs12;
+    type Builder : TlsAcceptorBuilder<Acceptor=Self>;
+
+    fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
+
     fn accept<S>(&self, stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + 'static;

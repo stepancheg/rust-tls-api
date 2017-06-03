@@ -20,5 +20,5 @@ fn connect_bad_hostname_ignored() {
 fn server() {
     tls_api::impl_test::server::<
         tls_api_openssl::TlsConnectorBuilder,
-        tls_api_openssl::TlsAcceptorBuilder>();
+        tls_api_openssl::TlsAcceptor>();
 }
