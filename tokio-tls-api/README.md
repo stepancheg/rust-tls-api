@@ -24,7 +24,7 @@ Next, add this to your crate:
 
 ```rust
 extern crate tls_api;
-extern crate tokio_tls;
+extern crate tokio_tls_api;
 
 use tokio_tls::{TlsConnectorExt, TlsAcceptorExt};
 ```

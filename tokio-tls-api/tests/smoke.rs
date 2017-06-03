@@ -3,23 +3,23 @@ extern crate futures;
 extern crate tls_api;
 extern crate tokio_core;
 extern crate tokio_io;
-extern crate tokio_tls;
+extern crate tokio_tls_api;
 
-#[macro_use]
-extern crate cfg_if;
+//#[macro_use]
+//extern crate cfg_if;
 
-use std::io::{self, Read, Write};
-use std::process::Command;
+//use std::io::{self, Read, Write};
+//use std::process::Command;
 
-use futures::{Future, Poll};
-use futures::stream::Stream;
-use tokio_io::{AsyncRead, AsyncWrite};
-use tokio_io::io::{read_to_end, copy, shutdown};
-use tokio_core::reactor::Core;
-use tokio_core::net::{TcpListener, TcpStream};
-use tokio_tls::{TlsConnectorExt, TlsAcceptorExt};
-use tls_api::{TlsConnector, TlsAcceptor, Pkcs12};
+//use futures::{Future, Poll};
+//use futures::stream::Stream;
+//use tokio_io::{AsyncRead, AsyncWrite};
+//use tokio_io::io::{read_to_end, copy, shutdown};
+//use tokio_core::reactor::Core;
+//use tokio_core::net::{TcpListener, TcpStream};
+//use tls_api::{TlsConnector, TlsAcceptor, Pkcs12};
 
+/*
 macro_rules! t {
     ($e:expr) => (match $e {
         Ok(e) => e,
@@ -648,3 +648,4 @@ fn one_byte_at_a_time() {
     assert_eq!(amt, AMT);
     assert!(data == vec![9; amt as usize]);
 }
+*/

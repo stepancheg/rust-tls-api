@@ -6,10 +6,10 @@ use std::result;
 pub mod impl_test;
 
 
-pub struct Error(Box<error::Error>);
+pub struct Error(Box<error::Error + Send + Sync>);
 
 impl Error {
-    pub fn new<E : error::Error + 'static>(e: E) -> Error {
+    pub fn new<E : error::Error + 'static + Send + Sync>(e: E) -> Error {
         Error(Box::new(e))
     }
 }

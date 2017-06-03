@@ -2,7 +2,7 @@ extern crate env_logger;
 extern crate futures;
 extern crate tls_api;
 extern crate tokio_core;
-extern crate tokio_tls;
+extern crate tokio_tls_api;
 
 #[macro_use]
 extern crate cfg_if;
@@ -14,8 +14,8 @@ use futures::Future;
 use tls_api::TlsConnector;
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
-use tokio_tls::TlsConnectorExt;
 
+/*
 macro_rules! t {
     ($e:expr) => (match $e {
         Ok(e) => e,
@@ -171,3 +171,4 @@ fn self_signed() {
 fn untrusted_root() {
     assert_untrusted_root(&get_host("untrusted-root.badssl.com"))
 }
+*/
