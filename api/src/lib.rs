@@ -3,6 +3,8 @@ use std::fmt;
 use std::error;
 use std::result;
 
+pub mod impl_test;
+
 
 pub trait Pkcs12 {
 }
@@ -128,7 +130,7 @@ pub enum HandshakeError {
 
 
 pub trait TlsConnector : Sized {
-    type Builder : TlsConnectorBuilder;
+    type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
     type Pkcs12 : Pkcs12;
 
