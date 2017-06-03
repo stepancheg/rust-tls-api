@@ -18,6 +18,11 @@ use tls_api::Error;
 use tls_api::Result;
 
 impl tls_api::Pkcs12 for Pkcs12 {
+    fn from_der(der: &[u8], password: &str) -> Result<Self> {
+        native_tls::Pkcs12::from_der(der, password)
+            .map(Pkcs12)
+            .map_err(Error::new)
+    }
 }
 
 impl tls_api::Certificate for Certificate {

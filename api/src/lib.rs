@@ -6,9 +6,6 @@ use std::result;
 pub mod impl_test;
 
 
-pub trait Pkcs12 {
-}
-
 pub struct Error(Box<error::Error>);
 
 impl Error {
@@ -39,8 +36,13 @@ impl fmt::Display for Error {
     }
 }
 
+
 pub type Result<A> = result::Result<A, Error>;
 
+
+pub trait Pkcs12 : Sized {
+    fn from_der(der: &[u8], password: &str) -> Result<Self>;
+}
 
 
 pub trait Certificate {
@@ -130,7 +132,7 @@ pub enum HandshakeError {
 }
 
 
-pub trait TlsConnector : Sized {
+pub trait TlsConnector : Sized + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
     type Pkcs12 : Pkcs12;
@@ -157,9 +159,9 @@ pub trait TlsAcceptorBuilder : Sized {
     fn build(self) -> Result<Self::Acceptor>;
 }
 
-pub trait TlsAcceptor : Sized {
+pub trait TlsAcceptor : Sized + Send + 'static {
     type Pkcs12 : Pkcs12;
-    type Builder : TlsAcceptorBuilder;
+    type Builder : TlsAcceptorBuilder<Acceptor=Self>;
 
     fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
 
