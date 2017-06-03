@@ -43,3 +43,5 @@ simply use that generic code.
 ## Why not simply use native-tls
 
 native-tls uses security-framework on OSX, and security-framework does not support ALPN.
+
+Or you simply want to have an option to avoid building TLS library.
