@@ -92,10 +92,28 @@ impl io::Write for TlsStream {
 
 
 
+pub trait MidHandshakeTlsStreamImpl : fmt::Debug {
+    fn handshake(&mut self) -> result::Result<TlsStream, HandshakeError>;
+}
+
+#[derive(Debug)]
+pub struct MidHandshakeTlsStream(Box<MidHandshakeTlsStreamImpl>);
+
+impl MidHandshakeTlsStream {
+    pub fn new<S : MidHandshakeTlsStreamImpl + 'static>(stream: S) -> MidHandshakeTlsStream {
+        MidHandshakeTlsStream(Box::new(stream))
+    }
+
+    pub fn handshake(mut self) -> result::Result<TlsStream, HandshakeError> {
+        self.0.handshake()
+    }
+}
+
+
 
 /// An error returned from `ClientBuilder::handshake`.
 #[derive(Debug)]
-pub enum HandshakeError<S : MidHandshakeTlsStream> {
+pub enum HandshakeError {
     /// A fatal error.
     Failure(Error),
 
@@ -105,18 +123,14 @@ pub enum HandshakeError<S : MidHandshakeTlsStream> {
     /// Note that this is not a fatal error and it should be safe to call
     /// `handshake` at a later time once the stream is ready to perform I/O
     /// again.
-    Interrupted(S),
+    Interrupted(MidHandshakeTlsStream),
 }
 
-pub trait MidHandshakeTlsStream : Sized {
-    fn handshake(self) -> result::Result<TlsStream, HandshakeError<Self>>;
-}
 
 pub trait TlsConnector : Sized {
     type Builder : TlsConnectorBuilder;
     type Certificate : Certificate;
     type Pkcs12 : Pkcs12;
-    type MidHandshakeTlsStream : MidHandshakeTlsStream;
 
     fn builder() -> Result<Self::Builder>;
 
@@ -124,7 +138,7 @@ pub trait TlsConnector : Sized {
         &self,
         domain: &str,
         stream: S)
-            -> result::Result<TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
+            -> result::Result<TlsStream, HandshakeError>
         where S : io::Read + io::Write + 'static;
 
 }
@@ -138,11 +152,10 @@ pub trait TlsAcceptorBuilder : Sized {
 pub trait TlsAcceptor : Sized {
     type Pkcs12 : Pkcs12;
     type Builder : TlsAcceptorBuilder;
-    type MidHandshakeTlsStream : MidHandshakeTlsStream;
 
     fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
 
     fn accept<S>(&self, stream: S)
-            -> result::Result<TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
+            -> result::Result<TlsStream, HandshakeError>
         where S : io::Read + io::Write + 'static;
 }
