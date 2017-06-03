@@ -13,8 +13,8 @@ use TlsAcceptorBuilder;
 use TlsStream;
 
 
-pub fn test_google<C : TlsConnectorBuilder>() {
-    let connector: C::Connector = C::new().expect("builder").build().expect("build");
+pub fn test_google<C : TlsConnector>() {
+    let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
     let mut tls_stream: TlsStream<_> = connector.connect("google.com", tcp_stream).expect("tls");
 
@@ -27,20 +27,20 @@ pub fn test_google<C : TlsConnectorBuilder>() {
     assert!(result.ends_with(b"</HTML>\r\n") || result.ends_with(b"</html>"));
 }
 
-pub fn connect_bad_hostname<C : TlsConnectorBuilder>() {
-    let connector: C::Connector = C::new().expect("builder").build().expect("build");
+pub fn connect_bad_hostname<C : TlsConnector>() {
+    let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
     connector.connect("goggle.com", tcp_stream).unwrap_err();
 }
 
-pub fn connect_bad_hostname_ignored<C : TlsConnectorBuilder>() {
-    let connector: C::Connector = C::new().expect("builder").build().expect("build");
+pub fn connect_bad_hostname_ignored<C : TlsConnector>() {
+    let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
     connector.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(tcp_stream)
         .expect("tls");
 }
 
-pub fn server<C : TlsConnectorBuilder, A : TlsAcceptor>() {
+pub fn server<C : TlsConnector, A : TlsAcceptor>() {
     let buf = include_bytes!("../test/identity.p12");
     let pkcs12 = A::Pkcs12::from_der(buf, "mypass").expect("pkcs12");
     let acceptor: A = A::builder(pkcs12).expect("acceptor builder")
@@ -64,9 +64,9 @@ pub fn server<C : TlsConnectorBuilder, A : TlsAcceptor>() {
     let root_ca = C::Certificate::from_der(root_ca).expect("certificate");
 
     let socket = TcpStream::connect(("::1", port)).expect("connect");
-    let mut connector = C::new().expect("connector builder");
+    let mut connector = C::builder().expect("connector builder");
     connector.add_root_certificate(root_ca).expect("add root certificate");
-    let connector: C::Connector = connector.build().expect("acceptor build");
+    let connector: C = connector.build().expect("acceptor build");
     let mut socket = connector.connect("foobar.com", socket).expect("tls connect");
 
     socket.write_all(b"hello").expect("client write");
