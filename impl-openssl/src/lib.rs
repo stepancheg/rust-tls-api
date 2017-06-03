@@ -79,7 +79,7 @@ impl<S : io::Read + io::Write + fmt::Debug> io::Write for TlsStream<S> {
     }
 }
 
-impl<S : io::Read + io::Write + fmt::Debug> tls_api::TlsStreamImpl<S> for TlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::TlsStreamImpl<S> for TlsStream<S> {
     fn shutdown(&mut self) -> io::Result<()> {
         match self.0.shutdown() {
             Ok(_) |
@@ -108,7 +108,7 @@ impl<S : io::Read + io::Write> fmt::Debug for MidHandshakeTlsStream<S> {
 
 
 
-impl<S : io::Read + io::Write + fmt::Debug + 'static> tls_api::MidHandshakeTlsStreamImpl<S> for MidHandshakeTlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::MidHandshakeTlsStreamImpl<S> for MidHandshakeTlsStream<S> {
     fn handshake(&mut self) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>> {
         self.0.take().unwrap().handshake()
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
@@ -117,7 +117,7 @@ impl<S : io::Read + io::Write + fmt::Debug + 'static> tls_api::MidHandshakeTlsSt
 }
 
 fn map_handshake_error<S>(e: openssl::ssl::HandshakeError<S>) -> tls_api::HandshakeError<S>
-    where S : io::Read + io::Write + fmt::Debug + 'static
+    where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
 {
     match e {
         openssl::ssl::HandshakeError::SetupFailure(e) => {
@@ -145,7 +145,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
     fn connect<S>(&self, domain: &str, stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S: io::Read + io::Write + fmt::Debug + 'static
+            where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
         self.0.connect(domain, stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
@@ -156,7 +156,7 @@ impl tls_api::TlsConnector for TlsConnector {
         &self,
         stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S: io::Read + io::Write + fmt::Debug + 'static
+            where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
         self.0.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
@@ -188,7 +188,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-        where S: io::Read + io::Write + fmt::Debug + 'static
+        where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
         self.0.accept(stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))

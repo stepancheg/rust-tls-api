@@ -49,18 +49,8 @@ pub trait Certificate {
     fn from_der(der: &[u8]) -> Result<Self> where Self : Sized;
 }
 
-pub trait TlsConnectorBuilder : Sized {
-    type Connector : TlsConnector;
 
-    fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
-        -> Result<&mut Self>;
-
-    fn build(self) -> Result<Self::Connector>;
-}
-
-
-
-pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug {
+pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + 'static {
     fn shutdown(&mut self) -> io::Result<()>;
 
     fn get_mut(&mut self) -> &mut S;
@@ -74,10 +64,10 @@ pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug {
 /// }
 /// ```
 #[derive(Debug)]
-pub struct TlsStream<S>(Box<TlsStreamImpl<S>>);
+pub struct TlsStream<S>(Box<TlsStreamImpl<S> + 'static>);
 
-impl<S> TlsStream<S> {
-    pub fn new<I: TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
+impl<S : 'static> TlsStream<S> {
+    pub fn new<I : TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
     }
 
@@ -108,14 +98,14 @@ impl<S> io::Write for TlsStream<S> {
 
 
 
-pub trait MidHandshakeTlsStreamImpl<S> : fmt::Debug {
+pub trait MidHandshakeTlsStreamImpl<S> : fmt::Debug + Sync + Send + 'static {
     fn handshake(&mut self) -> result::Result<TlsStream<S>, HandshakeError<S>>;
 }
 
 #[derive(Debug)]
-pub struct MidHandshakeTlsStream<S>(Box<MidHandshakeTlsStreamImpl<S>>);
+pub struct MidHandshakeTlsStream<S>(Box<MidHandshakeTlsStreamImpl<S> + 'static>);
 
-impl<S> MidHandshakeTlsStream<S> {
+impl<S : 'static> MidHandshakeTlsStream<S> {
     pub fn new<I : MidHandshakeTlsStreamImpl<S> + 'static>(stream: I) -> MidHandshakeTlsStream<S> {
         MidHandshakeTlsStream(Box::new(stream))
     }
@@ -143,7 +133,17 @@ pub enum HandshakeError<S> {
 }
 
 
-pub trait TlsConnector : Sized + Send + 'static {
+pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
+    type Connector : TlsConnector;
+
+    fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
+        -> Result<&mut Self>;
+
+    fn build(self) -> Result<Self::Connector>;
+}
+
+
+pub trait TlsConnector : Sized + Sync + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
 
@@ -154,22 +154,22 @@ pub trait TlsConnector : Sized + Send + 'static {
         domain: &str,
         stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>
-        where S : io::Read + io::Write + fmt::Debug + 'static;
+        where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
 
     fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
         &self,
         stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>
-        where S : io::Read + io::Write + fmt::Debug + 'static;
+        where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
 }
 
-pub trait TlsAcceptorBuilder : Sized {
+pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
     type Acceptor : TlsAcceptor;
 
     fn build(self) -> Result<Self::Acceptor>;
 }
 
-pub trait TlsAcceptor : Sized + Send + 'static {
+pub trait TlsAcceptor : Sized + Sync + Send + 'static {
     type Pkcs12 : Pkcs12;
     type Builder : TlsAcceptorBuilder<Acceptor=Self>;
 
@@ -177,5 +177,18 @@ pub trait TlsAcceptor : Sized + Send + 'static {
 
     fn accept<S>(&self, stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>
-        where S : io::Read + io::Write + fmt::Debug + 'static;
+        where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
+}
+
+fn _check_kinds() {
+    use std::net::TcpStream;
+
+    fn is_sync<T : Sync>() {}
+    fn is_send<T : Send>() {}
+    is_sync::<Error>();
+    is_send::<Error>();
+    is_sync::<TlsStream<TcpStream>>();
+    is_send::<TlsStream<TcpStream>>();
+    is_sync::<MidHandshakeTlsStream<TcpStream>>();
+    is_send::<MidHandshakeTlsStream<TcpStream>>();
 }

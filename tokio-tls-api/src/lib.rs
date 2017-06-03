@@ -101,7 +101,7 @@ impl<S: Io> Io for TlsStream<S> {
 impl<S: AsyncRead + AsyncWrite> AsyncRead for TlsStream<S> {
 }
 
-impl<S: AsyncRead + AsyncWrite> AsyncWrite for TlsStream<S> {
+impl<S: AsyncRead + AsyncWrite + 'static> AsyncWrite for TlsStream<S> {
     fn shutdown(&mut self) -> Poll<(), io::Error> {
         try_nb!(self.inner.shutdown());
         self.inner.get_mut().shutdown()
@@ -129,8 +129,8 @@ impl<S: AsyncRead + AsyncWrite> AsyncWrite for TlsStream<S> {
 /// properly.
 pub fn connect_async<C, S>(connector: &C, domain: &str, stream: S) -> ConnectAsync<S>
     where
-        S: Read + Write + fmt::Debug + 'static,
-        C: TlsConnector,
+        S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+        C : TlsConnector,
 {
     ConnectAsync {
         inner: MidHandshake {
@@ -158,8 +158,8 @@ pub fn connect_async<C, S>(connector: &C, domain: &str, stream: S) -> ConnectAsy
 /// properly.
 pub fn accept_async<A, S>(acceptor: &A, stream: S) -> AcceptAsync<S>
     where
-        S: Read + Write + fmt::Debug + 'static,
-        A: TlsAcceptor,
+        S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+        A : TlsAcceptor,
 {
     AcceptAsync {
         inner: MidHandshake {
@@ -169,7 +169,7 @@ pub fn accept_async<A, S>(acceptor: &A, stream: S) -> AcceptAsync<S>
 }
 
 // TODO: change this to AsyncRead/AsyncWrite on next major version
-impl<S: Read + Write> Future for ConnectAsync<S> {
+impl<S: Read + Write + 'static> Future for ConnectAsync<S> {
     type Item = TlsStream<S>;
     type Error = Error;
 
@@ -179,7 +179,7 @@ impl<S: Read + Write> Future for ConnectAsync<S> {
 }
 
 // TODO: change this to AsyncRead/AsyncWrite on next major version
-impl<S: Read + Write> Future for AcceptAsync<S> {
+impl<S: Read + Write + 'static> Future for AcceptAsync<S> {
     type Item = TlsStream<S>;
     type Error = Error;
 
@@ -189,7 +189,7 @@ impl<S: Read + Write> Future for AcceptAsync<S> {
 }
 
 // TODO: change this to AsyncRead/AsyncWrite on next major version
-impl<S: Read + Write> Future for MidHandshake<S> {
+impl<S: Read + Write + 'static> Future for MidHandshake<S> {
     type Item = TlsStream<S>;
     type Error = Error;
 
