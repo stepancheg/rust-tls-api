@@ -1,0 +1,8 @@
+[package]
+name = "tls-api-native-tls"
+version = "0.1.0"
+authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+
+[dependencies]
+native-tls = "0.*"
+tls-api = { version = "0.*", path = "../api" }
