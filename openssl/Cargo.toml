@@ -1,0 +1,8 @@
+[package]
+name = "tls-api-openssl"
+version = "0.1.0"
+authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+
+[dependencies]
+openssl = "0.*"
+tls-api = { version = "0.*", path = "../api" }

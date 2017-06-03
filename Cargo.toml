@@ -1,2 +1,2 @@
 [workspace]
-members = ["api", "native-tls", "tokio-tls-api"]
+members = ["api", "native-tls", "openssl", "tokio-tls-api"]
