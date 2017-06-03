@@ -11,7 +11,7 @@ Five crates:
 * tls-api-openssl — implementation of TLS API over
   [openssl](https://github.com/sfackler/rust-openssl) crate
 * tls-api-channel — missing implementation of TLS API over
-  [channel](https://github.com/steffengy/schannel-rs) crate (help wanted!)
+  [schannel](https://github.com/steffengy/schannel-rs) crate (help wanted!)
 * tokio-tls-api — fork of [tokio-tls](https://github.com/tokio-rs/tokio-tls)
   which uses tls-api instead of native-tls
 
