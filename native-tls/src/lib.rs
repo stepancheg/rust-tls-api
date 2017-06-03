@@ -122,6 +122,17 @@ impl tls_api::TlsConnector for TlsConnector {
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(map_handshake_error)
     }
+
+    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
+        &self,
+        stream: S)
+        -> result::Result<tls_api::TlsStream, tls_api::HandshakeError>
+            where S: io::Read + io::Write + fmt::Debug + 'static
+    {
+        self.0.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
+            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
+            .map_err(map_handshake_error)
+    }
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {

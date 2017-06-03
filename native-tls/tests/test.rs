@@ -10,3 +10,8 @@ fn test_google() {
 fn connect_bad_hostname() {
     tls_api::impl_test::connect_bad_hostname::<tls_api_native_tls::TlsConnector>();
 }
+
+#[test]
+fn connect_bad_hostname_ignored() {
+    tls_api::impl_test::connect_bad_hostname_ignored::<tls_api_native_tls::TlsConnector>();
+}

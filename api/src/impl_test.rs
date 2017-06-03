@@ -25,3 +25,10 @@ pub fn connect_bad_hostname<C : TlsConnector>() {
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
     connector.connect("goggle.com", tcp_stream).unwrap_err();
 }
+
+pub fn connect_bad_hostname_ignored<C : TlsConnector>() {
+    let connector: C = C::builder().expect("builder").build().expect("build");
+    let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
+    connector.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(tcp_stream)
+        .expect("tls");
+}

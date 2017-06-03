@@ -144,6 +144,11 @@ pub trait TlsConnector : Sized {
             -> result::Result<TlsStream, HandshakeError>
         where S : io::Read + io::Write + fmt::Debug + 'static;
 
+    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
+        &self,
+        stream: S)
+            -> result::Result<TlsStream, HandshakeError>
+        where S : io::Read + io::Write + fmt::Debug + 'static;
 }
 
 pub trait TlsAcceptorBuilder : Sized {
