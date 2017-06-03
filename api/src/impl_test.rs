@@ -19,3 +19,9 @@ pub fn test_google<C : TlsConnector>() {
     assert!(result.starts_with(b"HTTP/1.0"));
     assert!(result.ends_with(b"</HTML>\r\n") || result.ends_with(b"</html>"));
 }
+
+pub fn connect_bad_hostname<C : TlsConnector>() {
+    let connector: C = C::builder().expect("builder").build().expect("build");
+    let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
+    connector.connect("goggle.com", tcp_stream).unwrap_err();
+}

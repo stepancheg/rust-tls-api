@@ -58,16 +58,17 @@ pub trait TlsConnectorBuilder : Sized {
 
 
 
-pub trait TlsStreamImpl: io::Read + io::Write {
+pub trait TlsStreamImpl: io::Read + io::Write + fmt::Debug {
 }
 
 /// Since Rust has no HKT, it is not possible to declare something like
 ///
-/// ```
+/// ```ignore
 /// trait TlsConnector {
 ///     type <S> TlsStream<S> : TlsStreamImpl;
 /// }
 /// ```
+#[derive(Debug)]
 pub struct TlsStream(Box<TlsStreamImpl>);
 
 impl TlsStream {
@@ -141,7 +142,7 @@ pub trait TlsConnector : Sized {
         domain: &str,
         stream: S)
             -> result::Result<TlsStream, HandshakeError>
-        where S : io::Read + io::Write + 'static;
+        where S : io::Read + io::Write + fmt::Debug + 'static;
 
 }
 
@@ -159,5 +160,5 @@ pub trait TlsAcceptor : Sized {
 
     fn accept<S>(&self, stream: S)
             -> result::Result<TlsStream, HandshakeError>
-        where S : io::Read + io::Write + 'static;
+        where S : io::Read + io::Write + fmt::Debug + 'static;
 }

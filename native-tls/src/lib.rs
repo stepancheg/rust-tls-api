@@ -43,19 +43,20 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 }
 
-struct TlsStream<S : io::Read + io::Write>(native_tls::TlsStream<S>);
+#[derive(Debug)]
+struct TlsStream<S : io::Read + io::Write + fmt::Debug>(native_tls::TlsStream<S>);
 
-impl<S : io::Read + io::Write> TlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug> TlsStream<S> {
 
 }
 
-impl<S : io::Read + io::Write> io::Read for TlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug> io::Read for TlsStream<S> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.read(buf)
     }
 }
 
-impl<S : io::Read + io::Write> io::Write for TlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug> io::Write for TlsStream<S> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.0.write(buf)
     }
@@ -65,7 +66,7 @@ impl<S : io::Read + io::Write> io::Write for TlsStream<S> {
     }
 }
 
-impl<S : io::Read + io::Write> tls_api::TlsStreamImpl for TlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug> tls_api::TlsStreamImpl for TlsStream<S> {
 }
 
 
@@ -80,7 +81,7 @@ impl<S : io::Read + io::Write> fmt::Debug for MidHandshakeTlsStream<S> {
 
 
 
-impl<S : io::Read + io::Write + 'static> tls_api::MidHandshakeTlsStreamImpl for MidHandshakeTlsStream<S> {
+impl<S : io::Read + io::Write + fmt::Debug + 'static> tls_api::MidHandshakeTlsStreamImpl for MidHandshakeTlsStream<S> {
     fn handshake(&mut self) -> result::Result<tls_api::TlsStream, tls_api::HandshakeError> {
         self.0.take().unwrap().handshake()
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
@@ -89,7 +90,7 @@ impl<S : io::Read + io::Write + 'static> tls_api::MidHandshakeTlsStreamImpl for 
 }
 
 fn map_handshake_error<S>(e: native_tls::HandshakeError<S>) -> tls_api::HandshakeError
-    where S : io::Read + io::Write + 'static
+    where S : io::Read + io::Write + fmt::Debug + 'static
 {
     match e {
         native_tls::HandshakeError::Failure(e) => {
@@ -115,7 +116,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
     fn connect<S>(&self, domain: &str, stream: S)
         -> result::Result<tls_api::TlsStream, tls_api::HandshakeError>
-            where S: io::Read + io::Write + 'static
+            where S: io::Read + io::Write + fmt::Debug + 'static
     {
         self.0.connect(domain, stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
@@ -145,7 +146,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream, tls_api::HandshakeError>
-        where S: io::Read + io::Write + 'static
+        where S: io::Read + io::Write + fmt::Debug + 'static
     {
         self.0.accept(stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
