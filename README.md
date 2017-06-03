@@ -1,4 +1,5 @@
 [![Build Status](https://img.shields.io/travis/stepancheg/rust-tls-api.svg)](https://travis-ci.org/stepancheg/rust-tls-api)
+[![License](https://img.shields.io/crates/l/tls-api.svg)](https://github.com/stepancheg/rust-tls-api/blob/master/LICENSE)
 
 # Rust TLS API and implementations
 
