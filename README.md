@@ -37,8 +37,8 @@ Library users simply call that library with different implementations of connect
 [impl_test.rs](https://github.com/stepancheg/rust-tls-api/blob/master/api/src/impl_test.rs)
 contains tests implementation independent of any library. And identical tests which
 use:
-* [native-tls](https://github.com/stepancheg/rust-tls-api/blob/master/native-tls/tests/test.rs)
-* [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/openssl/tests/test.rs)
+* [native-tls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-native-tls/tests/test.rs)
+* [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/impl-openssl/tests/test.rs)
 
 ## Why not simply use native-tls
 
