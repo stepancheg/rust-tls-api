@@ -14,7 +14,6 @@ use std::net::ToSocketAddrs;
 use std::str;
 
 use futures::Future;
-use tls_api::TlsConnector;
 use tokio_io::io::{flush, read_to_end, write_all};
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
@@ -100,7 +99,7 @@ fn fetch_google() {
     // Send off the request by first negotiating an SSL handshake, then writing
     // of our request, then flushing, then finally read off the response.
     let data = client.and_then(move |socket| {
-                                   let builder = t!(tls_api_native_tls::TlsConnector::builder());
+                                   let builder = t!(tls_api_native_tls::TlsConnectorBuilder::new());
                                    let connector = t!(builder.build());
                                    tokio_tls_api::connect_async(&connector, "google.com", socket).map_err(native2io)
                                })

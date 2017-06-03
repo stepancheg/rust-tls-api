@@ -49,17 +49,6 @@ pub trait Certificate {
     fn from_der(der: &[u8]) -> Result<Self> where Self : Sized;
 }
 
-pub trait TlsConnectorBuilder : Sized {
-    type Connector : TlsConnector;
-
-    fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
-        -> Result<&mut Self>;
-
-    fn build(self) -> Result<Self::Connector>;
-}
-
-
-
 pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug {
     fn shutdown(&mut self) -> io::Result<()>;
 
@@ -143,12 +132,19 @@ pub enum HandshakeError<S> {
 }
 
 
-pub trait TlsConnector : Sized + Send + 'static {
-    type Builder : TlsConnectorBuilder<Connector=Self>;
+pub trait TlsConnectorBuilder : Sized {
+    type Connector : TlsConnector;
     type Certificate : Certificate;
 
-    fn builder() -> Result<Self::Builder>;
+    fn new() -> Result<Self>;
 
+    fn add_root_certificate(&mut self, cert: Self::Certificate)
+        -> Result<&mut Self>;
+
+    fn build(self) -> Result<Self::Connector>;
+}
+
+pub trait TlsConnector : Send + 'static {
     fn connect<S>(
         &self,
         domain: &str,

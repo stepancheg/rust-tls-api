@@ -39,23 +39,6 @@ impl tls_api::Certificate for Certificate {
     }
 }
 
-impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
-    type Connector = TlsConnector;
-
-    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
-        self.0
-            .builder_mut()
-            .cert_store_mut()
-            .add_cert(cert.0)
-                .map_err(map_error_stack)?;
-        Ok(self)
-    }
-
-    fn build(self) -> Result<TlsConnector> {
-        Ok(TlsConnector(self.0.build()))
-    }
-}
-
 #[derive(Debug)]
 struct TlsStream<S : io::Read + io::Write + fmt::Debug>(openssl::ssl::SslStream<S>);
 
@@ -133,15 +116,31 @@ fn map_handshake_error<S>(e: openssl::ssl::HandshakeError<S>) -> tls_api::Handsh
     }
 }
 
-impl tls_api::TlsConnector for TlsConnector {
-    type Builder = TlsConnectorBuilder;
+impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
+    type Connector = TlsConnector;
     type Certificate = Certificate;
 
-    fn builder() -> Result<TlsConnectorBuilder> {
+    fn new() -> Result<TlsConnectorBuilder> {
         openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())
             .map(TlsConnectorBuilder)
             .map_err(Error::new)
     }
+
+    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
+        self.0
+            .builder_mut()
+            .cert_store_mut()
+            .add_cert(cert.0)
+                .map_err(map_error_stack)?;
+        Ok(self)
+    }
+
+    fn build(self) -> Result<TlsConnector> {
+        Ok(TlsConnector(self.0.build()))
+    }
+}
+
+impl tls_api::TlsConnector for TlsConnector {
 
     fn connect<S>(&self, domain: &str, stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>

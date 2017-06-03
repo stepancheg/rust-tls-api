@@ -9,7 +9,6 @@ use std::io;
 use std::net::ToSocketAddrs;
 
 use futures::Future;
-use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
@@ -19,7 +18,7 @@ fn main() {
     let addr = "www.rust-lang.org:443".to_socket_addrs().unwrap().next().unwrap();
 
     let socket = TcpStream::connect(&addr, &core.handle());
-    let cx = tls_api_native_tls::TlsConnector::builder().unwrap().build().unwrap();
+    let cx = tls_api_native_tls::TlsConnectorBuilder::new().unwrap().build().unwrap();
 
     let tls_handshake = socket.and_then(|socket| {
         tokio_tls_api::connect_async(&cx, "www.rust-lang.org", socket).map_err(|e| {
