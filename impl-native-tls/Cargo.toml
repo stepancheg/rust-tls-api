@@ -1,10 +1,10 @@
 [package]
 name = "tls-api-native-tls"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over native-tls crate"
 license = "MIT/Apache-2.0"
 
 [dependencies]
 native-tls = "0.*"
-tls-api = { version = "0.1.5", path = "../api" }
+tls-api = { version = "0.1.6", path = "../api" }
