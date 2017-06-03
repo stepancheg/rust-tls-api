@@ -42,21 +42,19 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 }
 
-trait TlsStreamTrait : io::Read + io::Write {
+struct TlsStream<S : io::Read + io::Write>(native_tls::TlsStream<S>);
+
+impl<S : io::Read + io::Write> TlsStream<S> {
+
 }
 
-impl <S : io::Read + io::Write> TlsStreamTrait for native_tls::TlsStream<S> {
-}
-
-pub struct TlsStream(Box<TlsStreamTrait>);
-
-impl io::Read for TlsStream {
+impl<S : io::Read + io::Write> io::Read for TlsStream<S> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.read(buf)
     }
 }
 
-impl io::Write for TlsStream {
+impl<S : io::Read + io::Write> io::Write for TlsStream<S> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.0.write(buf)
     }
@@ -66,18 +64,19 @@ impl io::Write for TlsStream {
     }
 }
 
-impl tls_api::TlsStream for TlsStream {
-    
+impl<S : io::Read + io::Write> tls_api::TlsStreamImpl for TlsStream<S> {
 }
 
-trait MidHandshakeTlsStreamTrait {
-    fn handshake(&mut self) -> result::Result<TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>;
+
+
+trait MidHandshakeTlsStreamImpl {
+    fn handshake(&mut self) -> result::Result<tls_api::TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>;
 }
 
-impl<S : io::Read + io::Write + 'static> MidHandshakeTlsStreamTrait for Option<native_tls::MidHandshakeTlsStream<S>> {
-    fn handshake(&mut self) -> result::Result<TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>> {
+impl<S : io::Read + io::Write + 'static> MidHandshakeTlsStreamImpl for Option<native_tls::MidHandshakeTlsStream<S>> {
+    fn handshake(&mut self) -> result::Result<tls_api::TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>> {
         self.take().unwrap().handshake()
-            .map(|s| TlsStream(Box::new(s)))
+            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(|e| match e {
                 native_tls::HandshakeError::Failure(e) => {
                     tls_api::HandshakeError::Failure(Error::new(e))
@@ -90,12 +89,10 @@ impl<S : io::Read + io::Write + 'static> MidHandshakeTlsStreamTrait for Option<n
     }
 }
 
-pub struct MidHandshakeTlsStream(Box<MidHandshakeTlsStreamTrait>);
+pub struct MidHandshakeTlsStream(Box<MidHandshakeTlsStreamImpl>);
 
 impl tls_api::MidHandshakeTlsStream for MidHandshakeTlsStream {
-    type TlsStream = TlsStream;
-
-    fn handshake(mut self) -> result::Result<TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>> {
+    fn handshake(mut self) -> result::Result<tls_api::TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>> {
         self.0.handshake()
     }
 }
@@ -110,15 +107,14 @@ impl tls_api::TlsConnector for TlsConnector {
             .map(TlsConnectorBuilder)
             .map_err(Error::new)
     }
-    type TlsStream = TlsStream;
     type MidHandshakeTlsStream = MidHandshakeTlsStream;
 
     fn connect<S>(&self, domain: &str, stream: S)
-        -> result::Result<TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>
+        -> result::Result<tls_api::TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>
             where S: io::Read + io::Write + 'static
     {
         self.0.connect(domain, stream)
-            .map(|s| TlsStream(Box::new(s)))
+            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(|e| match e {
                 native_tls::HandshakeError::Failure(e) => {
                     tls_api::HandshakeError::Failure(Error::new(e))
@@ -143,7 +139,6 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Pkcs12 = Pkcs12;
     type Builder = TlsAcceptorBuilder;
-    type TlsStream = TlsStream;
     type MidHandshakeTlsStream = MidHandshakeTlsStream;
 
     fn builder(pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
@@ -153,11 +148,11 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     fn accept<S>(&self, stream: S)
-            -> result::Result<TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>
+            -> result::Result<tls_api::TlsStream, tls_api::HandshakeError<MidHandshakeTlsStream>>
         where S: io::Read + io::Write + 'static
     {
         self.0.accept(stream)
-            .map(|s| TlsStream(Box::new(s)))
+            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(|e| match e {
                 native_tls::HandshakeError::Failure(e) => {
                     tls_api::HandshakeError::Failure(Error::new(e))

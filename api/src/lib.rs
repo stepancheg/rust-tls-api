@@ -54,8 +54,44 @@ pub trait TlsConnectorBuilder : Sized {
     fn build(self) -> Result<Self::Connector>;
 }
 
-pub trait TlsStream : io::Read + io::Write {
+
+
+pub trait TlsStreamImpl: io::Read + io::Write {
 }
+
+/// Since Rust has no HKT, it is not possible to declare something like
+///
+/// ```
+/// trait TlsConnector {
+///     type <S> TlsStream<S> : TlsStreamImpl;
+/// }
+/// ```
+pub struct TlsStream(Box<TlsStreamImpl>);
+
+impl TlsStream {
+    pub fn new<S : TlsStreamImpl + 'static>(stream: S) -> TlsStream {
+        TlsStream(Box::new(stream))
+    }
+}
+
+impl io::Read for TlsStream {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.0.read(buf)
+    }
+}
+
+impl io::Write for TlsStream {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.0.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.0.flush()
+    }
+}
+
+
+
 
 /// An error returned from `ClientBuilder::handshake`.
 #[derive(Debug)]
@@ -73,17 +109,14 @@ pub enum HandshakeError<S : MidHandshakeTlsStream> {
 }
 
 pub trait MidHandshakeTlsStream : Sized {
-    type TlsStream : TlsStream;
-
-    fn handshake(self) -> result::Result<Self::TlsStream, HandshakeError<Self>>;
+    fn handshake(self) -> result::Result<TlsStream, HandshakeError<Self>>;
 }
 
 pub trait TlsConnector : Sized {
     type Builder : TlsConnectorBuilder;
     type Certificate : Certificate;
     type Pkcs12 : Pkcs12;
-    type TlsStream : TlsStream;
-    type MidHandshakeTlsStream : MidHandshakeTlsStream<TlsStream=Self::TlsStream>;
+    type MidHandshakeTlsStream : MidHandshakeTlsStream;
 
     fn builder() -> Result<Self::Builder>;
 
@@ -91,7 +124,7 @@ pub trait TlsConnector : Sized {
         &self,
         domain: &str,
         stream: S)
-            -> result::Result<Self::TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
+            -> result::Result<TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
         where S : io::Read + io::Write + 'static;
 
 }
@@ -105,12 +138,11 @@ pub trait TlsAcceptorBuilder : Sized {
 pub trait TlsAcceptor : Sized {
     type Pkcs12 : Pkcs12;
     type Builder : TlsAcceptorBuilder;
-    type TlsStream : TlsStream;
-    type MidHandshakeTlsStream : MidHandshakeTlsStream<TlsStream=Self::TlsStream>;
+    type MidHandshakeTlsStream : MidHandshakeTlsStream;
 
     fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
 
     fn accept<S>(&self, stream: S)
-            -> result::Result<Self::TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
+            -> result::Result<TlsStream, HandshakeError<Self::MidHandshakeTlsStream>>
         where S : io::Read + io::Write + 'static;
 }
