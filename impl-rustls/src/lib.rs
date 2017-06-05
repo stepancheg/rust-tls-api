@@ -181,6 +181,12 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static>
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
 
+    type Underlying = rustls::ClientConfig;
+
+    fn underlying_mut(&mut self) -> &mut rustls::ClientConfig {
+        &mut self.0
+    }
+
     fn add_root_certificate(&mut self, _cert: Certificate) -> Result<&mut Self> {
         unimplemented!()
     }
@@ -249,6 +255,12 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
+
+    type Underlying = rustls::ServerConfig;
+
+    fn underlying_mut(&mut self) -> &mut rustls::ServerConfig {
+        &mut self.0
+    }
 
     fn build(self) -> Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0))

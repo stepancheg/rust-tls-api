@@ -151,6 +151,10 @@ pub enum HandshakeError<S> {
 pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
     type Connector : TlsConnector;
 
+    type Underlying;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying;
+
     fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
         -> Result<&mut Self>;
 
@@ -182,6 +186,10 @@ pub trait TlsConnector : Sized + Sync + Send + 'static {
 /// A builder for `TlsAcceptor`s.
 pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
     type Acceptor : TlsAcceptor;
+
+    type Underlying;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     fn build(self) -> Result<Self::Acceptor>;
 }

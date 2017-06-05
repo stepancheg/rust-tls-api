@@ -42,6 +42,12 @@ impl tls_api::Certificate for Certificate {
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
 
+    type Underlying = openssl::ssl::SslConnectorBuilder;
+
+    fn underlying_mut(&mut self) -> &mut openssl::ssl::SslConnectorBuilder {
+        &mut self.0
+    }
+
     fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
         self.0
             .builder_mut()
@@ -53,6 +59,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     fn build(self) -> Result<TlsConnector> {
         Ok(TlsConnector(self.0.build()))
+    }
+}
+
+impl TlsConnectorBuilder {
+    pub fn builder_mut(&mut self) -> &mut openssl::ssl::SslConnectorBuilder {
+        &mut self.0
     }
 }
 
@@ -167,8 +179,20 @@ impl tls_api::TlsConnector for TlsConnector {
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
 
+    type Underlying = openssl::ssl::SslAcceptorBuilder;
+
+    fn underlying_mut(&mut self) -> &mut openssl::ssl::SslAcceptorBuilder {
+        &mut self.0
+    }
+
     fn build(self) -> Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0.build()))
+    }
+}
+
+impl TlsAcceptorBuilder {
+    pub fn builder_mut(&mut self) -> &mut openssl::ssl::SslAcceptorBuilder {
+        &mut self.0
     }
 }
 
