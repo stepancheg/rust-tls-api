@@ -4,6 +4,7 @@
 use std::io;
 use std::net::ToSocketAddrs;
 use std::str;
+use std::error;
 
 use futures::Future;
 use tokio_io::io::{flush, read_to_end, write_all};
@@ -114,11 +115,10 @@ pub fn fetch_google<C : tls_api::TlsConnector>() {
     assert!(data.ends_with("</html>") || data.ends_with("</HTML>"));
 }
 
-/*
 // see comment in bad.rs for ignore reason
-#[cfg_attr(all(target_os = "macos", feature = "force-openssl"), ignore)]
-#[test]
-fn wrong_hostname_error() {
+//#[cfg_attr(all(target_os = "macos", feature = "force-openssl"), ignore)]
+//#[test]
+pub fn wrong_hostname_error<C : tls_api::TlsConnector>() -> tls_api::Error {
     drop(env_logger::init());
 
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
@@ -126,14 +126,15 @@ fn wrong_hostname_error() {
     let mut l = t!(Core::new());
     let client = TcpStream::connect(&addr, &l.handle());
     let data = client.and_then(move |socket| {
-                                   let builder = t!(TlsConnector::builder());
-                                   let connector = t!(builder.build());
-                                   connector.connect_async("rust-lang.org", socket)
-                                       .map_err(native2io)
-                               });
+        let builder = t!(C::builder());
+        let connector = t!(builder.build());
+        tokio_tls_api::connect_async(&connector, "rust-lang.org", socket)
+            .map_err(native2io)
+    });
 
     let res = l.run(data);
     assert!(res.is_err());
-    assert_bad_hostname_error(&res.err().unwrap());
+    let err: io::Error = res.unwrap_err();
+    let inner: Box<error::Error> = err.into_inner().unwrap();
+    *inner.downcast().unwrap()
 }
-*/

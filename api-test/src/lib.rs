@@ -103,3 +103,4 @@ pub fn server<C : TlsConnector, A : TlsAcceptor>() {
 }
 
 pub use tokio_google::fetch_google as tokio_fetch_google;
+pub use tokio_google::wrong_hostname_error as tokio_wrong_hostname_error;

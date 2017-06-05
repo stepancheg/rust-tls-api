@@ -8,10 +8,20 @@ use std::result;
 
 pub struct Error(Box<error::Error + Send + Sync>);
 
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error::new(err)
+    }
+}
+
 /// An error returned from the TLS implementation.
 impl Error {
     pub fn new<E : error::Error + 'static + Send + Sync>(e: E) -> Error {
         Error(Box::new(e))
+    }
+
+    pub fn into_inner(self) -> Box<error::Error + Send + Sync> {
+        self.0
     }
 }
 

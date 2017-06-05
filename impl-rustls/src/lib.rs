@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::mem;
 
 use tls_api::Result;
+use tls_api::Error;
 
 use rustls::Session as rustls_Session;
 
@@ -43,9 +44,35 @@ pub struct TlsStream<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'stat
     write_skip: usize,
 }
 
+enum IntermediateError {
+    Io(io::Error),
+    Tls(rustls::TLSError),
+}
+
+impl IntermediateError {
+    fn into_error(self) -> Error {
+        match self {
+            IntermediateError::Io(err) => Error::new(err),
+            IntermediateError::Tls(err) => Error::new(err),
+        }
+    }
+}
+
+impl From<io::Error> for IntermediateError {
+    fn from(err: io::Error) -> IntermediateError {
+        IntermediateError::Io(err)
+    }
+}
+
+impl From<rustls::TLSError> for IntermediateError {
+    fn from(err: rustls::TLSError) -> IntermediateError {
+        IntermediateError::Tls(err)
+    }
+}
+
 impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> TlsStream<S> {
 
-    fn complete_handshake(&mut self) -> io::Result<()> {
+    fn complete_handshake(&mut self) -> result::Result<(), IntermediateError> {
         while self.session.is_handshaking() {
             // TODO: https://github.com/ctz/rustls/issues/77
             if self.session.is_handshaking() && self.session.wants_write() {
@@ -54,8 +81,7 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> TlsStream<S>
             }
             if self.session.is_handshaking() && self.session.wants_read() {
                 self.session.read_tls(&mut self.stream)?;
-                self.session.process_new_packets()
-                    .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+                self.session.process_new_packets()?;
             }
         }
 
@@ -69,14 +95,14 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> TlsStream<S>
             Ok(_) => {
                 Ok(tls_api::TlsStream::new(self))
             },
-            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+            Err(IntermediateError::Io(ref e)) if e.kind() == io::ErrorKind::WouldBlock => {
                 let mid_handshake = tls_api::MidHandshakeTlsStream::new(MidHandshakeTlsStream {
                     stream: Some(self)
                 });
                 Err(tls_api::HandshakeError::Interrupted(mid_handshake))
             }
             Err(e) => {
-                Err(tls_api::HandshakeError::Failure(tls_api::Error::new(e)))
+                Err(tls_api::HandshakeError::Failure(e.into_error()))
             },
         }
     }
