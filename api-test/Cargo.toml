@@ -1,9 +1,11 @@
 [package]
-name = "tls-api"
-version = "0.1.6"
+name = "tls-api-test"
+version = "0.0.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
 
 [dependencies]
+tls-api    = { path = "../api" }
 log        = "0.*"
+env_logger = "0.*"

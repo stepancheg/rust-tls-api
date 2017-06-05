@@ -8,3 +8,6 @@ license = "MIT/Apache-2.0"
 [dependencies]
 openssl = "0.*"
 tls-api = { version = "0.1.6", path = "../api" }
+
+[dev-dependencies]
+tls-api-test = { path = "../api-test" }

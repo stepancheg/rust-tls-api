@@ -3,8 +3,6 @@ use std::fmt;
 use std::error;
 use std::result;
 
-pub mod impl_test;
-
 
 pub struct Error(Box<error::Error + Send + Sync>);
 

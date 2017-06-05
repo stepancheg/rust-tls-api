@@ -1,13 +1,14 @@
 [package]
-name = "tls-api-stub"
+name = "tls-api-rustls"
 version = "0.1.6"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
-description = "TLS API implementation that returns error on any operation"
+description = "TLS API implementation over rustls crate"
 license = "MIT/Apache-2.0"
 
 [dependencies]
+rustls = "0.*"
 tls-api = { version = "0.1.6", path = "../api" }
-void    = "1"
+webpki-roots = "0.10"
 
 [dev-dependencies]
 tls-api-test = { path = "../api-test" }
