@@ -47,6 +47,7 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> TlsStream<S>
 
     fn complete_handshake(&mut self) -> io::Result<()> {
         while self.session.is_handshaking() {
+            // TODO: https://github.com/ctz/rustls/issues/77
             if self.session.is_handshaking() && self.session.wants_write() {
                 while self.session.write_tls(&mut self.stream)? > 0 {
                 };
