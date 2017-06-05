@@ -106,6 +106,10 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::Tls
     fn get_mut(&mut self) -> &mut S {
         self.0.get_mut()
     }
+
+    fn get_alpn_protocol(&self) -> Option<String> {
+        None
+    }
 }
 
 

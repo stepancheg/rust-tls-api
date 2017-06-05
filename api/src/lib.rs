@@ -6,13 +6,10 @@ use std::error;
 use std::result;
 
 
-pub struct Error(Box<error::Error + Send + Sync>);
+// Error
 
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::new(err)
-    }
-}
+
+pub struct Error(Box<error::Error + Send + Sync>);
 
 /// An error returned from the TLS implementation.
 impl Error {
@@ -47,6 +44,15 @@ impl fmt::Display for Error {
     }
 }
 
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error::new(err)
+    }
+}
+
+
+// Result
+
 
 /// A typedef of the result type returned by many methods.
 pub type Result<A> = result::Result<A, Error>;
@@ -63,6 +69,9 @@ pub trait Certificate {
 
 
 pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + 'static {
+    /// Get negotiated ALPN protocol.
+    fn get_alpn_protocol(&self) -> Option<String>;
+
     fn shutdown(&mut self) -> io::Result<()>;
 
     fn get_mut(&mut self) -> &mut S;
