@@ -1,3 +1,5 @@
+//! Implementation neutral TLS API.
+
 use std::io;
 use std::fmt;
 use std::error;
@@ -6,6 +8,7 @@ use std::result;
 
 pub struct Error(Box<error::Error + Send + Sync>);
 
+/// An error returned from the TLS implementation.
 impl Error {
     pub fn new<E : error::Error + 'static + Send + Sync>(e: E) -> Error {
         Error(Box::new(e))
@@ -35,6 +38,7 @@ impl fmt::Display for Error {
 }
 
 
+/// A typedef of the result type returned by many methods.
 pub type Result<A> = result::Result<A, Error>;
 
 
@@ -60,6 +64,8 @@ pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + '
 /// trait TlsConnector {
 ///     type <S> TlsStream<S> : TlsStreamImpl;
 /// }
+///
+/// So `TlsStream` is actually a box to concrete TLS implementation.
 /// ```
 #[derive(Debug)]
 pub struct TlsStream<S>(Box<TlsStreamImpl<S> + 'static>);
@@ -131,6 +137,7 @@ pub enum HandshakeError<S> {
 }
 
 
+/// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
     type Connector : TlsConnector;
 
@@ -141,6 +148,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 }
 
 
+/// A builder for client-side TLS connections.
 pub trait TlsConnector : Sized + Sync + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
@@ -161,12 +169,14 @@ pub trait TlsConnector : Sized + Sync + Send + 'static {
         where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
 }
 
+/// A builder for `TlsAcceptor`s.
 pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
     type Acceptor : TlsAcceptor;
 
     fn build(self) -> Result<Self::Acceptor>;
 }
 
+/// A builder for server-side TLS connections.
 pub trait TlsAcceptor : Sized + Sync + Send + 'static {
     type Pkcs12 : Pkcs12;
     type Builder : TlsAcceptorBuilder<Acceptor=Self>;
