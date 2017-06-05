@@ -2,7 +2,7 @@
 
 version="0.1.6"
 
-sed -e 's,^version = .*,version = "'$version'",' -i '' \
+sed -e '/0\.0\.0/ ! s,^version = .*,version = "'$version'",' -i '' \
     */Cargo.toml
 
 sed -e '/^tls-api.*path/ s,version = [^ ]*",version = "'$version'",' -i '' */Cargo.toml
