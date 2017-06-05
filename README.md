@@ -4,7 +4,8 @@
 
 # Rust TLS API and implementations
 
-Five crates:
+Several crates:
+
 * tls-api — TLS API without any implementation and without dependencies
 * tls-api-native-tls — implementation of TLS API over
   [native-tls](https://github.com/sfackler/rust-native-tls) crate
@@ -16,6 +17,7 @@ Five crates:
   [schannel](https://github.com/steffengy/schannel-rs) crate
 * tls-api-security-framework — _missing_ implementation of TLS API over
   [security framework](https://github.com/sfackler/rust-security-framework) crate
+* tls-api-native-tls — stub API implementation which returns an error on any operation
 * tokio-tls-api — fork of [tokio-tls](https://github.com/tokio-rs/tokio-tls)
   which uses tls-api instead of native-tls
 
