@@ -10,6 +10,8 @@ Five crates:
   [native-tls](https://github.com/sfackler/rust-native-tls) crate
 * tls-api-openssl — implementation of TLS API over
   [openssl](https://github.com/sfackler/rust-openssl) crate
+* tls-api-rustls — implementation of TLS API over
+  [rustls](https://github.com/ctz/rustls) crate
 * tls-api-schannel — missing implementation of TLS API over
   [schannel](https://github.com/steffengy/schannel-rs) crate (help wanted!)
 * tokio-tls-api — fork of [tokio-tls](https://github.com/tokio-rs/tokio-tls)
@@ -38,11 +40,12 @@ Library users simply call that library with different implementations of connect
 
 ## Example
 
-[impl_test.rs](https://github.com/stepancheg/rust-tls-api/blob/master/api/src/impl_test.rs)
+[api-test](https://github.com/stepancheg/rust-tls-api/blob/master/api-test/src/lib.rs)
 contains tests implementation independent of any library. And identical tests which
 use:
 * [native-tls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-native-tls/tests/test.rs)
 * [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/impl-openssl/tests/test.rs)
+* [rustls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-rustls/tests/test.rs)
 
 ## Why not simply use native-tls
 
