@@ -14,3 +14,8 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 tls-api    = { version = "0.1.6", path = "../api" }
 log        = "0.*"
 env_logger = "0.*"
+
+futures       = "0.*"
+tokio-core    = "0.*"
+tokio-io      = "0.*"
+tokio-tls-api = { version = "0.1.6", path = "../tokio-tls-api" }

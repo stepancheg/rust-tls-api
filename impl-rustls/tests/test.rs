@@ -23,3 +23,8 @@ fn server() {
         tls_api_rustls::TlsConnector,
         tls_api_rustls::TlsAcceptor>();
 }
+
+#[test]
+fn tokio_fetch_google() {
+    tls_api_test::tokio_fetch_google::<tls_api_rustls::TlsConnector>();
+}

@@ -1,11 +1,3 @@
-extern crate env_logger;
-extern crate futures;
-extern crate tls_api;
-extern crate tls_api_native_tls;
-extern crate tokio_core;
-extern crate tokio_io;
-extern crate tokio_tls_api;
-
 //#[macro_use]
 //extern crate cfg_if;
 
@@ -14,12 +6,17 @@ use std::net::ToSocketAddrs;
 use std::str;
 
 use futures::Future;
-use tls_api::TlsConnector;
 use tokio_io::io::{flush, read_to_end, write_all};
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
 
-use tls_api::TlsConnectorBuilder;
+use env_logger;
+
+use tls_api;
+
+use tls_api::TlsConnectorBuilder as tls_api_TlsConnectorBuilder;
+
+use tokio_tls_api;
 
 
 macro_rules! t {
@@ -85,8 +82,7 @@ fn native2io(e: tls_api::Error) -> io::Error {
     io::Error::new(io::ErrorKind::Other, e)
 }
 
-#[test]
-fn fetch_google() {
+pub fn fetch_google<C : tls_api::TlsConnector>() {
     drop(env_logger::init());
 
     // First up, resolve google.com
@@ -100,7 +96,7 @@ fn fetch_google() {
     // Send off the request by first negotiating an SSL handshake, then writing
     // of our request, then flushing, then finally read off the response.
     let data = client.and_then(move |socket| {
-                                   let builder = t!(tls_api_native_tls::TlsConnector::builder());
+                                   let builder = t!(C::builder());
                                    let connector = t!(builder.build());
                                    tokio_tls_api::connect_async(&connector, "google.com", socket).map_err(native2io)
                                })

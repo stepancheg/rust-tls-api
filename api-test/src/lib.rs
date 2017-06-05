@@ -1,8 +1,16 @@
+extern crate futures;
+extern crate tokio_core;
+extern crate tokio_io;
+extern crate tokio_tls_api;
+
 #[macro_use]
 extern crate log;
 extern crate env_logger;
 
 extern crate tls_api;
+
+
+mod tokio_google;
 
 
 use std::net::TcpStream;
@@ -93,3 +101,5 @@ pub fn server<C : TlsConnector, A : TlsAcceptor>() {
 
     j.join().expect("thread join");
 }
+
+pub use tokio_google::fetch_google as tokio_fetch_google;

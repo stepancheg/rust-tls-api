@@ -22,3 +22,8 @@ fn server() {
         tls_api_openssl::TlsConnector,
         tls_api_openssl::TlsAcceptor>();
 }
+
+#[test]
+fn tokio_fetch_google() {
+    tls_api_test::tokio_fetch_google::<tls_api_openssl::TlsConnector>();
+}
