@@ -19,7 +19,7 @@ pub struct TlsConnectorBuilder(rustls::ClientConfig);
 pub struct TlsConnector(Arc<rustls::ClientConfig>);
 
 pub struct TlsAcceptorBuilder(rustls::ServerConfig);
-pub struct TlsAcceptor(rustls::ServerConfig);
+pub struct TlsAcceptor(Arc<rustls::ServerConfig>);
 
 
 impl tls_api::Pkcs12 for Pkcs12 {
@@ -314,7 +314,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     }
 
     fn build(self) -> Result<TlsAcceptor> {
-        Ok(TlsAcceptor(self.0))
+        Ok(TlsAcceptor(Arc::new(self.0)))
     }
 }
 
@@ -326,10 +326,16 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(rustls::ServerConfig::new()))
     }
 
-    fn accept<S>(&self, _stream: S)
+    fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
-        unimplemented!()
+        let tls_stream = TlsStream {
+            stream: stream,
+            session: rustls::ServerSession::new(&self.0),
+            write_skip: 0,
+        };
+
+        tls_stream.complete_handleshake_mid()
     }
 }
