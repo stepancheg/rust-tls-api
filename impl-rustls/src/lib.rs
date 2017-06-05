@@ -188,11 +188,36 @@ impl tls_api::TlsConnector for TlsConnector {
 
     fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
         &self,
-        _stream: S)
+        stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
-        unimplemented!()
+        // TODO: Clone current config: https://github.com/ctz/rustls/pull/78
+        let mut client_config = rustls::ClientConfig::new();
+
+        struct NoCertificateVerifier;
+
+        impl rustls::ServerCertVerifier for NoCertificateVerifier {
+            fn verify_server_cert(
+                &self,
+                _roots: &rustls::RootCertStore,
+                _presented_certs: &[rustls::Certificate],
+                _dns_name: &str)
+                    -> result::Result<(), rustls::TLSError>
+            {
+                Ok(())
+            }
+        }
+
+        client_config.dangerous().set_certificate_verifier(Box::new(NoCertificateVerifier));
+
+        let tls_stream = TlsStream {
+            stream: stream,
+            session: rustls::ClientSession::new(&Arc::new(client_config), "ignore"),
+            write_skip: 0,
+        };
+
+        tls_stream.complete_handleshake_mid()
     }
 }
 

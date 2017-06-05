@@ -11,7 +11,6 @@ fn connect_bad_hostname() {
     tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector>();
 }
 
-#[ignore] // TODO
 #[test]
 fn connect_bad_hostname_ignored() {
     tls_api_test::connect_bad_hostname_ignored::<tls_api_rustls::TlsConnector>();
