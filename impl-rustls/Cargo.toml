@@ -4,6 +4,11 @@ version = "0.1.6"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over rustls crate"
 license = "MIT/Apache-2.0"
+repository = "https://github.com/stepancheg/rust-tls-api/"
+keywords = ["tls"]
+
+[badges]
+travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
 rustls = "0.*"
