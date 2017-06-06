@@ -62,11 +62,6 @@ impl From<io::Error> for Error {
 pub type Result<A> = result::Result<A, Error>;
 
 
-pub trait Pkcs12 : Sized {
-    fn from_der(der: &[u8], password: &str) -> Result<Self>;
-}
-
-
 pub trait Certificate {
     fn from_der(der: &[u8]) -> Result<Self> where Self : Sized;
 }
@@ -209,10 +204,7 @@ pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
 
 /// A builder for server-side TLS connections.
 pub trait TlsAcceptor : Sized + Sync + Send + 'static {
-    type Pkcs12 : Pkcs12;
     type Builder : TlsAcceptorBuilder<Acceptor=Self>;
-
-    fn builder(pkcs12: Self::Pkcs12) -> Result<Self::Builder>;
 
     fn accept<S>(&self, stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>

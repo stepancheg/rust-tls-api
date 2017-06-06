@@ -47,12 +47,6 @@ impl fmt::Display for Error {
     }
 }
 
-impl tls_api::Pkcs12 for Pkcs12 {
-    fn from_der(_der: &[u8], _password: &str) -> Result<Self> {
-        Err(tls_api::Error::new(Error))
-    }
-}
-
 impl tls_api::Certificate for Certificate {
     fn from_der(_der: &[u8]) -> Result<Self> where Self: Sized {
         Err(tls_api::Error::new(Error))
@@ -117,12 +111,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 }
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
-    type Pkcs12 = Pkcs12;
     type Builder = TlsAcceptorBuilder;
-
-    fn builder(_pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
-        Err(tls_api::Error::new(Error))
-    }
 
     fn accept<S>(&self, _stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>

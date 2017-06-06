@@ -7,8 +7,6 @@ use std::fmt;
 
 use tls_api::Error;
 use tls_api::Result;
-use tls_api::TlsAcceptor as tls_api_TlsAcceptor;
-use tls_api::Pkcs12 as tls_api_Pkcs12;
 
 
 pub struct Pkcs12(native_tls::Pkcs12);
@@ -20,14 +18,6 @@ pub struct TlsConnector(native_tls::TlsConnector);
 pub struct TlsAcceptorBuilder(native_tls::TlsAcceptorBuilder);
 pub struct TlsAcceptor(native_tls::TlsAcceptor);
 
-
-impl tls_api::Pkcs12 for Pkcs12 {
-    fn from_der(der: &[u8], password: &str) -> Result<Self> {
-        native_tls::Pkcs12::from_der(der, password)
-            .map(Pkcs12)
-            .map_err(Error::new)
-    }
-}
 
 impl tls_api::Certificate for Certificate {
     fn from_der(der: &[u8]) -> Result<Self> where Self: Sized {
@@ -166,7 +156,12 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
-        TlsAcceptor::builder(Pkcs12::from_der(pkcs12, password)?)
+        let pkcs12 = native_tls::Pkcs12::from_der(pkcs12, password)
+            .map_err(Error::new)?;
+
+        native_tls::TlsAcceptor::builder(pkcs12)
+            .map(TlsAcceptorBuilder)
+            .map_err(Error::new)
     }
 }
 
@@ -188,14 +183,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 }
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
-    type Pkcs12 = Pkcs12;
     type Builder = TlsAcceptorBuilder;
-
-    fn builder(pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
-        native_tls::TlsAcceptor::builder(pkcs12.0)
-            .map(TlsAcceptorBuilder)
-            .map_err(Error::new)
-    }
 
     fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>

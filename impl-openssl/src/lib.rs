@@ -8,9 +8,6 @@ use std::fmt;
 use tls_api::Error;
 use tls_api::Result;
 
-use tls_api::TlsAcceptor as tls_api_TlsAcceptor;
-use tls_api::Pkcs12 as tls_api_Pkcs12;
-
 
 pub struct Pkcs12(openssl::pkcs12::ParsedPkcs12);
 pub struct Certificate(openssl::x509::X509);
@@ -26,14 +23,6 @@ fn map_error_stack(e: openssl::error::ErrorStack) -> Error {
     Error::new(e)
 }
 
-
-impl tls_api::Pkcs12 for Pkcs12 {
-    fn from_der(der: &[u8], password: &str) -> Result<Self> {
-        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(der).map_err(map_error_stack)?;
-        let parsed = pkcs12.parse(password).map_err(map_error_stack)?;
-        Ok(Pkcs12(parsed))
-    }
-}
 
 impl tls_api::Certificate for Certificate {
     fn from_der(der: &[u8]) -> Result<Self> where Self: Sized {
@@ -189,7 +178,16 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
-        TlsAcceptor::builder(Pkcs12::from_der(pkcs12, password)?)
+        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(map_error_stack)?;
+        let pkcs12 = pkcs12.parse(password).map_err(map_error_stack)?;
+
+        openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
+            openssl::ssl::SslMethod::tls(),
+            &pkcs12.pkey,
+            &pkcs12.cert,
+            &pkcs12.chain)
+                .map(TlsAcceptorBuilder)
+                .map_err(map_error_stack)
     }
 }
 
@@ -214,18 +212,7 @@ impl TlsAcceptorBuilder {
 }
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
-    type Pkcs12 = Pkcs12;
     type Builder = TlsAcceptorBuilder;
-
-    fn builder(pkcs12: Pkcs12) -> Result<TlsAcceptorBuilder> {
-        openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
-            openssl::ssl::SslMethod::tls(),
-            &pkcs12.0.pkey,
-            &pkcs12.0.cert,
-            &pkcs12.0.chain)
-                .map(TlsAcceptorBuilder)
-                .map_err(map_error_stack)
-    }
 
     fn accept<S>(&self, stream: S)
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
