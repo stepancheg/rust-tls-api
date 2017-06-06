@@ -7,4 +7,5 @@ members = [
     "impl-rustls",
     "impl-stub",
     "tokio-tls-api",
+    "interop",
 ]

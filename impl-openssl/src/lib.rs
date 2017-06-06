@@ -5,6 +5,13 @@ use std::io;
 use std::result;
 use std::fmt;
 
+use tls_api::Error;
+use tls_api::Result;
+
+use tls_api::TlsAcceptor as tls_api_TlsAcceptor;
+use tls_api::Pkcs12 as tls_api_Pkcs12;
+
+
 pub struct Pkcs12(openssl::pkcs12::ParsedPkcs12);
 pub struct Certificate(openssl::x509::X509);
 
@@ -13,9 +20,6 @@ pub struct TlsConnector(openssl::ssl::SslConnector);
 
 pub struct TlsAcceptorBuilder(openssl::ssl::SslAcceptorBuilder);
 pub struct TlsAcceptor(openssl::ssl::SslAcceptor);
-
-use tls_api::Error;
-use tls_api::Result;
 
 
 fn map_error_stack(e: openssl::error::ErrorStack) -> Error {
@@ -177,6 +181,15 @@ impl tls_api::TlsConnector for TlsConnector {
         self.0.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(map_handshake_error)
+    }
+}
+
+
+// TlsAcceptor and TlsAcceptorBuilder
+
+impl TlsAcceptorBuilder {
+    pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
+        TlsAcceptor::builder(Pkcs12::from_der(pkcs12, password)?)
     }
 }
 

@@ -13,7 +13,7 @@ use tls_api::Error;
 
 
 pub struct Pkcs12();
-pub struct Certificate();
+pub struct Certificate(rustls::Certificate);
 
 pub struct TlsConnectorBuilder(rustls::ClientConfig);
 pub struct TlsConnector(Arc<rustls::ClientConfig>);
@@ -29,8 +29,8 @@ impl tls_api::Pkcs12 for Pkcs12 {
 }
 
 impl tls_api::Certificate for Certificate {
-    fn from_der(_der: &[u8]) -> Result<Self> where Self: Sized {
-        unimplemented!()
+    fn from_der(der: &[u8]) -> Result<Self> {
+        Ok(Certificate(rustls::Certificate(der.to_vec())))
     }
 }
 
@@ -85,9 +85,8 @@ impl<S, T> TlsStream<S, T>
     fn complete_handshake(&mut self) -> result::Result<(), IntermediateError> {
         while self.session.is_handshaking() {
             // TODO: https://github.com/ctz/rustls/issues/77
-            if self.session.is_handshaking() && self.session.wants_write() {
-                while self.session.write_tls(&mut self.stream)? > 0 {
-                };
+            while self.session.is_handshaking() && self.session.wants_write() {
+                self.session.write_tls(&mut self.stream)?;
             }
             if self.session.is_handshaking() && self.session.wants_read() {
                 self.session.read_tls(&mut self.stream)?;
@@ -238,12 +237,16 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn add_root_certificate(&mut self, _cert: Certificate) -> Result<&mut Self> {
-        unimplemented!()
+    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
+        self.0.root_store.add(&cert.0)
+            .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+        Ok(self)
     }
 
     fn build(mut self) -> Result<TlsConnector> {
-        self.0.root_store.add_trust_anchors(&webpki_roots::ROOTS);
+        if self.0.root_store.is_empty() {
+            self.0.root_store.add_trust_anchors(&webpki_roots::ROOTS);
+        }
         Ok(TlsConnector(Arc::new(self.0)))
     }
 }
@@ -301,6 +304,19 @@ impl tls_api::TlsConnector for TlsConnector {
         };
 
         tls_stream.complete_handleshake_mid()
+    }
+}
+
+
+// TlsAcceptor and TlsAcceptorBuilder
+
+
+impl TlsAcceptorBuilder {
+    pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
+        let mut config = rustls::ServerConfig::new();
+        let certs = certs.into_iter().map(|c| rustls::Certificate(c.to_vec())).collect();
+        config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()));
+        Ok(TlsAcceptorBuilder(config))
     }
 }
 

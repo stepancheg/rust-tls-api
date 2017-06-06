@@ -3,6 +3,10 @@ extern crate tokio_core;
 extern crate tokio_io;
 extern crate tokio_tls_api;
 
+extern crate pem;
+extern crate webpki;
+extern crate untrusted;
+
 #[macro_use]
 extern crate log;
 extern crate env_logger;
@@ -20,7 +24,6 @@ use std::io::Read;
 use std::thread;
 
 use tls_api::Certificate;
-use tls_api::Pkcs12;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tls_api::TlsAcceptor;
@@ -63,13 +66,58 @@ pub fn connect_bad_hostname_ignored<C : TlsConnector>() {
         .expect("tls");
 }
 
-pub fn server<C : TlsConnector, A : TlsAcceptor>() {
+
+pub struct RsaPrivateKey(pub Vec<u8>);
+pub struct Certificatex(pub Vec<u8>);
+
+/// File contents and password
+pub struct Pkcs12(pub Vec<u8>, pub String);
+
+pub struct CertificatesAndKey(pub Vec<Certificatex>, pub RsaPrivateKey);
+
+impl CertificatesAndKey {
+    fn parse_pem(pem: &[u8]) -> CertificatesAndKey {
+        let pems = pem::parse_many(pem);
+
+        let certs: Vec<_> = pems.iter().filter_map(|p| {
+            if p.tag == "CERTIFICATE" {
+                Some(Certificatex(p.contents.clone()))
+            } else {
+                None
+            }
+        }).collect();
+
+        assert!(certs.len() > 0);
+
+        let mut pks: Vec<_> = pems.iter().filter_map(|p| {
+            if p.tag == "RSA PRIVATE KEY" {
+                Some(RsaPrivateKey(p.contents.clone()))
+            } else {
+                None
+            }
+        }).collect();
+
+        assert!(pks.len() == 1);
+
+        CertificatesAndKey(certs, pks.swap_remove(0))
+    }
+}
+
+
+pub fn server<C, A, F>(acceptor: F)
+    where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
+{
     drop(env_logger::init());
     
-    let buf = include_bytes!("../test/identity.p12");
-    let pkcs12 = A::Pkcs12::from_der(buf, "mypass").expect("pkcs12");
-    let acceptor: A = A::builder(pkcs12).expect("acceptor builder")
-        .build().expect("acceptor build");
+    let pkcs12 = include_bytes!("../test/identity.p12");
+    let pkcs12 = Pkcs12(pkcs12.to_vec(), "mypass".to_owned());
+
+    let pem = include_bytes!("../test/identity.pem");
+    let pem = CertificatesAndKey::parse_pem(pem);
+
+    let acceptor = acceptor(&pkcs12, &pem);
+
+    let acceptor: A = acceptor.build().expect("acceptor build");
 
     let listener = TcpListener::bind("[::1]:0").expect("bind");
     let port = listener.local_addr().expect("local_addr").port();
@@ -86,6 +134,8 @@ pub fn server<C : TlsConnector, A : TlsAcceptor>() {
     });
 
     let root_ca = include_bytes!("../test/root-ca.der");
+    webpki::trust_anchor_util::cert_der_as_trust_anchor(untrusted::Input::from(root_ca))
+        .expect("parse_cert");
     let root_ca = C::Certificate::from_der(root_ca).expect("certificate");
 
     let socket = TcpStream::connect(("::1", port)).expect("connect");

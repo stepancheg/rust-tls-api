@@ -17,6 +17,10 @@ impl Error {
         Error(Box::new(e))
     }
 
+    pub fn new_other(message: &str) -> Error {
+        Error::new(io::Error::new(io::ErrorKind::Other, message))
+    }
+
     pub fn into_inner(self) -> Box<error::Error + Send + Sync> {
         self.0
     }

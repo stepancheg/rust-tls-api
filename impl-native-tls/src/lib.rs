@@ -5,6 +5,12 @@ use std::io;
 use std::result;
 use std::fmt;
 
+use tls_api::Error;
+use tls_api::Result;
+use tls_api::TlsAcceptor as tls_api_TlsAcceptor;
+use tls_api::Pkcs12 as tls_api_Pkcs12;
+
+
 pub struct Pkcs12(native_tls::Pkcs12);
 pub struct Certificate(native_tls::Certificate);
 
@@ -14,8 +20,6 @@ pub struct TlsConnector(native_tls::TlsConnector);
 pub struct TlsAcceptorBuilder(native_tls::TlsAcceptorBuilder);
 pub struct TlsAcceptor(native_tls::TlsAcceptor);
 
-use tls_api::Error;
-use tls_api::Result;
 
 impl tls_api::Pkcs12 for Pkcs12 {
     fn from_der(der: &[u8], password: &str) -> Result<Self> {
@@ -155,6 +159,17 @@ impl tls_api::TlsConnector for TlsConnector {
             .map_err(map_handshake_error)
     }
 }
+
+
+// TlsAcceptor and TlsAcceptorBuilder
+
+
+impl TlsAcceptorBuilder {
+    pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
+        TlsAcceptor::builder(Pkcs12::from_der(pkcs12, password)?)
+    }
+}
+
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;

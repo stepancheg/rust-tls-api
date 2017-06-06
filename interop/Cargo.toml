@@ -1,0 +1,10 @@
+[package]
+name = "interop"
+version = "0.0.0"
+authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+
+[dependencies]
+tls-api-test       = { version = "0.1.6", path = "../api-test" }
+tls-api-openssl    = { version = "0.1.6", path = "../impl-openssl" }
+tls-api-rustls     = { version = "0.1.6", path = "../impl-rustls" }
+tls-api-native-tls = { version = "0.1.6", path = "../impl-native-tls" }
