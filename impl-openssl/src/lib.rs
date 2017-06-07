@@ -9,9 +9,6 @@ use tls_api::Error;
 use tls_api::Result;
 
 
-pub struct Pkcs12(openssl::pkcs12::ParsedPkcs12);
-pub struct Certificate(openssl::x509::X509);
-
 pub struct TlsConnectorBuilder(openssl::ssl::SslConnectorBuilder);
 pub struct TlsConnector(openssl::ssl::SslConnector);
 
@@ -25,14 +22,6 @@ pub const HAS_ALPN: bool = true;
 #[cfg(not(has_alpn))]
 pub const HAS_ALPN: bool = false;
 
-
-impl tls_api::Certificate for Certificate {
-    fn from_der(der: &[u8]) -> Result<Self> where Self: Sized {
-        openssl::x509::X509::from_der(der)
-            .map(Certificate)
-            .map_err(Error::new)
-    }
-}
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -58,12 +47,16 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(Error::new_other("openssl is compiled without alpn"))
     }
 
-    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
+        let cert = openssl::x509::X509::from_der(&cert.into_der())
+            .map_err(Error::new)?;
+
         self.0
             .builder_mut()
             .cert_store_mut()
-            .add_cert(cert.0)
-                .map_err(Error::new)?;
+            .add_cert(cert)
+            .map_err(Error::new)?;
+        
         Ok(self)
     }
 
@@ -167,7 +160,6 @@ fn map_handshake_error<S>(e: openssl::ssl::HandshakeError<S>) -> tls_api::Handsh
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
-    type Certificate = Certificate;
 
     fn builder() -> Result<TlsConnectorBuilder> {
         openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())

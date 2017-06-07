@@ -9,23 +9,12 @@ use tls_api::Error;
 use tls_api::Result;
 
 
-pub struct Pkcs12(native_tls::Pkcs12);
-pub struct Certificate(native_tls::Certificate);
-
 pub struct TlsConnectorBuilder(native_tls::TlsConnectorBuilder);
 pub struct TlsConnector(native_tls::TlsConnector);
 
 pub struct TlsAcceptorBuilder(native_tls::TlsAcceptorBuilder);
 pub struct TlsAcceptor(native_tls::TlsAcceptor);
 
-
-impl tls_api::Certificate for Certificate {
-    fn from_der(der: &[u8]) -> Result<Self> where Self: Sized {
-        native_tls::Certificate::from_der(der)
-            .map(Certificate)
-            .map_err(Error::new)
-    }
-}
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -44,8 +33,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(Error::new_other("ALPN is not implemented in rust-native-tls"))
     }
 
-    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
-        self.0.add_root_certificate(cert.0).map_err(Error::new)?;
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
+        let cert = native_tls::Certificate::from_der(&cert.into_der())
+            .map_err(Error::new)?;
+
+        self.0.add_root_certificate(cert).map_err(Error::new)?;
+
         Ok(self)
     }
 
@@ -129,7 +122,6 @@ fn map_handshake_error<S>(e: native_tls::HandshakeError<S>) -> tls_api::Handshak
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
-    type Certificate = Certificate;
 
     fn builder() -> Result<TlsConnectorBuilder> {
         native_tls::TlsConnector::builder()

@@ -13,21 +13,11 @@ use tls_api::Result;
 use tls_api::Error;
 
 
-pub struct Pkcs12();
-pub struct Certificate(rustls::Certificate);
-
 pub struct TlsConnectorBuilder(rustls::ClientConfig);
 pub struct TlsConnector(Arc<rustls::ClientConfig>);
 
 pub struct TlsAcceptorBuilder(rustls::ServerConfig);
 pub struct TlsAcceptor(Arc<rustls::ServerConfig>);
-
-
-impl tls_api::Certificate for Certificate {
-    fn from_der(der: &[u8]) -> Result<Self> {
-        Ok(Certificate(rustls::Certificate(der.to_vec())))
-    }
-}
 
 
 pub struct TlsStream<S, T>
@@ -232,8 +222,9 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
-        self.0.root_store.add(&cert.0)
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
+        let cert = rustls::Certificate(cert.into_der());
+        self.0.root_store.add(&cert)
             .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
         Ok(self)
     }
@@ -261,7 +252,6 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
-    type Certificate = Certificate;
 
     fn builder() -> Result<TlsConnectorBuilder> {
         Ok(TlsConnectorBuilder(rustls::ClientConfig::new()))

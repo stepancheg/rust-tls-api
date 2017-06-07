@@ -47,12 +47,6 @@ impl fmt::Display for Error {
     }
 }
 
-impl tls_api::Certificate for Certificate {
-    fn from_der(_der: &[u8]) -> Result<Self> where Self: Sized {
-        Err(tls_api::Error::new(Error))
-    }
-}
-
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
 
@@ -70,7 +64,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(tls_api::Error::new(Error))
     }
 
-    fn add_root_certificate(&mut self, _cert: Certificate) -> Result<&mut Self> {
+    fn add_root_certificate(&mut self, _cert: tls_api::Certificate) -> Result<&mut Self> {
         Err(tls_api::Error::new(Error))
     }
 
@@ -81,7 +75,6 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
-    type Certificate = Certificate;
 
     fn builder() -> Result<TlsConnectorBuilder> {
         Err(tls_api::Error::new(Error))

@@ -62,8 +62,17 @@ impl From<io::Error> for Error {
 pub type Result<A> = result::Result<A, Error>;
 
 
-pub trait Certificate {
-    fn from_der(der: &[u8]) -> Result<Self> where Self : Sized;
+// X.509 certificate
+pub struct Certificate(Vec<u8>);
+
+impl Certificate {
+    pub fn from_der(der: Vec<u8>) -> Certificate {
+        Certificate(der)
+    }
+
+    pub fn into_der(self) -> Vec<u8> {
+        self.0
+    }
 }
 
 
@@ -171,7 +180,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
+    fn add_root_certificate(&mut self, cert: Certificate)
         -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;
@@ -181,8 +190,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 /// A builder for client-side TLS connections.
 pub trait TlsConnector : Sized + Sync + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
-    type Certificate : Certificate;
-
+    
     fn supports_alpn() -> bool {
         <Self::Builder as TlsConnectorBuilder>::supports_alpn()
     }

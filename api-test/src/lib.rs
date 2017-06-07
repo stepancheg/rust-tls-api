@@ -118,7 +118,7 @@ fn new_acceptor<A, F>(acceptor: F) -> A::Builder
 
 fn new_connector_with_root_ca<C : TlsConnector>() -> C::Builder {
     let root_ca = include_bytes!("../test/root-ca.der");
-    let root_ca = C::Certificate::from_der(root_ca).expect("certificate");
+    let root_ca = Certificate::from_der(root_ca.to_vec());
 
     let mut connector = C::builder().expect("connector builder");
     connector.add_root_certificate(root_ca).expect("add root certificate");
