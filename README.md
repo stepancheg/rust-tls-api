@@ -51,6 +51,14 @@ use:
 * [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/impl-openssl/tests/test.rs)
 * [rustls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-rustls/tests/test.rs)
 
+## Status
+
+|                          | openssl | native-tls | rustls |
+| ------------------------ | ------- | ---------- | ------ |
+| Can fetch google.com:443 | Yes     | Yes        | Yes    |
+| Server works             | Yes     | Yes        | No     |
+| ALPN                     | Yes     | No         | No     |
+
 ## Why not simply use native-tls
 
 native-tls uses security-framework on OSX, and security-framework does not support ALPN.
