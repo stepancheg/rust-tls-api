@@ -19,9 +19,11 @@ pub struct TlsAcceptorBuilder(openssl::ssl::SslAcceptorBuilder);
 pub struct TlsAcceptor(openssl::ssl::SslAcceptor);
 
 
-fn map_error_stack(e: openssl::error::ErrorStack) -> Error {
-    Error::new(e)
-}
+// TODO: https://github.com/sfackler/rust-openssl/pull/646
+#[cfg(has_alpn)]
+pub const HAS_ALPN: bool = true;
+#[cfg(not(has_alpn))]
+pub const HAS_ALPN: bool = false;
 
 
 impl tls_api::Certificate for Certificate {
@@ -41,12 +43,27 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
+    fn supports_alpn() -> bool {
+        HAS_ALPN
+    }
+
+    #[cfg(has_alpn)]
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        self.0.builder_mut().set_alpn_protocols(protocols)
+            .map_err(Error::new)
+    }
+
+    #[cfg(not(has_alpn))]
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        Err(Error::new_other("openssl is compiled without alpn"))
+    }
+
     fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
         self.0
             .builder_mut()
             .cert_store_mut()
             .add_cert(cert.0)
-                .map_err(map_error_stack)?;
+                .map_err(Error::new)?;
         Ok(self)
     }
 
@@ -100,7 +117,13 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::Tls
         self.0.get_mut()
     }
 
-    fn get_alpn_protocol(&self) -> Option<String> {
+    #[cfg(has_alpn)]
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+        self.0.ssl().selected_alpn_protocol().map(Vec::from)
+    }
+
+    #[cfg(not(has_alpn))]
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
         None
     }
 }
@@ -178,8 +201,8 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
-        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(map_error_stack)?;
-        let pkcs12 = pkcs12.parse(password).map_err(map_error_stack)?;
+        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(Error::new)?;
+        let pkcs12 = pkcs12.parse(password).map_err(Error::new)?;
 
         openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
             openssl::ssl::SslMethod::tls(),
@@ -187,7 +210,7 @@ impl TlsAcceptorBuilder {
             &pkcs12.cert,
             &pkcs12.chain)
                 .map(TlsAcceptorBuilder)
-                .map_err(map_error_stack)
+                .map_err(Error::new)
     }
 }
 
@@ -199,6 +222,22 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     fn underlying_mut(&mut self) -> &mut openssl::ssl::SslAcceptorBuilder {
         &mut self.0
     }
+
+    fn supports_alpn() -> bool {
+        HAS_ALPN
+    }
+
+    #[cfg(has_alpn)]
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        self.0.builder_mut().set_alpn_protocols(protocols)
+            .map_err(Error::new)
+    }
+
+    #[cfg(not(has_alpn))]
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        Err(Error::new_other("openssl is compiled without alpn"))
+    }
+
 
     fn build(self) -> Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0.build()))

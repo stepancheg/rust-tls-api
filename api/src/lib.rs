@@ -69,7 +69,7 @@ pub trait Certificate {
 
 pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + 'static {
     /// Get negotiated ALPN protocol.
-    fn get_alpn_protocol(&self) -> Option<String>;
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>>;
 
     fn shutdown(&mut self) -> io::Result<()>;
 
@@ -99,6 +99,10 @@ impl<S : 'static> TlsStream<S> {
 
     pub fn get_mut(&mut self) -> &mut S {
         self.0.get_mut()
+    }
+
+    pub fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+        self.0.get_alpn_protocol()
     }
 }
 
@@ -163,6 +167,10 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
+    fn supports_alpn() -> bool;
+
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
+
     fn add_root_certificate(&mut self, cert: <Self::Connector as TlsConnector>::Certificate)
         -> Result<&mut Self>;
 
@@ -174,6 +182,10 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 pub trait TlsConnector : Sized + Sync + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
     type Certificate : Certificate;
+
+    fn supports_alpn() -> bool {
+        <Self::Builder as TlsConnectorBuilder>::supports_alpn()
+    }
 
     fn builder() -> Result<Self::Builder>;
 
@@ -195,7 +207,12 @@ pub trait TlsConnector : Sized + Sync + Send + 'static {
 pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
     type Acceptor : TlsAcceptor;
 
+    // Type of underlying builder
     type Underlying;
+
+    fn supports_alpn() -> bool;
+
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
@@ -205,6 +222,10 @@ pub trait TlsAcceptorBuilder : Sized + Sync + Send + 'static {
 /// A builder for server-side TLS connections.
 pub trait TlsAcceptor : Sized + Sync + Send + 'static {
     type Builder : TlsAcceptorBuilder<Acceptor=Self>;
+
+    fn supports_alpn() -> bool {
+        <Self::Builder as TlsAcceptorBuilder>::supports_alpn()
+    }
 
     fn accept<S>(&self, stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>

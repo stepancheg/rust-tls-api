@@ -30,6 +30,13 @@ fn server() {
 }
 
 #[test]
+fn alpn() {
+    tls_api_test::alpn::<
+        tls_api_native_tls::TlsConnector,
+        tls_api_native_tls::TlsAcceptor, _>(new_acceptor);
+}
+
+#[test]
 fn tokio_fetch_google() {
     tls_api_test::tokio_fetch_google::<tls_api_native_tls::TlsConnector>();
 }
