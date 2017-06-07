@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-version="0.1.6"
+version="0.1.7"
 
 sed -e '/0\.0\.0/ ! s,^version = .*,version = "'$version'",' -i '' \
     */Cargo.toml
