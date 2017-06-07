@@ -62,6 +62,14 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
+    fn supports_alpn() -> bool {
+        false
+    }
+
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
+        Err(tls_api::Error::new(Error))
+    }
+
     fn add_root_certificate(&mut self, _cert: Certificate) -> Result<&mut Self> {
         Err(tls_api::Error::new(Error))
     }
@@ -100,6 +108,14 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
 
     type Underlying = Void;
+
+    fn supports_alpn() -> bool {
+        false
+    }
+
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
+        Err(tls_api::Error::new(Error))
+    }
 
     fn underlying_mut(&mut self) -> &mut Void {
         &mut self.0

@@ -7,6 +7,7 @@ use std::result;
 use std::fmt;
 use std::sync::Arc;
 use std::mem;
+use std::str;
 
 use tls_api::Result;
 use tls_api::Error;
@@ -181,8 +182,8 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
         &mut self.stream
     }
 
-    fn get_alpn_protocol(&self) -> Option<String> {
-        self.session.get_alpn_protocol()
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+        self.session.get_alpn_protocol().map(String::into_bytes)
     }
 }
 
@@ -235,6 +236,19 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         self.0.root_store.add(&cert.0)
             .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
         Ok(self)
+    }
+
+    fn supports_alpn() -> bool {
+        true
+    }
+
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        let mut v = Vec::new();
+        for p in protocols {
+            v.push(String::from(str::from_utf8(p).map_err(Error::new)?));
+        }
+        self.0.alpn_protocols = v;
+        Ok(())
     }
 
     fn build(mut self) -> Result<TlsConnector> {
@@ -321,6 +335,20 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     fn underlying_mut(&mut self) -> &mut rustls::ServerConfig {
         &mut self.0
+    }
+
+    fn supports_alpn() -> bool {
+        // TODO: https://github.com/sfackler/rust-openssl/pull/646
+        true
+    }
+
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+        let mut v = Vec::new();
+        for p in protocols {
+            v.push(String::from(str::from_utf8(p).map_err(Error::new)?));
+        }
+        self.0.alpn_protocols = v;
+        Ok(())
     }
 
     fn build(self) -> Result<TlsAcceptor> {

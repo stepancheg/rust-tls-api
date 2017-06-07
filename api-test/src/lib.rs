@@ -104,19 +104,35 @@ impl CertificatesAndKey {
 }
 
 
-pub fn server<C, A, F>(acceptor: F)
-    where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
+fn new_acceptor<A, F>(acceptor: F) -> A::Builder
+    where A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
 {
-    drop(env_logger::init());
-    
     let pkcs12 = include_bytes!("../test/identity.p12");
     let pkcs12 = Pkcs12(pkcs12.to_vec(), "mypass".to_owned());
 
     let pem = include_bytes!("../test/identity.pem");
     let pem = CertificatesAndKey::parse_pem(pem);
 
-    let acceptor = acceptor(&pkcs12, &pem);
+    acceptor(&pkcs12, &pem)
+}
 
+fn new_connector_with_root_ca<C : TlsConnector>() -> C::Builder {
+    let root_ca = include_bytes!("../test/root-ca.der");
+    let root_ca = C::Certificate::from_der(root_ca).expect("certificate");
+
+    let mut connector = C::builder().expect("connector builder");
+    connector.add_root_certificate(root_ca).expect("add root certificate");
+    connector
+}
+
+
+pub fn server<C, A, F>(acceptor: F)
+    where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
+{
+    drop(env_logger::init());
+
+    let acceptor = new_acceptor::<A, _>(acceptor);
+    
     let acceptor: A = acceptor.build().expect("acceptor build");
 
     let listener = TcpListener::bind("[::1]:0").expect("bind");
@@ -133,16 +149,67 @@ pub fn server<C, A, F>(acceptor: F)
         socket.write_all(b"world").expect("server write");
     });
 
-    let root_ca = include_bytes!("../test/root-ca.der");
-    webpki::trust_anchor_util::cert_der_as_trust_anchor(untrusted::Input::from(root_ca))
-        .expect("parse_cert");
-    let root_ca = C::Certificate::from_der(root_ca).expect("certificate");
-
     let socket = TcpStream::connect(("::1", port)).expect("connect");
-    let mut connector = C::builder().expect("connector builder");
-    connector.add_root_certificate(root_ca).expect("add root certificate");
+
+    let connector: C::Builder = new_connector_with_root_ca::<C>();
     let connector: C = connector.build().expect("acceptor build");
     let mut socket = connector.connect("foobar.com", socket).expect("tls connect");
+
+    socket.write_all(b"hello").expect("client write");
+    let mut buf = vec![];
+    socket.read_to_end(&mut buf).expect("client read");
+    assert_eq!(buf, b"world");
+
+    j.join().expect("thread join");
+}
+
+pub fn alpn<C, A, F>(acceptor: F)
+    where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
+{
+    drop(env_logger::init());
+
+    if !C::supports_alpn() {
+        debug!("connector does not support ALPN");
+        return;
+    }
+
+    if !A::supports_alpn() {
+        debug!("acceptor does not support ALPN");
+        return;
+    }
+
+    let mut acceptor: A::Builder = new_acceptor::<A, _>(acceptor);
+
+    acceptor.set_alpn_protocols(&[b"abc", b"de", b"f"]).expect("set_alpn_protocols");
+
+    let acceptor: A = acceptor.build().expect("acceptor build");
+
+    let listener = TcpListener::bind("[::1]:0").expect("bind");
+    let port = listener.local_addr().expect("local_addr").port();
+
+    let j = thread::spawn(move || {
+        let socket = listener.accept().expect("accept").0;
+        let mut socket = acceptor.accept(socket).expect("tls accept");
+
+        assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
+
+        let mut buf = [0; 5];
+        socket.read_exact(&mut buf).expect("server read_exact");
+        assert_eq!(&buf, b"hello");
+
+        socket.write_all(b"world").expect("server write");
+    });
+
+    let socket = TcpStream::connect(("::1", port)).expect("connect");
+
+    let mut connector: C::Builder = new_connector_with_root_ca::<C>();
+
+    connector.set_alpn_protocols(&[b"xyz", b"de", b"u"]).expect("set_alpn_protocols");
+
+    let connector: C = connector.build().expect("acceptor build");
+    let mut socket = connector.connect("foobar.com", socket).expect("tls connect");
+
+    assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
 
     socket.write_all(b"hello").expect("client write");
     let mut buf = vec![];

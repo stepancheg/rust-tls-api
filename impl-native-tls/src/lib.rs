@@ -36,6 +36,14 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
+    fn supports_alpn() -> bool {
+        false
+    }
+
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
+        Err(Error::new_other("ALPN is not implemented in rust-native-tls"))
+    }
+
     fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self> {
         self.0.add_root_certificate(cert.0).map_err(Error::new)?;
         Ok(self)
@@ -80,7 +88,7 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::Tls
         self.0.get_mut()
     }
 
-    fn get_alpn_protocol(&self) -> Option<String> {
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
         None
     }
 }
@@ -171,6 +179,14 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     type Underlying = native_tls::TlsAcceptorBuilder;
 
+    fn supports_alpn() -> bool {
+        false
+    }
+
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
+        Err(Error::new_other("ALPN is not implemented in rust-native-tls"))
+    }
+
     fn underlying_mut(&mut self) -> &mut native_tls::TlsAcceptorBuilder {
         &mut self.0
     }
@@ -180,6 +196,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
             .map(TlsAcceptor)
             .map_err(Error::new)
     }
+
 }
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
