@@ -251,7 +251,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     fn build(mut self) -> Result<TlsConnector> {
         if self.0.root_store.is_empty() {
-            self.0.root_store.add_trust_anchors(&webpki_roots::ROOTS);
+            self.0.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
         }
         Ok(TlsConnector(Arc::new(self.0)))
     }
