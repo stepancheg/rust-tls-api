@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-rustls"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over rustls crate"
 license = "MIT/Apache-2.0"
@@ -12,9 +12,9 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 
 [dependencies]
 rustls = { version = "0.11", features = ["dangerous_configuration"] }
-tls-api = { version = "0.1.9", path = "../api" }
+tls-api = { version = "0.1.10", path = "../api" }
 webpki       = "0.17"
 webpki-roots = "0.13"
 
 [dev-dependencies]
-tls-api-test = { version = "0.1.9", path = "../api-test" }
+tls-api-test = { version = "0.1.10", path = "../api-test" }
