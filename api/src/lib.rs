@@ -89,6 +89,8 @@ pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + '
     fn shutdown(&mut self) -> io::Result<()>;
 
     fn get_mut(&mut self) -> &mut S;
+
+    fn get_ref(&self) -> &S;
 }
 
 /// Since Rust has no HKT, it is not possible to declare something like
@@ -114,6 +116,10 @@ impl<S : 'static> TlsStream<S> {
 
     pub fn get_mut(&mut self) -> &mut S {
         self.0.get_mut()
+    }
+
+    pub fn get_ref(&self) -> &S {
+        self.0.get_ref()
     }
 
     pub fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
