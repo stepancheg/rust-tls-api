@@ -179,6 +179,10 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
         &mut self.stream
     }
 
+    fn get_ref(&self) -> &S {
+        &self.stream
+    }
+
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
         self.session.get_alpn_protocol().map(String::into_bytes)
     }

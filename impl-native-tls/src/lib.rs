@@ -81,6 +81,10 @@ impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::Tls
         self.0.get_mut()
     }
 
+    fn get_ref(&self) -> &S {
+        self.0.get_ref()
+    }
+
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
         None
     }
