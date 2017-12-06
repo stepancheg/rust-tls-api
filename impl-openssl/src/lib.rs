@@ -9,11 +9,11 @@ use tls_api::Error;
 use tls_api::Result;
 
 
-pub struct TlsConnectorBuilder(openssl::ssl::SslConnectorBuilder);
-pub struct TlsConnector(openssl::ssl::SslConnector);
+pub struct TlsConnectorBuilder(pub openssl::ssl::SslConnectorBuilder);
+pub struct TlsConnector(pub openssl::ssl::SslConnector);
 
-pub struct TlsAcceptorBuilder(openssl::ssl::SslAcceptorBuilder);
-pub struct TlsAcceptor(openssl::ssl::SslAcceptor);
+pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
+pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
 
 // TODO: https://github.com/sfackler/rust-openssl/pull/646

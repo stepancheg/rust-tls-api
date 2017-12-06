@@ -9,11 +9,11 @@ use tls_api::Error;
 use tls_api::Result;
 
 
-pub struct TlsConnectorBuilder(native_tls::TlsConnectorBuilder);
-pub struct TlsConnector(native_tls::TlsConnector);
+pub struct TlsConnectorBuilder(pub native_tls::TlsConnectorBuilder);
+pub struct TlsConnector(pub native_tls::TlsConnector);
 
-pub struct TlsAcceptorBuilder(native_tls::TlsAcceptorBuilder);
-pub struct TlsAcceptor(native_tls::TlsAcceptor);
+pub struct TlsAcceptorBuilder(pub native_tls::TlsAcceptorBuilder);
+pub struct TlsAcceptor(pub native_tls::TlsAcceptor);
 
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {

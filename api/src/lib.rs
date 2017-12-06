@@ -202,7 +202,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 /// A builder for client-side TLS connections.
 pub trait TlsConnector : Sized + Sync + Send + 'static {
     type Builder : TlsConnectorBuilder<Connector=Self>;
-    
+
     fn supports_alpn() -> bool {
         <Self::Builder as TlsConnectorBuilder>::supports_alpn()
     }

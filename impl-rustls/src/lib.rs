@@ -13,11 +13,11 @@ use tls_api::Result;
 use tls_api::Error;
 
 
-pub struct TlsConnectorBuilder(rustls::ClientConfig);
-pub struct TlsConnector(Arc<rustls::ClientConfig>);
+pub struct TlsConnectorBuilder(pub rustls::ClientConfig);
+pub struct TlsConnector(pub Arc<rustls::ClientConfig>);
 
-pub struct TlsAcceptorBuilder(rustls::ServerConfig);
-pub struct TlsAcceptor(Arc<rustls::ServerConfig>);
+pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
+pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
 
 
 pub struct TlsStream<S, T>
