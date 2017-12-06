@@ -1,6 +1,6 @@
 [package]
 name = "tokio-tls-api"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Carl Lerche <me@carllerche.com>",
            "Alex Crichton <alex@alexcrichton.com>"]
 license = "MIT/Apache-2.0"
@@ -14,7 +14,7 @@ categories = ["asynchronous", "network-programming"]
 
 [dependencies]
 futures = "0.*"
-tls-api = { version = "0.1.11", path = "../api" }
+tls-api = { version = "0.1.12", path = "../api" }
 tokio-core = "0.*"
 tokio-io = "0.1"
 tokio-proto = { version = "0.1", optional = true }
@@ -22,7 +22,7 @@ tokio-proto = { version = "0.1", optional = true }
 [dev-dependencies]
 env_logger = { version = "0.3", default-features = false }
 cfg-if = "0.1"
-tls-api-native-tls = { version = "0.1.11", path = "../impl-native-tls" }
+tls-api-native-tls = { version = "0.1.12", path = "../impl-native-tls" }
 
 [target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]
 openssl = "0.9"
