@@ -3,7 +3,6 @@
 for d in api api-test impl-native-tls impl-openssl impl-rustls impl-stub tokio-tls-api; do
     (
         cd $d
-        cargo package
         cargo publish
     )
 done
