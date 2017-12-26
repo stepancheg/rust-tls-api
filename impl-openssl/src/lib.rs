@@ -38,8 +38,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.builder_mut().set_alpn_protocols(protocols)
-            .map_err(Error::new)
+        self.0.set_alpn_protocols(protocols).map_err(Error::new)
     }
 
     #[cfg(not(has_alpn))]
@@ -52,7 +51,6 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             .map_err(Error::new)?;
 
         self.0
-            .builder_mut()
             .cert_store_mut()
             .add_cert(cert)
             .map_err(Error::new)?;
@@ -225,8 +223,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.builder_mut().set_alpn_protocols(protocols)
-            .map_err(Error::new)
+        self.0.set_alpn_protocols(protocols).map_err(Error::new)
     }
 
     #[cfg(not(has_alpn))]
