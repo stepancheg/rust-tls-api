@@ -42,7 +42,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     #[cfg(not(has_alpn))]
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
         Err(Error::new_other("openssl is compiled without alpn"))
     }
 
@@ -227,7 +227,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     }
 
     #[cfg(not(has_alpn))]
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
         Err(Error::new_other("openssl is compiled without alpn"))
     }
 
