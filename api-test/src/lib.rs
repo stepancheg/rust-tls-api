@@ -126,6 +126,11 @@ fn new_connector_with_root_ca<C : TlsConnector>() -> C::Builder {
 }
 
 
+// `::1` is broken on travis-ci
+// https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
+const BIND_HOST: &str = "127.0.0.1";
+
+
 pub fn server<C, A, F>(acceptor: F)
     where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
 {
@@ -135,7 +140,7 @@ pub fn server<C, A, F>(acceptor: F)
     
     let acceptor: A = acceptor.build().expect("acceptor build");
 
-    let listener = TcpListener::bind("[::1]:0").expect("bind");
+    let listener = TcpListener::bind((BIND_HOST, 0)).expect("bind");
     let port = listener.local_addr().expect("local_addr").port();
 
     let j = thread::spawn(move || {
@@ -149,7 +154,7 @@ pub fn server<C, A, F>(acceptor: F)
         socket.write_all(b"world").expect("server write");
     });
 
-    let socket = TcpStream::connect(("::1", port)).expect("connect");
+    let socket = TcpStream::connect((BIND_HOST, port)).expect("connect");
 
     let connector: C::Builder = new_connector_with_root_ca::<C>();
     let connector: C = connector.build().expect("acceptor build");
@@ -184,7 +189,7 @@ pub fn alpn<C, A, F>(acceptor: F)
 
     let acceptor: A = acceptor.build().expect("acceptor build");
 
-    let listener = TcpListener::bind("[::1]:0").expect("bind");
+    let listener = TcpListener::bind((BIND_HOST, 0)).expect("bind");
     let port = listener.local_addr().expect("local_addr").port();
 
     let j = thread::spawn(move || {
@@ -200,7 +205,7 @@ pub fn alpn<C, A, F>(acceptor: F)
         socket.write_all(b"world").expect("server write");
     });
 
-    let socket = TcpStream::connect(("::1", port)).expect("connect");
+    let socket = TcpStream::connect((BIND_HOST, port)).expect("connect");
 
     let mut connector: C::Builder = new_connector_with_root_ca::<C>();
 
