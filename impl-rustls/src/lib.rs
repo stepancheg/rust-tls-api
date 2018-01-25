@@ -1,17 +1,17 @@
 extern crate tls_api;
 extern crate rustls;
 extern crate webpki_roots;
+extern crate webpki;
 
 use std::io;
 use std::result;
 use std::fmt;
 use std::sync::Arc;
-use std::mem;
 use std::str;
 
 use tls_api::Result;
 use tls_api::Error;
-
+use rustls::Session;
 
 pub struct TlsConnectorBuilder(pub rustls::ClientConfig);
 pub struct TlsConnector(pub Arc<rustls::ClientConfig>);
@@ -133,10 +133,18 @@ impl<S, T> io::Read for TlsStream<S, T>
             return Ok(r);
         }
 
-        self.session.read_tls(&mut self.stream)?;
-        self.session.process_new_packets()
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        self.session.read(buf)
+        loop {
+            self.session.read_tls(&mut self.stream)?;
+            self.session.process_new_packets()
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            match self.session.read(buf) {
+                Ok(0) => {
+                    // No plaintext available yet.
+                    continue;
+                }
+                rc @ _ => return rc
+            };
+        }
     }
 }
 
@@ -146,16 +154,46 @@ impl<S, T> io::Write for TlsStream<S, T>
         T : rustls::Session + 'static,
 {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // Flush previously written data
-        self.session.write_tls(&mut self.stream)?;
-
-        // Must write the same buffer after previous failure
-        let r = self.session.write(&buf[self.write_skip..])?;
-        self.write_skip += r;
-
-        self.session.write_tls(&mut self.stream)?;
-
-        Ok(mem::replace(&mut self.write_skip, 0))
+        let mut rd_offset = self.write_skip;
+        let mut nsent = 0;
+        loop {
+            let wrote = if rd_offset < buf.len() {
+                self.session.write(&buf[rd_offset..])?
+            } else { 0 };
+            self.write_skip += wrote;
+            rd_offset += wrote;
+            if self.write_skip > 0 {
+                loop {
+                    match self.session.write_tls(&mut self.stream) {
+                        Ok(0) => {
+                            return Ok(0);
+                        }
+                        Ok(_) => { // we can not rely on returned bytes, as TLS adds its own data
+                            if !self.session.wants_write() {
+                                nsent += self.write_skip;
+                                self.write_skip = 0;
+                            }
+                            break;
+                        }
+                        Err(e) => {
+                            if e.kind() == ::std::io::ErrorKind::Interrupted {
+                                continue;
+                            } else if e.kind() == ::std::io::ErrorKind::WouldBlock {
+                                if nsent == 0 {
+                                    return Err(e);
+                                } else {
+                                    return Ok(nsent);
+                                }
+                            }
+                            return Err(e);
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        Ok(nsent)
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -184,7 +222,7 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
     }
 
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        self.session.get_alpn_protocol().map(String::into_bytes)
+        self.session.get_alpn_protocol().map(|s| Vec::from(s.as_bytes()))
     }
 }
 
@@ -272,13 +310,17 @@ impl tls_api::TlsConnector for TlsConnector {
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + 'static
     {
-        let tls_stream = TlsStream {
-            stream: stream,
-            session: rustls::ClientSession::new(&self.0, domain),
-            write_skip: 0,
-        };
+        if let Ok(domain) = webpki::DNSNameRef::try_from_ascii_str(domain) {
+            let mut tls_stream = TlsStream {
+                stream,
+                session: rustls::ClientSession::new(&self.0, domain),
+                write_skip: 0,
+            };
+            tls_stream.session.set_buffer_limit(16*1024);
 
-        tls_stream.complete_handleshake_mid()
+            return tls_stream.complete_handleshake_mid();
+        }
+        Err(tls_api::HandshakeError::Failure(Error::new_other("invalid domain")))
     }
 
     fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
@@ -297,7 +339,7 @@ impl tls_api::TlsConnector for TlsConnector {
                 &self,
                 _roots: &rustls::RootCertStore,
                 _presented_certs: &[rustls::Certificate],
-                _dns_name: &str,
+                _dns_name: webpki::DNSNameRef,
                 _ocsp_response: &[u8])
                     -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
             {
@@ -307,10 +349,16 @@ impl tls_api::TlsConnector for TlsConnector {
 
         client_config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
 
-        let tls_stream = TlsStream {
-            stream: stream,
-            session: rustls::ClientSession::new(&Arc::new(client_config), "ignore"),
-            write_skip: 0,
+        let tls_stream = if let Ok(domain) = webpki::DNSNameRef::try_from_ascii_str("ignore") {
+            let mut session = rustls::ClientSession::new(&Arc::new(client_config), domain);
+            session.set_buffer_limit(16*1024);
+            TlsStream {
+                stream: stream,
+                session,
+                write_skip: 0,
+            }
+        } else {
+            return Err(tls_api::HandshakeError::Failure(Error::new_other("invalid domain")));
         };
 
         tls_stream.complete_handleshake_mid()
@@ -323,7 +371,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
-        let mut config = rustls::ServerConfig::new();
+        let mut config = rustls::ServerConfig::new(rustls::NoClientAuth::new());
         let certs = certs.into_iter().map(|c| rustls::Certificate(c.to_vec())).collect();
         config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()));
         Ok(TlsAcceptorBuilder(config))
@@ -365,12 +413,14 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
             -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + Send + 'static
     {
-        let tls_stream = TlsStream {
+        let mut tls_stream = TlsStream {
             stream: stream,
             session: rustls::ServerSession::new(&self.0),
             write_skip: 0,
         };
+        tls_stream.session.set_buffer_limit(16*1024);
 
         tls_stream.complete_handleshake_mid()
     }
 }
+

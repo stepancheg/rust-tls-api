@@ -16,7 +16,7 @@ log        = "0.*"
 env_logger = "0.4.*"
 
 pem        = "0.*"
-webpki     = "0.*"
+webpki     = "^0.18.0-alpha"
 untrusted  = "0.*"
 
 futures       = "0.*"
