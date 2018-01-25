@@ -48,8 +48,8 @@ fn tokio_wrong_hostname() {
 
     let err: openssl::ssl::Error = *err.into_inner().downcast().expect("openssl::ssl::Error");
 
-    let err = match err {
-        openssl::ssl::Error::Ssl(stack) => stack,
+    let err = match err.ssl_error() {
+        Some(stack) => stack,
         _ => panic!("wrong error: {:?}", err),
     };
 

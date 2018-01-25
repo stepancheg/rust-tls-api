@@ -22,6 +22,15 @@ pub const HAS_ALPN: bool = true;
 #[cfg(not(has_alpn))]
 pub const HAS_ALPN: bool = false;
 
+fn fill_alpn(protocols: &[&[u8]], single: &mut [u8]) {
+    let mut pos = 0;
+    for p in protocols {
+        single[pos] = p.len() as u8;
+        pos += 1;
+        single[pos..pos+p.len()].copy_from_slice(&p[..]);
+        pos += p.len();
+    }
+}
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -38,7 +47,24 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.set_alpn_protocols(protocols).map_err(Error::new)
+        let mut sz = 0;
+        for p in protocols {
+            sz += p.len() + 1;
+        }
+        if sz <= 64 {
+            let mut single = [0u8;64];
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        } else if sz <= 128 {
+            let mut single = [0u8;128];
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        } else {
+            let mut single = Vec::with_capacity(sz);
+            single.resize(sz, 0);
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        }
     }
 
     #[cfg(not(has_alpn))]
@@ -54,7 +80,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             .cert_store_mut()
             .add_cert(cert)
             .map_err(Error::new)?;
-        
+
         Ok(self)
     }
 
@@ -95,12 +121,17 @@ impl<S : io::Read + io::Write + fmt::Debug> io::Write for TlsStream<S> {
 impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::TlsStreamImpl<S> for TlsStream<S> {
     fn shutdown(&mut self) -> io::Result<()> {
         match self.0.shutdown() {
-            Ok(_) |
-            Err(openssl::ssl::Error::ZeroReturn) => Ok(()),
-            Err(openssl::ssl::Error::Stream(e)) |
-            Err(openssl::ssl::Error::WantRead(e)) |
-            Err(openssl::ssl::Error::WantWrite(e)) => Err(e),
-            Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e)),
+            Ok(_) => Ok(()),
+            Err(e) => {
+                match e.into_io_error() {
+                    Ok(ioe) => {
+                        Err(ioe)
+                    }
+                    Err(other) => {
+                        Err(io::Error::new(io::ErrorKind::Other, other))
+                    }
+                }
+            }
         }
     }
 
@@ -148,12 +179,12 @@ fn map_handshake_error<S>(e: openssl::ssl::HandshakeError<S>) -> tls_api::Handsh
 {
     match e {
         openssl::ssl::HandshakeError::SetupFailure(e) => {
-            tls_api::HandshakeError::Failure(Error::new(openssl::ssl::Error::Ssl(e)))
+            tls_api::HandshakeError::Failure(Error::new(e))
         }
         openssl::ssl::HandshakeError::Failure(e) => {
             tls_api::HandshakeError::Failure(Error::new(e.into_error()))
         },
-        openssl::ssl::HandshakeError::Interrupted(s) => {
+        openssl::ssl::HandshakeError::WouldBlock(s) => {
             tls_api::HandshakeError::Interrupted(
                 tls_api::MidHandshakeTlsStream::new(MidHandshakeTlsStream(Some(s))))
         }
@@ -164,7 +195,7 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     fn builder() -> Result<TlsConnectorBuilder> {
-        openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())
+        openssl::ssl::SslConnector::builder(openssl::ssl::SslMethod::tls())
             .map(TlsConnectorBuilder)
             .map_err(Error::new)
     }
@@ -184,9 +215,24 @@ impl tls_api::TlsConnector for TlsConnector {
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
-        self.0.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
-            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
-            .map_err(map_handshake_error)
+        let cfgr = match self.0.configure() {
+            Ok(mut cfg) => {
+                cfg.set_verify_hostname(false);
+                cfg.set_use_server_name_indication(false);
+                cfg.connect("",stream)
+            }
+            Err(e) => {
+                return Err(tls_api::HandshakeError::Failure(Error::new(e)));
+            }
+        };
+        match cfgr {
+            Ok(c) => {
+                Ok(tls_api::TlsStream::new(TlsStream(c)))
+            }
+            Err(e) => {
+                Err(map_handshake_error(e))
+            }
+        }
     }
 }
 
@@ -198,13 +244,23 @@ impl TlsAcceptorBuilder {
         let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(Error::new)?;
         let pkcs12 = pkcs12.parse(password).map_err(Error::new)?;
 
-        openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
-            openssl::ssl::SslMethod::tls(),
-            &pkcs12.pkey,
-            &pkcs12.cert,
-            &pkcs12.chain)
-                .map(TlsAcceptorBuilder)
-                .map_err(Error::new)
+        let abr = openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls());
+        match abr {
+            Ok(mut ab) => {
+                ab.set_private_key(&pkcs12.pkey).map_err(Error::new)?;
+                ab.set_certificate(&pkcs12.cert).map_err(Error::new)?;
+                ab.check_private_key().map_err(Error::new)?;
+                if let Some(chain) = pkcs12.chain {
+                    for cert in chain.into_iter() {
+                        ab.add_extra_chain_cert(cert).map_err(Error::new)?;
+                    }
+                }
+                Ok(TlsAcceptorBuilder(ab))
+            }
+            Err(e) => {
+                return Err(Error::new(e));
+            }
+        }
     }
 }
 
@@ -223,7 +279,24 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.set_alpn_protocols(protocols).map_err(Error::new)
+        let mut sz = 0;
+        for p in protocols {
+            sz += p.len() + 1;
+        }
+        if sz <= 64 {
+            let mut single = [0u8;64];
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        } else if sz <= 128 {
+            let mut single = [0u8;128];
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        } else {
+            let mut single = Vec::with_capacity(sz);
+            single.resize(sz, 0);
+            fill_alpn(protocols, &mut single);
+            self.0.set_alpn_protos(&single[..sz]).map_err(Error::new)
+        }
     }
 
     #[cfg(not(has_alpn))]

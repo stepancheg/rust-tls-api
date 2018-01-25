@@ -1,6 +1,6 @@
 [package]
 name = "tls-api"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
