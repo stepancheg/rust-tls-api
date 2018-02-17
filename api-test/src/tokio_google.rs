@@ -84,7 +84,7 @@ fn native2io(e: tls_api::Error) -> io::Error {
 }
 
 pub fn fetch_google<C : tls_api::TlsConnector>() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     // First up, resolve google.com
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
@@ -119,7 +119,7 @@ pub fn fetch_google<C : tls_api::TlsConnector>() {
 //#[cfg_attr(all(target_os = "macos", feature = "force-openssl"), ignore)]
 //#[test]
 pub fn wrong_hostname_error<C : tls_api::TlsConnector>() -> tls_api::Error {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
 

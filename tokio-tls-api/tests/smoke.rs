@@ -515,7 +515,7 @@ const AMT: u64 = 128 * 1024;
 
 #[test]
 fn client_to_server() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
     let mut l = t!(Core::new());
 
     // Create a server listening on a port, then figure out what that port is
@@ -554,7 +554,7 @@ fn client_to_server() {
 
 #[test]
 fn server_to_client() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
     let mut l = t!(Core::new());
 
     // Create a server listening on a port, then figure out what that port is
@@ -617,7 +617,7 @@ impl<S: AsyncWrite> AsyncWrite for OneByte<S> {
 #[test]
 fn one_byte_at_a_time() {
     const AMT: u64 = 1024;
-    drop(env_logger::init());
+    drop(env_logger::try_init());
     let mut l = t!(Core::new());
 
     let srv = t!(TcpListener::bind(&t!("127.0.0.1:0".parse()), &l.handle()));

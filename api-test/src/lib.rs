@@ -32,7 +32,7 @@ use tls_api::TlsStream;
 
 
 pub fn test_google<C : TlsConnector>() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
@@ -50,7 +50,7 @@ pub fn test_google<C : TlsConnector>() {
 }
 
 pub fn connect_bad_hostname<C : TlsConnector>() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
@@ -58,7 +58,7 @@ pub fn connect_bad_hostname<C : TlsConnector>() {
 }
 
 pub fn connect_bad_hostname_ignored<C : TlsConnector>() {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
@@ -134,7 +134,7 @@ const BIND_HOST: &str = "127.0.0.1";
 pub fn server<C, A, F>(acceptor: F)
     where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
 {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     let acceptor = new_acceptor::<A, _>(acceptor);
     
@@ -171,7 +171,7 @@ pub fn server<C, A, F>(acceptor: F)
 pub fn alpn<C, A, F>(acceptor: F)
     where C : TlsConnector, A : TlsAcceptor, F : FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder
 {
-    drop(env_logger::init());
+    drop(env_logger::try_init());
 
     if !C::supports_alpn() {
         debug!("connector does not support ALPN");
