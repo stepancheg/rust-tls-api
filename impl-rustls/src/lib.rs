@@ -6,7 +6,6 @@ use std::io;
 use std::result;
 use std::fmt;
 use std::sync::Arc;
-use std::mem;
 use std::str;
 
 use tls_api::Result;
@@ -27,8 +26,6 @@ pub struct TlsStream<S, T>
 {
     stream: S,
     session: T,
-    // Amount of data buffered in session
-    write_skip: usize,
 }
 
 // TODO: do not require Sync from TlsStream
@@ -73,7 +70,6 @@ impl<S, T> TlsStream<S, T>
         S : io::Read + io::Write + fmt::Debug + Send + 'static,
         T : rustls::Session + 'static,
 {
-
     fn complete_handshake(&mut self) -> result::Result<(), IntermediateError> {
         while self.session.is_handshaking() {
             // TODO: https://github.com/ctz/rustls/issues/77
@@ -128,23 +124,8 @@ impl<S, T> io::Read for TlsStream<S, T>
         T : rustls::Session + 'static,
 {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let r = self.session.read(buf)?;
-        if r > 0 {
-            return Ok(r);
-        }
-
-        loop {
-            self.session.read_tls(&mut self.stream)?;
-            self.session.process_new_packets()
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-            match self.session.read(buf) {
-                Ok(0) => {
-                    // No plaintext available yet.
-                    continue;
-                }
-                rc @ _ => return rc
-            };
-        }
+        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
+            .read(buf)
     }
 }
 
@@ -154,22 +135,13 @@ impl<S, T> io::Write for TlsStream<S, T>
         T : rustls::Session + 'static,
 {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // Flush previously written data
-        self.session.write_tls(&mut self.stream)?;
-
-        // Must write the same buffer after previous failure
-        let r = self.session.write(&buf[self.write_skip..])?;
-        self.write_skip += r;
-
-        self.session.write_tls(&mut self.stream)?;
-
-        Ok(mem::replace(&mut self.write_skip, 0))
+        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
+            .write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        self.session.flush()?;
-        self.session.write_tls(&mut self.stream)?;
-        Ok(())
+        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
+            .flush()
     }
 }
 
@@ -283,7 +255,6 @@ impl tls_api::TlsConnector for TlsConnector {
         let tls_stream = TlsStream {
             stream: stream,
             session: rustls::ClientSession::new(&self.0, domain),
-            write_skip: 0,
         };
 
         tls_stream.complete_handleshake_mid()
@@ -318,7 +289,6 @@ impl tls_api::TlsConnector for TlsConnector {
         let tls_stream = TlsStream {
             stream: stream,
             session: rustls::ClientSession::new(&Arc::new(client_config), "ignore"),
-            write_skip: 0,
         };
 
         tls_stream.complete_handleshake_mid()
@@ -376,7 +346,6 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         let tls_stream = TlsStream {
             stream: stream,
             session: rustls::ServerSession::new(&self.0),
-            write_skip: 0,
         };
 
         tls_stream.complete_handleshake_mid()
