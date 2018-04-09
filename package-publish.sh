@@ -1,6 +1,6 @@
 #!/bin/sh -ex
 
-for d in api api-test impl-native-tls impl-openssl impl-rustls impl-stub tokio-tls-api; do
+for d in api tokio-tls-api api-test impl-native-tls impl-openssl impl-rustls impl-stub; do
     (
         cd $d
         cargo publish

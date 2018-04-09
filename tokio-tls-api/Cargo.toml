@@ -1,10 +1,10 @@
 [package]
 name = "tokio-tls-api"
-version = "0.1.14"
+version = "0.1.19"
 authors = ["Carl Lerche <me@carllerche.com>",
            "Alex Crichton <alex@alexcrichton.com>"]
 license = "MIT/Apache-2.0"
-repository = "https://github.com/stepancheg/tokio-tls-api"
+repository = "https://github.com/stepancheg/rust-tls-api"
 documentation = "https://docs.rs/tokio-tls-api"
 description = """
 An implementation of TLS/SSL streams for Tokio giving an implementation of TLS
@@ -13,16 +13,15 @@ for nonblocking I/O streams.
 categories = ["asynchronous", "network-programming"]
 
 [dependencies]
-futures = "0.*"
-tls-api = { version = "0.1.14", path = "../api" }
-tokio-core = "0.*"
+futures = "0.1"
+tls-api = { version = "0.1.19", path = "../api" }
+tokio-core = "0.1"
 tokio-io = "0.1"
 tokio-proto = { version = "0.1", optional = true }
 
 [dev-dependencies]
 env_logger = { version = "0.5", default-features = false }
 cfg-if = "0.1"
-tls-api-native-tls = { version = "0.1.14", path = "../impl-native-tls" }
 
 [target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]
 openssl = "0.9"
