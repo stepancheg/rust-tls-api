@@ -1,8 +1,8 @@
 extern crate env_logger;
 extern crate futures;
 extern crate tls_api;
-extern crate tokio_core;
 extern crate tokio_tls_api;
+extern crate tokio_tcp;
 
 #[macro_use]
 extern crate cfg_if;
@@ -12,8 +12,7 @@ use std::net::ToSocketAddrs;
 
 use futures::Future;
 use tls_api::TlsConnector;
-use tokio_core::net::TcpStream;
-use tokio_core::reactor::Core;
+use tokio_tcp::TcpStream;
 
 /*
 macro_rules! t {
