@@ -1,7 +1,6 @@
 extern crate env_logger;
 extern crate futures;
 extern crate tls_api;
-extern crate tokio_core;
 extern crate tokio_io;
 extern crate tokio_tls_api;
 
