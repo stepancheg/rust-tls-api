@@ -16,7 +16,7 @@ log        = "0.4"
 env_logger = "0.5"
 
 pem        = "0.5"
-webpki     = "0.17"
+webpki     = "0.18"
 untrusted  = "0.6"
 
 futures       = "0.1"

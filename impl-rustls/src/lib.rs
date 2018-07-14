@@ -1,5 +1,6 @@
 extern crate tls_api;
 extern crate rustls;
+extern crate webpki;
 extern crate webpki_roots;
 
 use std::io;
@@ -170,7 +171,7 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
     }
 
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        self.session.get_alpn_protocol().map(String::into_bytes)
+        self.session.get_alpn_protocol().map(|p| p.as_bytes().to_vec())
     }
 }
 
@@ -258,6 +259,11 @@ impl tls_api::TlsConnector for TlsConnector {
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + 'static
     {
+        let domain = match webpki::DNSNameRef::try_from_ascii_str(domain) {
+            Ok(domain) => domain,
+            Err(()) => return Err(tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name"))),
+        };
+
         let tls_stream = TlsStream {
             stream: stream,
             session: rustls::ClientSession::new(&self.0, domain),
@@ -282,7 +288,7 @@ impl tls_api::TlsConnector for TlsConnector {
                 &self,
                 _roots: &rustls::RootCertStore,
                 _presented_certs: &[rustls::Certificate],
-                _dns_name: &str,
+                _dns_name: webpki::DNSNameRef,
                 _ocsp_response: &[u8])
                     -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
             {
@@ -294,7 +300,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
         let tls_stream = TlsStream {
             stream: stream,
-            session: rustls::ClientSession::new(&Arc::new(client_config), "ignore"),
+            session: rustls::ClientSession::new(&Arc::new(client_config), webpki::DNSNameRef::try_from_ascii_str("ignore").unwrap()),
         };
 
         tls_stream.complete_handleshake_mid()
@@ -307,7 +313,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
-        let mut config = rustls::ServerConfig::new();
+        let mut config = rustls::ServerConfig::new(rustls::NoClientAuth::new());
         let certs = certs.into_iter().map(|c| rustls::Certificate(c.to_vec())).collect();
         config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()));
         Ok(TlsAcceptorBuilder(config))
