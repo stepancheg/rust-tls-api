@@ -10,19 +10,20 @@ description = """
 Example of tokio-tls-api
 """
 categories = ["asynchronous", "network-programming"]
+publish = false
 
 [dependencies]
 futures = "0.1"
-tls-api = { version = "0.1.19", path = "../api" }
+tls-api = { path = "../api" }
 tokio-core = "0.1"
 tokio-io = "0.1"
 tokio-proto = { version = "0.1", optional = true }
-tokio-tls-api = { version = "0.1.19", path = "../tokio-tls-api" }
+tokio-tls-api = { path = "../tokio-tls-api" }
 
 [dev-dependencies]
 env_logger = { version = "0.5", default-features = false }
 cfg-if = "0.1"
-tls-api-native-tls = { version = "0.1.19", path = "../impl-native-tls" }
+tls-api-native-tls = { path = "../impl-native-tls" }
 
 [target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]
 openssl = "0.9"

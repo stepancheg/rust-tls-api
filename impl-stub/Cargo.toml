@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-stub"
-version = "0.1.19"
+version = "0.1.20"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation that returns error on any operation"
 license = "MIT/Apache-2.0"
@@ -11,8 +11,8 @@ keywords = ["tls"]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { version = "0.1.19", path = "../api" }
+tls-api = { path = "../api", version = "=0.1.20" }
 void    = "1"
 
 [dev-dependencies]
-tls-api-test = { version = "0.1.19", path = "../api-test" }
+tls-api-test = { path = "../api-test", version = "=0.1.20" }
