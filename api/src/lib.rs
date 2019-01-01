@@ -99,9 +99,9 @@ pub trait TlsStreamImpl<S> : io::Read + io::Write + fmt::Debug + Send + Sync + '
 /// trait TlsConnector {
 ///     type <S> TlsStream<S> : TlsStreamImpl;
 /// }
+/// ```
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
-/// ```
 #[derive(Debug)]
 pub struct TlsStream<S>(Box<TlsStreamImpl<S> + 'static>);
 
