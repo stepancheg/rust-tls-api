@@ -179,6 +179,11 @@ pub enum HandshakeError<S> {
     Interrupted(MidHandshakeTlsStream<S>),
 }
 
+/// Describes the type of the underlying certificate
+pub enum CertType {
+    DER,
+    PEM,
+}
 
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
@@ -192,7 +197,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: Certificate)
+    fn add_root_certificate(&mut self, cert: Certificate, cert_type: &CertType)
         -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;

@@ -33,9 +33,13 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(Error::new_other("ALPN is not implemented in rust-native-tls"))
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
-        let cert = native_tls::Certificate::from_der(&cert.into_der())
-            .map_err(Error::new)?;
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate, cert_type: &tls_api::CertType) -> Result<&mut Self> {
+        let cert = match cert_type {
+            tls_api::CertType::DER => native_tls::Certificate::from_der(&cert.into_der())
+                .map_err(Error::new)?,
+            tls_api::CertType::PEM => native_tls::Certificate::from_pem(&cert.into_der())
+                .map_err(Error::new)?,
+        };
 
         self.0.add_root_certificate(cert).map_err(Error::new)?;
 

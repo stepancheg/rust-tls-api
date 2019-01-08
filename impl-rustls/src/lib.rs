@@ -219,11 +219,18 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
-        let cert = rustls::Certificate(cert.into_der());
-        self.0.root_store.add(&cert)
-            .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-        Ok(self)
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate, cert_type: &tls_api::CertType) -> Result<&mut Self> {
+        match cert_type {
+           tls_api::CertType::PEM => {
+               Err(Error::new_other(&format!("RUSTLS cannot open PEM certificates")))
+           },
+           tls_api::CertType::DER => {
+               let cert = rustls::Certificate(cert.into_der());
+               self.0.root_store.add(&cert)
+                   .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+               Ok(self)
+           }
+        }
     }
 
     fn supports_alpn() -> bool {
