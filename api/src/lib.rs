@@ -67,12 +67,6 @@ impl From<Error> for io::Error {
 /// A typedef of the result type returned by many methods.
 pub type Result<A> = result::Result<A, Error>;
 
-/// Describes the type of the underlying certificate
-pub enum CertificateType {
-    DER,
-    PEM,
-}
-
 // X.509 certificate
 pub enum Certificate {
     DER(Vec<u8>),
@@ -212,7 +206,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: Certificate, cert_type: &CertificateType)
+    fn add_root_certificate(&mut self, cert: Certificate)
         -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;

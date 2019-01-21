@@ -46,15 +46,11 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(Error::new_other("openssl is compiled without alpn"))
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Certificate, cert_type: &tls_api::CertificateType) -> Result<&mut Self> {
-        let cert = match cert_type {
-            tls_api::CertificateType::DER => openssl::x509::X509::from_der(&cert.into_der()
-                .ok_or(Error::new_other(&format!("Could not retrieve Certificate as DER") ))
-                .map_err(|e| Error::new_other(&format!("{:?}", e)))?)
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
+        let cert = match cert {
+            tls_api::Certificate::DER(der) => openssl::x509::X509::from_der(&der)
                 .map_err(Error::new)?,
-            tls_api::CertificateType::PEM => openssl::x509::X509::from_pem(&cert.into_pem()
-                .ok_or(Error::new_other(&format!("Could not retrieve Certificate as DER") ))
-                .map_err(|e| Error::new_other(&format!("{:?}", e)))?)
+            tls_api::Certificate::PEM(pem) => openssl::x509::X509::from_pem(&pem)
                 .map_err(Error::new)?,
         };
 

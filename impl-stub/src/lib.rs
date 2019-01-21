@@ -64,7 +64,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(tls_api::Error::new(Error))
     }
 
-    fn add_root_certificate(&mut self, _cert: tls_api::Certificate, _cert_type: &tls_api::CertificateType) -> Result<&mut Self> {
+    fn add_root_certificate(&mut self, _cert: tls_api::Certificate) -> Result<&mut Self> {
         Err(tls_api::Error::new(Error))
     }
 
