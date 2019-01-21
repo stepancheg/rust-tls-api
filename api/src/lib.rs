@@ -67,17 +67,38 @@ impl From<Error> for io::Error {
 /// A typedef of the result type returned by many methods.
 pub type Result<A> = result::Result<A, Error>;
 
+/// Describes the type of the underlying certificate
+pub enum CertificateType {
+    DER,
+    PEM,
+}
 
 // X.509 certificate
-pub struct Certificate(Vec<u8>);
+pub enum Certificate {
+    DER(Vec<u8>),
+    PEM(Vec<u8>),
+}
+
+
 
 impl Certificate {
     pub fn from_der(der: Vec<u8>) -> Certificate {
-        Certificate(der)
+        Certificate::DER(der)
     }
 
-    pub fn into_der(self) -> Vec<u8> {
-        self.0
+    pub fn into_der(self) -> Option<Vec<u8>> {
+        // TODO: there are methods to convert PEM->DER which might be used here
+        match self {
+            Certificate::DER(der) => Some(der),
+            _ => None,
+        }
+    }
+    pub fn into_pem(self) -> Option<Vec<u8>> {
+        // TODO: there are methods to convert DER->PEM which might be used here
+        match self {
+            Certificate::PEM(pem) => Some(pem),
+            _ => None,
+        }
     }
 }
 
@@ -179,12 +200,6 @@ pub enum HandshakeError<S> {
     Interrupted(MidHandshakeTlsStream<S>),
 }
 
-/// Describes the type of the underlying certificate
-pub enum CertType {
-    DER,
-    PEM,
-}
-
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
     type Connector : TlsConnector;
@@ -197,7 +212,7 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: Certificate, cert_type: &CertType)
+    fn add_root_certificate(&mut self, cert: Certificate, cert_type: &CertificateType)
         -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;

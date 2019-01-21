@@ -219,13 +219,17 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Certificate, cert_type: &tls_api::CertType) -> Result<&mut Self> {
+    fn add_root_certificate(&mut self, cert: tls_api::Certificate, cert_type: &tls_api::CertificateType) -> Result<&mut Self> {
         match cert_type {
-           tls_api::CertType::PEM => {
+           tls_api::CertificateType::PEM => {
                Err(Error::new_other(&format!("RUSTLS cannot open PEM certificates")))
            },
-           tls_api::CertType::DER => {
-               let cert = rustls::Certificate(cert.into_der());
+           tls_api::CertificateType::DER => {
+               let cert = rustls::Certificate(
+                   cert.into_der()
+                       .ok_or(Error::new_other(&format!("Could not retrieve Certificate as DER") ))
+                       .map_err(|e| Error::new_other(&format!("{:?}", e)))?);
+
                self.0.root_store.add(&cert)
                    .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
                Ok(self)
