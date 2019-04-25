@@ -1,6 +1,7 @@
 extern crate tls_api;
 extern crate rustls;
 extern crate webpki_roots;
+extern crate webpki;
 
 use std::io;
 use std::result;
@@ -10,6 +11,8 @@ use std::str;
 
 use tls_api::Result;
 use tls_api::Error;
+use webpki::DNSNameRef;
+use rustls::NoClientAuth;
 
 
 pub struct TlsConnectorBuilder(pub rustls::ClientConfig);
@@ -170,7 +173,7 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
     }
 
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        self.session.get_alpn_protocol().map(String::into_bytes)
+        self.session.get_alpn_protocol().map(Vec::from)
     }
 }
 
@@ -231,11 +234,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        let mut v = Vec::new();
-        for p in protocols {
-            v.push(String::from(str::from_utf8(p).map_err(Error::new)?));
-        }
-        self.0.alpn_protocols = v;
+        self.0.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
         Ok(())
     }
 
@@ -258,9 +257,11 @@ impl tls_api::TlsConnector for TlsConnector {
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + 'static
     {
+        let dns_name = DNSNameRef::try_from_ascii_str(domain)
+            .map_err(|()| tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name")))?;
         let tls_stream = TlsStream {
-            stream: stream,
-            session: rustls::ClientSession::new(&self.0, domain),
+            stream,
+            session: rustls::ClientSession::new(&self.0, dns_name),
         };
 
         tls_stream.complete_handleshake_mid()
@@ -282,7 +283,7 @@ impl tls_api::TlsConnector for TlsConnector {
                 &self,
                 _roots: &rustls::RootCertStore,
                 _presented_certs: &[rustls::Certificate],
-                _dns_name: &str,
+                _dns_name: webpki::DNSNameRef,
                 _ocsp_response: &[u8])
                     -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
             {
@@ -292,9 +293,12 @@ impl tls_api::TlsConnector for TlsConnector {
 
         client_config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
 
+        let ignore = DNSNameRef::try_from_ascii_str("ignore")
+            .map_err(|()| tls_api::HandshakeError::Failure(Error::new_other("impossible")))?;
+
         let tls_stream = TlsStream {
-            stream: stream,
-            session: rustls::ClientSession::new(&Arc::new(client_config), "ignore"),
+            stream,
+            session: rustls::ClientSession::new(&Arc::new(client_config), ignore),
         };
 
         tls_stream.complete_handleshake_mid()
@@ -307,9 +311,10 @@ impl tls_api::TlsConnector for TlsConnector {
 
 impl TlsAcceptorBuilder {
     pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
-        let mut config = rustls::ServerConfig::new();
+        let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
         let certs = certs.into_iter().map(|c| rustls::Certificate(c.to_vec())).collect();
-        config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()));
+        config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()))
+            .map_err(tls_api::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }
 }
@@ -329,11 +334,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     }
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        let mut v = Vec::new();
-        for p in protocols {
-            v.push(String::from(str::from_utf8(p).map_err(Error::new)?));
-        }
-        self.0.alpn_protocols = v;
+        self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();
         Ok(())
     }
 

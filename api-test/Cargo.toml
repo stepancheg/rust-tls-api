@@ -15,9 +15,9 @@ tls-api    = { version = "0.1.19", path = "../api" }
 log        = "0.4"
 env_logger = "0.5"
 
-pem        = "0.5"
-webpki     = "0.17"
-untrusted  = "0.6"
+pem        = "0.6.*"
+webpki     = "0.19.1"
+untrusted  = "0.6.*"
 
 futures       = "0.1"
 tokio-core    = "0.1"

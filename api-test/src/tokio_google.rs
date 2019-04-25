@@ -3,7 +3,6 @@
 
 use std::io;
 use std::net::ToSocketAddrs;
-use std::str;
 use std::error;
 
 use futures::Future;
@@ -111,7 +110,7 @@ pub fn fetch_google<C : tls_api::TlsConnector>() {
     assert!(data.starts_with(b"HTTP/1.0 "));
 
     let data = String::from_utf8_lossy(&data);
-    let data = data.trim_right();
+    let data = data.trim_end();
     assert!(data.ends_with("</html>") || data.ends_with("</HTML>"));
 }
 
