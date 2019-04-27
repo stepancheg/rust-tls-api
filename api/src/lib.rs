@@ -192,6 +192,8 @@ pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
+    fn set_verify_hostname(&mut self, verify: bool) -> Result<()>;
+
     fn add_root_certificate(&mut self, cert: Certificate)
         -> Result<&mut Self>;
 
@@ -212,12 +214,6 @@ pub trait TlsConnector : Sized + Sync + Send + 'static {
     fn connect<S>(
         &self,
         domain: &str,
-        stream: S)
-            -> result::Result<TlsStream<S>, HandshakeError<S>>
-        where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
-
-    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
-        &self,
         stream: S)
             -> result::Result<TlsStream<S>, HandshakeError<S>>
         where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static;

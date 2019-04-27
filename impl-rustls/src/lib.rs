@@ -15,8 +15,14 @@ use webpki::DNSNameRef;
 use rustls::NoClientAuth;
 
 
-pub struct TlsConnectorBuilder(pub rustls::ClientConfig);
-pub struct TlsConnector(pub Arc<rustls::ClientConfig>);
+pub struct TlsConnectorBuilder {
+    pub config: rustls::ClientConfig,
+    pub verify_hostname: bool,
+}
+pub struct TlsConnector {
+    pub config: Arc<rustls::ClientConfig>,
+    pub verify_hostname: bool,
+}
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
@@ -219,12 +225,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Underlying = rustls::ClientConfig;
 
     fn underlying_mut(&mut self) -> &mut rustls::ClientConfig {
-        &mut self.0
+        &mut self.config
     }
 
     fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
         let cert = rustls::Certificate(cert.into_der());
-        self.0.root_store.add(&cert)
+        self.config.root_store.add(&cert)
             .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
         Ok(self)
     }
@@ -234,15 +240,23 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
+        self.config.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
         Ok(())
     }
 
     fn build(mut self) -> Result<TlsConnector> {
-        if self.0.root_store.is_empty() {
-            self.0.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+        if self.config.root_store.is_empty() {
+            self.config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
         }
-        Ok(TlsConnector(Arc::new(self.0)))
+        Ok(TlsConnector {
+            config: Arc::new(self.config),
+            verify_hostname: self.verify_hostname,
+        })
+    }
+
+    fn set_verify_hostname(&mut self, verify: bool) -> Result<()> {
+        self.verify_hostname = verify;
+        Ok(())
     }
 }
 
@@ -250,7 +264,10 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     fn builder() -> Result<TlsConnectorBuilder> {
-        Ok(TlsConnectorBuilder(rustls::ClientConfig::new()))
+        Ok(TlsConnectorBuilder {
+            config: rustls::ClientConfig::new(),
+            verify_hostname: true,
+        })
     }
 
     fn connect<S>(&self, domain: &str, stream: S)
@@ -259,46 +276,34 @@ impl tls_api::TlsConnector for TlsConnector {
     {
         let dns_name = DNSNameRef::try_from_ascii_str(domain)
             .map_err(|()| tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name")))?;
-        let tls_stream = TlsStream {
-            stream,
-            session: rustls::ClientSession::new(&self.0, dns_name),
-        };
+        let config = if self.verify_hostname {
+            self.config.clone()
+        } else {
+            // TODO: Clone current config: https://github.com/ctz/rustls/pull/78
+            let mut client_config = rustls::ClientConfig::new();
 
-        tls_stream.complete_handleshake_mid()
-    }
+            struct NoCertificateVerifier;
 
-    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
-        &self,
-        stream: S)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S : io::Read + io::Write + fmt::Debug + Send + 'static
-    {
-        // TODO: Clone current config: https://github.com/ctz/rustls/pull/78
-        let mut client_config = rustls::ClientConfig::new();
-
-        struct NoCertificateVerifier;
-
-        impl rustls::ServerCertVerifier for NoCertificateVerifier {
-            fn verify_server_cert(
-                &self,
-                _roots: &rustls::RootCertStore,
-                _presented_certs: &[rustls::Certificate],
-                _dns_name: webpki::DNSNameRef,
-                _ocsp_response: &[u8])
+            impl rustls::ServerCertVerifier for NoCertificateVerifier {
+                fn verify_server_cert(
+                    &self,
+                    _roots: &rustls::RootCertStore,
+                    _presented_certs: &[rustls::Certificate],
+                    _dns_name: webpki::DNSNameRef,
+                    _ocsp_response: &[u8])
                     -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
-            {
-                Ok(rustls::ServerCertVerified::assertion())
+                {
+                    Ok(rustls::ServerCertVerified::assertion())
+                }
             }
-        }
 
-        client_config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
+            client_config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
 
-        let ignore = DNSNameRef::try_from_ascii_str("ignore")
-            .map_err(|()| tls_api::HandshakeError::Failure(Error::new_other("impossible")))?;
-
+            Arc::new(client_config)
+        };
         let tls_stream = TlsStream {
             stream,
-            session: rustls::ClientSession::new(&Arc::new(client_config), ignore),
+            session: rustls::ClientSession::new(&config, dns_name),
         };
 
         tls_stream.complete_handleshake_mid()

@@ -9,8 +9,15 @@ use tls_api::Error;
 use tls_api::Result;
 
 
-pub struct TlsConnectorBuilder(pub openssl::ssl::SslConnectorBuilder);
-pub struct TlsConnector(pub openssl::ssl::SslConnector);
+pub struct TlsConnectorBuilder {
+    pub builder: openssl::ssl::SslConnectorBuilder,
+    pub verify_hostname: bool,
+}
+
+pub struct TlsConnector {
+    pub connector: openssl::ssl::SslConnector,
+    pub verify_hostname: bool,
+}
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
@@ -29,7 +36,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Underlying = openssl::ssl::SslConnectorBuilder;
 
     fn underlying_mut(&mut self) -> &mut openssl::ssl::SslConnectorBuilder {
-        &mut self.0
+        &mut self.builder
     }
 
     fn supports_alpn() -> bool {
@@ -38,7 +45,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.set_alpn_protocols(protocols).map_err(Error::new)
+        self.builder.set_alpn_protocols(protocols).map_err(Error::new)
     }
 
     #[cfg(not(has_alpn))]
@@ -46,11 +53,16 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(Error::new_other("openssl is compiled without alpn"))
     }
 
+    fn set_verify_hostname(&mut self, verify: bool) -> Result<()> {
+        self.verify_hostname = verify;
+        Ok(())
+    }
+
     fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
         let cert = openssl::x509::X509::from_der(&cert.into_der())
             .map_err(Error::new)?;
 
-        self.0
+        self.builder
             .cert_store_mut()
             .add_cert(cert)
             .map_err(Error::new)?;
@@ -59,13 +71,16 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn build(self) -> Result<TlsConnector> {
-        Ok(TlsConnector(self.0.build()))
+        Ok(TlsConnector {
+            connector: self.builder.build(),
+            verify_hostname: self.verify_hostname,
+        })
     }
 }
 
 impl TlsConnectorBuilder {
     pub fn builder_mut(&mut self) -> &mut openssl::ssl::SslConnectorBuilder {
-        &mut self.0
+        &mut self.builder
     }
 }
 
@@ -164,27 +179,23 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     fn builder() -> Result<TlsConnectorBuilder> {
-        openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())
-            .map(TlsConnectorBuilder)
-            .map_err(Error::new)
+        let builder = openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())
+            .map_err(Error::new)?;
+        Ok(TlsConnectorBuilder {
+            builder,
+            verify_hostname: true,
+        })
     }
 
     fn connect<S>(&self, domain: &str, stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
-        self.0.connect(domain, stream)
-            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
-            .map_err(map_handshake_error)
-    }
-
-    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
-        &self,
-        stream: S)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
-    {
-        self.0.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
+        if self.verify_hostname {
+            self.connector.connect(domain, stream)
+        } else {
+            self.connector.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
+        }
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(map_handshake_error)
     }

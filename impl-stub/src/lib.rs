@@ -64,6 +64,10 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Err(tls_api::Error::new(Error))
     }
 
+    fn set_verify_hostname(&mut self, _verify: bool) -> Result<()> {
+        Err(tls_api::Error::new(Error))
+    }
+
     fn add_root_certificate(&mut self, _cert: tls_api::Certificate) -> Result<&mut Self> {
         Err(tls_api::Error::new(Error))
     }
@@ -81,15 +85,6 @@ impl tls_api::TlsConnector for TlsConnector {
     }
 
     fn connect<S>(&self, _domain: &str, _stream: S)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S: io::Read + io::Write + fmt::Debug + 'static
-    {
-        Err(tls_api::HandshakeError::Failure(tls_api::Error::new(Error)))
-    }
-
-    fn danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(
-        &self,
-        _stream: S)
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S: io::Read + io::Write + fmt::Debug + 'static
     {

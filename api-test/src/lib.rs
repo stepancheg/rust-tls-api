@@ -60,9 +60,11 @@ pub fn connect_bad_hostname<C : TlsConnector>() {
 pub fn connect_bad_hostname_ignored<C : TlsConnector>() {
     drop(env_logger::try_init());
 
-    let connector: C = C::builder().expect("builder").build().expect("build");
+    let mut builder = C::builder().expect("builder");
+    builder.set_verify_hostname(false).expect("set_verify_hostname");
+    let connector: C = builder.build().expect("build");
     let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
-    connector.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(tcp_stream)
+    connector.connect("ignore", tcp_stream)
         .expect("tls");
 }
 
