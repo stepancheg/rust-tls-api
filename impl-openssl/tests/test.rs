@@ -2,6 +2,7 @@ extern crate tls_api_test;
 extern crate tls_api_openssl;
 extern crate openssl;
 
+
 #[test]
 fn test_google() {
     tls_api_test::test_google::<tls_api_openssl::TlsConnector>();
@@ -48,10 +49,7 @@ fn tokio_wrong_hostname() {
 
     let err: openssl::ssl::Error = *err.into_inner().downcast().expect("openssl::ssl::Error");
 
-    let err = match err {
-        openssl::ssl::Error::Ssl(stack) => stack,
-        _ => panic!("wrong error: {:?}", err),
-    };
+    let err = err.ssl_error().unwrap();
 
     for err in err.errors() {
         if err.reason() == Some("certificate verify failed") {

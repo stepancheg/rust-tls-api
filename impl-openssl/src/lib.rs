@@ -7,6 +7,7 @@ use std::fmt;
 
 use tls_api::Error;
 use tls_api::Result;
+use openssl::ssl::AlpnError;
 
 
 pub struct TlsConnectorBuilder {
@@ -30,6 +31,25 @@ pub const HAS_ALPN: bool = true;
 pub const HAS_ALPN: bool = false;
 
 
+fn encode_alpn_protos(protos: &[&[u8]]) -> Result<Vec<u8>> {
+    let mut r = Vec::new();
+    for proto in protos {
+        if proto.len() > 255 {
+            return Err(Error::new_other("prototol len"));
+        }
+        r.push(proto.len() as u8);
+        r.extend_from_slice(proto);
+    }
+    Ok(r)
+}
+
+#[cfg(test)]
+#[test]
+fn test_encode_alpn_protos() {
+    assert_eq!(&b"\x06spdy/1\x08http/1.1"[..], &encode_alpn_protos(&[b"spdy/1", b"http/1.1"]).unwrap()[..]);
+}
+
+
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
 
@@ -45,7 +65,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.builder.set_alpn_protocols(protocols).map_err(Error::new)
+        self.builder.set_alpn_protos(&encode_alpn_protos(protocols)?).map_err(Error::new)
     }
 
     #[cfg(not(has_alpn))]
@@ -110,12 +130,9 @@ impl<S : io::Read + io::Write + fmt::Debug> io::Write for TlsStream<S> {
 impl<S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::TlsStreamImpl<S> for TlsStream<S> {
     fn shutdown(&mut self) -> io::Result<()> {
         match self.0.shutdown() {
-            Ok(_) |
-            Err(openssl::ssl::Error::ZeroReturn) => Ok(()),
-            Err(openssl::ssl::Error::Stream(e)) |
-            Err(openssl::ssl::Error::WantRead(e)) |
-            Err(openssl::ssl::Error::WantWrite(e)) => Err(e),
-            Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e)),
+            Ok(_) => Ok(()),
+            Err(ref e) if e.code() == openssl::ssl::ErrorCode::ZERO_RETURN => Ok(()),
+            Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
         }
     }
 
@@ -163,12 +180,12 @@ fn map_handshake_error<S>(e: openssl::ssl::HandshakeError<S>) -> tls_api::Handsh
 {
     match e {
         openssl::ssl::HandshakeError::SetupFailure(e) => {
-            tls_api::HandshakeError::Failure(Error::new(openssl::ssl::Error::Ssl(e)))
+            tls_api::HandshakeError::Failure(Error::new(e))
         }
         openssl::ssl::HandshakeError::Failure(e) => {
             tls_api::HandshakeError::Failure(Error::new(e.into_error()))
         },
-        openssl::ssl::HandshakeError::Interrupted(s) => {
+        openssl::ssl::HandshakeError::WouldBlock(s) => {
             tls_api::HandshakeError::Interrupted(
                 tls_api::MidHandshakeTlsStream::new(MidHandshakeTlsStream(Some(s))))
         }
@@ -179,7 +196,7 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     fn builder() -> Result<TlsConnectorBuilder> {
-        let builder = openssl::ssl::SslConnectorBuilder::new(openssl::ssl::SslMethod::tls())
+        let builder = openssl::ssl::SslConnector::builder(openssl::ssl::SslMethod::tls())
             .map_err(Error::new)?;
         Ok(TlsConnectorBuilder {
             builder,
@@ -191,11 +208,11 @@ impl tls_api::TlsConnector for TlsConnector {
         -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
             where S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static
     {
-        if self.verify_hostname {
-            self.connector.connect(domain, stream)
-        } else {
-            self.connector.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)
-        }
+        self.connector
+            .configure().map_err(|e| tls_api::HandshakeError::Failure(Error::new(e)))?
+            .verify_hostname(self.verify_hostname)
+            .use_server_name_indication(false)
+            .connect(domain, stream)
             .map(|s| tls_api::TlsStream::new(TlsStream(s)))
             .map_err(map_handshake_error)
     }
@@ -209,13 +226,18 @@ impl TlsAcceptorBuilder {
         let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(Error::new)?;
         let pkcs12 = pkcs12.parse(password).map_err(Error::new)?;
 
-        openssl::ssl::SslAcceptorBuilder::mozilla_intermediate(
-            openssl::ssl::SslMethod::tls(),
-            &pkcs12.pkey,
-            &pkcs12.cert,
-            &pkcs12.chain)
-                .map(TlsAcceptorBuilder)
-                .map_err(Error::new)
+        let mut builder = openssl::ssl::SslAcceptor::mozilla_intermediate(
+            openssl::ssl::SslMethod::tls()).map_err(Error::new)?;
+
+        if let Some(chain) = pkcs12.chain {
+            for x509 in chain {
+                builder.add_extra_chain_cert(x509).map_err(Error::new)?;
+            }
+        }
+        builder.set_certificate(&pkcs12.cert).map_err(Error::new)?;
+        builder.set_private_key(&pkcs12.pkey).map_err(Error::new)?;
+
+        Ok(TlsAcceptorBuilder(builder))
     }
 }
 
@@ -234,7 +256,14 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
-        self.0.set_alpn_protocols(protocols).map_err(Error::new)
+        let protocols = encode_alpn_protos(protocols)?;
+        self.0.set_alpn_select_callback(move |_ssl, client_protocols| {
+            match openssl::ssl::select_next_proto(&protocols, client_protocols) {
+                Some(selected) => Ok(selected),
+                None => Err(AlpnError::NOACK),
+            }
+        });
+        Ok(())
     }
 
     #[cfg(not(has_alpn))]
