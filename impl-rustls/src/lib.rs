@@ -21,7 +21,6 @@ pub struct TlsConnectorBuilder {
 }
 pub struct TlsConnector {
     pub config: Arc<rustls::ClientConfig>,
-    pub verify_hostname: bool,
 }
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
@@ -250,12 +249,35 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         Ok(TlsConnector {
             config: Arc::new(self.config),
-            verify_hostname: self.verify_hostname,
         })
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> Result<()> {
-        self.verify_hostname = verify;
+        if !verify {
+            struct NoCertificateVerifier;
+
+            impl rustls::ServerCertVerifier for NoCertificateVerifier {
+                fn verify_server_cert(
+                    &self,
+                    _roots: &rustls::RootCertStore,
+                    _presented_certs: &[rustls::Certificate],
+                    _dns_name: webpki::DNSNameRef,
+                    _ocsp_response: &[u8])
+                    -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
+                {
+                    Ok(rustls::ServerCertVerified::assertion())
+                }
+            }
+
+            self.config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
+            self.verify_hostname = false;
+        } else {
+            if !self.verify_hostname {
+                return Err(Error::new_other(
+                    "cannot set_verify_hostname(true) after set_verify_hostname(false)"))
+            }
+        }
+
         Ok(())
     }
 }
@@ -276,34 +298,9 @@ impl tls_api::TlsConnector for TlsConnector {
     {
         let dns_name = DNSNameRef::try_from_ascii_str(domain)
             .map_err(|()| tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name")))?;
-        let config = if self.verify_hostname {
-            self.config.clone()
-        } else {
-            // TODO: Clone current config: https://github.com/ctz/rustls/pull/78
-            let mut client_config = rustls::ClientConfig::new();
-
-            struct NoCertificateVerifier;
-
-            impl rustls::ServerCertVerifier for NoCertificateVerifier {
-                fn verify_server_cert(
-                    &self,
-                    _roots: &rustls::RootCertStore,
-                    _presented_certs: &[rustls::Certificate],
-                    _dns_name: webpki::DNSNameRef,
-                    _ocsp_response: &[u8])
-                    -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
-                {
-                    Ok(rustls::ServerCertVerified::assertion())
-                }
-            }
-
-            client_config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
-
-            Arc::new(client_config)
-        };
         let tls_stream = TlsStream {
             stream,
-            session: rustls::ClientSession::new(&config, dns_name),
+            session: rustls::ClientSession::new(&self.config, dns_name),
         };
 
         tls_stream.complete_handleshake_mid()
