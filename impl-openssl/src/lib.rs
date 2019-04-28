@@ -7,6 +7,7 @@ use std::fmt;
 
 use tls_api::Error;
 use tls_api::Result;
+#[cfg(has_alpn)]
 use openssl::ssl::AlpnError;
 
 
