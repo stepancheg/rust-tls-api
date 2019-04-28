@@ -15,4 +15,4 @@ native-tls = "0.1"
 tls-api = { path = "../api", version = "=0.1.21" }
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test" }
+tls-api-test = { path = "../api-test", version = "=0.1.21" }
