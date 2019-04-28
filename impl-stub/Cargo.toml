@@ -15,4 +15,4 @@ tls-api = { path = "../api", version = "=0.1.21" }
 void    = "1"
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test" }
+tls-api-test = { path = "../api-test", version = "=0.1.21" }
