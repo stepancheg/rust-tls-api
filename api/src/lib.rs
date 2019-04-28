@@ -67,17 +67,40 @@ impl From<Error> for io::Error {
 /// A typedef of the result type returned by many methods.
 pub type Result<A> = result::Result<A, Error>;
 
+pub enum CertificateFormat {
+    DER,
+    PEM
+}
 
 // X.509 certificate
-pub struct Certificate(Vec<u8>);
+pub struct Certificate {
+    pub bytes: Vec<u8>,
+    pub format: CertificateFormat,
+}
+
+
 
 impl Certificate {
     pub fn from_der(der: Vec<u8>) -> Certificate {
-        Certificate(der)
+        Certificate {
+            bytes: der,
+            format: CertificateFormat::DER,
+        }
     }
 
-    pub fn into_der(self) -> Vec<u8> {
-        self.0
+    pub fn into_der(self) -> Option<Vec<u8>> {
+        // TODO: there are methods to convert PEM->DER which might be used here
+        match self.format {
+            CertificateFormat::DER => Some(self.bytes),
+            _ => None,
+        }
+    }
+    pub fn into_pem(self) -> Option<Vec<u8>> {
+        // TODO: there are methods to convert DER->PEM which might be used here
+        match self.format {
+            CertificateFormat::PEM => Some(self.bytes),
+            _ => None,
+        }
     }
 }
 
@@ -178,7 +201,6 @@ pub enum HandshakeError<S> {
     /// again.
     Interrupted(MidHandshakeTlsStream<S>),
 }
-
 
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder : Sized + Sync + Send + 'static {

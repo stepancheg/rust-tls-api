@@ -228,9 +228,21 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
-        let cert = rustls::Certificate(cert.into_der());
-        self.config.root_store.add(&cert)
-            .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+        match cert.format {
+           tls_api::CertificateFormat::PEM => {
+               let cert = rustls::internal::pemfile::certs(&mut cert.bytes.as_slice())
+                   .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+               if !cert.is_empty() {
+                   self.config.root_store.add(&cert[0])
+                       .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+               }
+           },
+           tls_api::CertificateFormat::DER => {
+               let cert = rustls::Certificate(cert.bytes);
+               self.config.root_store.add(&cert)
+                   .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+           }
+        }
         Ok(self)
     }
 
