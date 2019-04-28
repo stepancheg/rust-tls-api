@@ -17,4 +17,4 @@ webpki       = "0.19.1"
 webpki-roots = "0.16.0"
 
 [dev-dependencies]
-tls-api-test = { version = "0.1.19", path = "../api-test" }
+tls-api-test = { path = "../api-test" }
