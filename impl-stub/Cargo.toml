@@ -11,7 +11,7 @@ keywords = ["tls"]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { version = "0.1.19", path = "../api" }
+tls-api = { version = "=0.1.19", path = "../api" }
 void    = "1"
 
 [dev-dependencies]
