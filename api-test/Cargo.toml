@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-test"
-version = "0.2.0"
+version = "0.3.0-pre"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
@@ -11,7 +11,7 @@ keywords = ["tls"]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { path = "../api", version = "=0.2.0" }
+tls-api = { path = "../api", version = "=0.3.0-pre" }
 log        = "0.4"
 env_logger = "0.5"
 
@@ -22,4 +22,4 @@ untrusted  = "0.6.*"
 futures       = "0.1"
 tokio-core    = "0.1"
 tokio-io      = "0.1"
-tokio-tls-api = { path = "../tokio-tls-api", version = "=0.2.0" }
+tokio-tls-api = { path = "../tokio-tls-api", version = "=0.3.0-pre" }
