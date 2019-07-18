@@ -2,6 +2,8 @@ use std::env;
 
 fn main() {
     // HAS
+    println!("****> {:?} ===>", env::var("DEP_OPENSSL_VERSION"));
+    
     match env::var("DEP_OPENSSL_VERSION") {
         Ok(ref v) if v == "101" => {
         }
@@ -11,6 +13,9 @@ fn main() {
         Ok(ref v) if v == "110" => {
             println!("cargo:rustc-cfg=has_alpn");
         }
-        _ => panic!("Unable to detect OpenSSL version"),
+        Ok(ref v) if v == "111" => {
+            println!("cargo:rustc-cfg=has_alpn");
+        }
+        _ => panic!("tls-api-openssl: Unable to detect OpenSSL version"),
     }
 }
