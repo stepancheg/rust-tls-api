@@ -1,9 +1,7 @@
 use std::env;
 
 fn main() {
-    // HAS
-    println!("****> {:?} ===>", env::var("DEP_OPENSSL_VERSION"));
-    
+    // HAS   
     match env::var("DEP_OPENSSL_VERSION") {
         Ok(ref v) if v == "101" => {
         }
