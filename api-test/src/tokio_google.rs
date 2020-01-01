@@ -134,6 +134,6 @@ pub fn wrong_hostname_error<C: tls_api::TlsConnector>() -> tls_api::Error {
     let res = l.run(data);
     assert!(res.is_err());
     let err: io::Error = res.unwrap_err();
-    let inner: Box<error::Error> = err.into_inner().unwrap();
+    let inner: Box<dyn error::Error> = err.into_inner().unwrap();
     *inner.downcast().unwrap()
 }

@@ -7,13 +7,6 @@ extern crate tokio_tls_api;
 #[macro_use]
 extern crate cfg_if;
 
-use std::io::{self, Error};
-use std::net::ToSocketAddrs;
-
-use futures::Future;
-use tls_api::TlsConnector;
-use tokio_tcp::TcpStream;
-
 /*
 macro_rules! t {
     ($e:expr) => (match $e {
