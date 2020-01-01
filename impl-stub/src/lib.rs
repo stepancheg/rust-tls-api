@@ -42,7 +42,7 @@ impl std_Error for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(self.description(), f)
+        write!(f, "stub implementation")
     }
 }
 

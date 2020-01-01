@@ -28,10 +28,6 @@ impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         self.0.source()
     }
-
-    fn description(&self) -> &str {
-        self.0.description()
-    }
 }
 
 impl fmt::Debug for Error {
