@@ -1,14 +1,14 @@
 //#[macro_use]
 //extern crate cfg_if;
 
+use std::error;
 use std::io;
 use std::net::ToSocketAddrs;
-use std::error;
 
 use futures::Future;
-use tokio_io::io::{flush, read_to_end, write_all};
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
+use tokio_io::io::{flush, read_to_end, write_all};
 
 use env_logger;
 
@@ -18,12 +18,13 @@ use tls_api::TlsConnectorBuilder as tls_api_TlsConnectorBuilder;
 
 use tokio_tls_api;
 
-
 macro_rules! t {
-    ($e:expr) => (match $e {
-        Ok(e) => e,
-        Err(e) => panic!("{} failed with {:?}", stringify!($e), e),
-    })
+    ($e:expr) => {
+        match $e {
+            Ok(e) => e,
+            Err(e) => panic!("{} failed with {:?}", stringify!($e), e),
+        }
+    };
 }
 
 /*
@@ -82,7 +83,7 @@ fn native2io(e: tls_api::Error) -> io::Error {
     io::Error::new(io::ErrorKind::Other, e)
 }
 
-pub fn fetch_google<C : tls_api::TlsConnector>() {
+pub fn fetch_google<C: tls_api::TlsConnector>() {
     drop(env_logger::try_init());
 
     // First up, resolve google.com
@@ -92,14 +93,14 @@ pub fn fetch_google<C : tls_api::TlsConnector>() {
     let mut l = t!(Core::new());
     let client = TcpStream::connect(&addr, &l.handle());
 
-
     // Send off the request by first negotiating an SSL handshake, then writing
     // of our request, then flushing, then finally read off the response.
-    let data = client.and_then(move |socket| {
-                                   let builder = t!(C::builder());
-                                   let connector = t!(builder.build());
-                                   tokio_tls_api::connect_async(&connector, "google.com", socket).map_err(native2io)
-                               })
+    let data = client
+        .and_then(move |socket| {
+            let builder = t!(C::builder());
+            let connector = t!(builder.build());
+            tokio_tls_api::connect_async(&connector, "google.com", socket).map_err(native2io)
+        })
         .and_then(|socket| write_all(socket, b"GET / HTTP/1.0\r\n\r\n"))
         .and_then(|(socket, _)| flush(socket))
         .and_then(|socket| read_to_end(socket, Vec::new()));
@@ -117,7 +118,7 @@ pub fn fetch_google<C : tls_api::TlsConnector>() {
 // see comment in bad.rs for ignore reason
 //#[cfg_attr(all(target_os = "macos", feature = "force-openssl"), ignore)]
 //#[test]
-pub fn wrong_hostname_error<C : tls_api::TlsConnector>() -> tls_api::Error {
+pub fn wrong_hostname_error<C: tls_api::TlsConnector>() -> tls_api::Error {
     drop(env_logger::try_init());
 
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
@@ -127,8 +128,7 @@ pub fn wrong_hostname_error<C : tls_api::TlsConnector>() -> tls_api::Error {
     let data = client.and_then(move |socket| {
         let builder = t!(C::builder());
         let connector = t!(builder.build());
-        tokio_tls_api::connect_async(&connector, "rust-lang.org", socket)
-            .map_err(native2io)
+        tokio_tls_api::connect_async(&connector, "rust-lang.org", socket).map_err(native2io)
     });
 
     let res = l.run(data);

@@ -1,19 +1,18 @@
-extern crate tls_api;
 extern crate rustls;
-extern crate webpki_roots;
+extern crate tls_api;
 extern crate webpki;
+extern crate webpki_roots;
 
+use std::fmt;
 use std::io;
 use std::result;
-use std::fmt;
-use std::sync::Arc;
 use std::str;
+use std::sync::Arc;
 
-use tls_api::Result;
-use tls_api::Error;
-use webpki::DNSNameRef;
 use rustls::NoClientAuth;
-
+use tls_api::Error;
+use tls_api::Result;
+use webpki::DNSNameRef;
 
 pub struct TlsConnectorBuilder {
     pub config: rustls::ClientConfig,
@@ -26,11 +25,10 @@ pub struct TlsConnector {
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
 
-
 pub struct TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     stream: S,
     session: T,
@@ -38,10 +36,11 @@ pub struct TlsStream<S, T>
 
 // TODO: do not require Sync from TlsStream
 unsafe impl<S, T> Sync for TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
-{}
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
+{
+}
 
 enum IntermediateError {
     Io(io::Error),
@@ -69,14 +68,12 @@ impl From<rustls::TLSError> for IntermediateError {
     }
 }
 
-
 // TlsStream
 
-
 impl<S, T> TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn complete_handshake(&mut self) -> result::Result<(), IntermediateError> {
         while self.session.is_handshaking() {
@@ -99,30 +96,26 @@ impl<S, T> TlsStream<S, T>
         Ok(())
     }
 
-    fn complete_handleshake_mid(mut self)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-    {
+    fn complete_handleshake_mid(
+        mut self,
+    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>> {
         match self.complete_handshake() {
-            Ok(_) => {
-                Ok(tls_api::TlsStream::new(self))
-            },
+            Ok(_) => Ok(tls_api::TlsStream::new(self)),
             Err(IntermediateError::Io(ref e)) if e.kind() == io::ErrorKind::WouldBlock => {
                 let mid_handshake = tls_api::MidHandshakeTlsStream::new(MidHandshakeTlsStream {
-                    stream: Some(self)
+                    stream: Some(self),
                 });
                 Err(tls_api::HandshakeError::Interrupted(mid_handshake))
             }
-            Err(e) => {
-                Err(tls_api::HandshakeError::Failure(e.into_error()))
-            },
+            Err(e) => Err(tls_api::HandshakeError::Failure(e.into_error())),
         }
     }
 }
 
 impl<S, T> fmt::Debug for TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("TlsStream")
@@ -133,36 +126,45 @@ impl<S, T> fmt::Debug for TlsStream<S, T>
 }
 
 impl<S, T> io::Read for TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
-            .read(buf)
+        rustls::Stream {
+            sock: &mut self.stream,
+            sess: &mut self.session,
+        }
+        .read(buf)
     }
 }
 
 impl<S, T> io::Write for TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
-            .write(buf)
+        rustls::Stream {
+            sock: &mut self.stream,
+            sess: &mut self.session,
+        }
+        .write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        rustls::Stream { sock: &mut self.stream, sess: &mut self.session }
-            .flush()
+        rustls::Stream {
+            sock: &mut self.stream,
+            sess: &mut self.session,
+        }
+        .flush()
     }
 }
 
 impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn shutdown(&mut self) -> io::Result<()> {
         // TODO: do something
@@ -182,22 +184,20 @@ impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
     }
 }
 
-
 // MidHandshakeTlsStream
 
-
 pub struct MidHandshakeTlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
-    stream: Option<TlsStream<S, T>>
+    stream: Option<TlsStream<S, T>>,
 }
 
 impl<S, T> tls_api::MidHandshakeTlsStreamImpl<S> for MidHandshakeTlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn handshake(&mut self) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>> {
         self.stream.take().unwrap().complete_handleshake_mid()
@@ -205,9 +205,9 @@ impl<S, T> tls_api::MidHandshakeTlsStreamImpl<S> for MidHandshakeTlsStream<S, T>
 }
 
 impl<T, S> fmt::Debug for MidHandshakeTlsStream<S, T>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + 'static,
-        T : rustls::Session + 'static,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + 'static,
+    T: rustls::Session + 'static,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("MidHandshakeTlsStream")
@@ -215,8 +215,6 @@ impl<T, S> fmt::Debug for MidHandshakeTlsStream<S, T>
             .finish()
     }
 }
-
-
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -229,19 +227,23 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
         match cert.format {
-           tls_api::CertificateFormat::PEM => {
-               let cert = rustls::internal::pemfile::certs(&mut cert.bytes.as_slice())
-                   .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-               if !cert.is_empty() {
-                   self.config.root_store.add(&cert[0])
-                       .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-               }
-           },
-           tls_api::CertificateFormat::DER => {
-               let cert = rustls::Certificate(cert.bytes);
-               self.config.root_store.add(&cert)
-                   .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-           }
+            tls_api::CertificateFormat::PEM => {
+                let cert = rustls::internal::pemfile::certs(&mut cert.bytes.as_slice())
+                    .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+                if !cert.is_empty() {
+                    self.config
+                        .root_store
+                        .add(&cert[0])
+                        .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+                }
+            }
+            tls_api::CertificateFormat::DER => {
+                let cert = rustls::Certificate(cert.bytes);
+                self.config
+                    .root_store
+                    .add(&cert)
+                    .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
+            }
         }
         Ok(self)
     }
@@ -257,7 +259,9 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     fn build(mut self) -> Result<TlsConnector> {
         if self.config.root_store.is_empty() {
-            self.config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+            self.config
+                .root_store
+                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
         }
         Ok(TlsConnector {
             config: Arc::new(self.config),
@@ -274,19 +278,21 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
                     _roots: &rustls::RootCertStore,
                     _presented_certs: &[rustls::Certificate],
                     _dns_name: webpki::DNSNameRef,
-                    _ocsp_response: &[u8])
-                    -> result::Result<rustls::ServerCertVerified, rustls::TLSError>
-                {
+                    _ocsp_response: &[u8],
+                ) -> result::Result<rustls::ServerCertVerified, rustls::TLSError> {
                     Ok(rustls::ServerCertVerified::assertion())
                 }
             }
 
-            self.config.dangerous().set_certificate_verifier(Arc::new(NoCertificateVerifier));
+            self.config
+                .dangerous()
+                .set_certificate_verifier(Arc::new(NoCertificateVerifier));
             self.verify_hostname = false;
         } else {
             if !self.verify_hostname {
                 return Err(Error::new_other(
-                    "cannot set_verify_hostname(true) after set_verify_hostname(false)"))
+                    "cannot set_verify_hostname(true) after set_verify_hostname(false)",
+                ));
             }
         }
 
@@ -304,12 +310,17 @@ impl tls_api::TlsConnector for TlsConnector {
         })
     }
 
-    fn connect<S>(&self, domain: &str, stream: S)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S : io::Read + io::Write + fmt::Debug + Send + 'static
+    fn connect<S>(
+        &self,
+        domain: &str,
+        stream: S,
+    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    where
+        S: io::Read + io::Write + fmt::Debug + Send + 'static,
     {
-        let dns_name = DNSNameRef::try_from_ascii_str(domain)
-            .map_err(|()| tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name")))?;
+        let dns_name = DNSNameRef::try_from_ascii_str(domain).map_err(|()| {
+            tls_api::HandshakeError::Failure(tls_api::Error::new_other("invalid domain name"))
+        })?;
         let tls_stream = TlsStream {
             stream,
             session: rustls::ClientSession::new(&self.config, dns_name),
@@ -319,15 +330,17 @@ impl tls_api::TlsConnector for TlsConnector {
     }
 }
 
-
 // TlsAcceptor and TlsAcceptorBuilder
-
 
 impl TlsAcceptorBuilder {
     pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
         let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
-        let certs = certs.into_iter().map(|c| rustls::Certificate(c.to_vec())).collect();
-        config.set_single_cert(certs, rustls::PrivateKey(key.to_vec()))
+        let certs = certs
+            .into_iter()
+            .map(|c| rustls::Certificate(c.to_vec()))
+            .collect();
+        config
+            .set_single_cert(certs, rustls::PrivateKey(key.to_vec()))
             .map_err(tls_api::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }
@@ -360,9 +373,12 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
-    fn accept<S>(&self, stream: S)
-            -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-        where S : io::Read + io::Write + fmt::Debug + Send + 'static
+    fn accept<S>(
+        &self,
+        stream: S,
+    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    where
+        S: io::Read + io::Write + fmt::Debug + Send + 'static,
     {
         let tls_stream = TlsStream {
             stream: stream,

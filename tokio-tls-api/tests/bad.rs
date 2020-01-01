@@ -1,8 +1,8 @@
 extern crate env_logger;
 extern crate futures;
 extern crate tls_api;
-extern crate tokio_tls_api;
 extern crate tokio_tcp;
+extern crate tokio_tls_api;
 
 #[macro_use]
 extern crate cfg_if;
