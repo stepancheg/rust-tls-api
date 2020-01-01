@@ -11,6 +11,7 @@ An implementation of TLS/SSL streams for Tokio giving an implementation of TLS
 for nonblocking I/O streams.
 """
 categories = ["asynchronous", "network-programming"]
+edition = "2018"
 
 [dependencies]
 futures = "0.1"
