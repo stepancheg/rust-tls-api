@@ -7,6 +7,7 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/stepancheg/rust-tls-api/"
 readme = "../README.md"
 keywords = ["tls"]
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
