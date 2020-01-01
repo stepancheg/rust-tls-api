@@ -27,8 +27,8 @@ extern crate tokio_io;
 use std::fmt;
 use std::io::{self, Read, Write};
 
-use futures::{Poll, Future, Async};
-use tls_api::{HandshakeError, Error, TlsConnector, TlsAcceptor};
+use futures::{Async, Future, Poll};
+use tls_api::{Error, HandshakeError, TlsAcceptor, TlsConnector};
 use tokio_io::{AsyncRead, AsyncWrite};
 
 pub mod proto;
@@ -91,8 +91,7 @@ impl<S: Read + Write> Write for TlsStream<S> {
     }
 }
 
-impl<S: AsyncRead + AsyncWrite> AsyncRead for TlsStream<S> {
-}
+impl<S: AsyncRead + AsyncWrite> AsyncRead for TlsStream<S> {}
 
 impl<S: AsyncRead + AsyncWrite + 'static> AsyncWrite for TlsStream<S> {
     fn shutdown(&mut self) -> Poll<(), io::Error> {
@@ -121,9 +120,9 @@ impl<S: AsyncRead + AsyncWrite + 'static> AsyncWrite for TlsStream<S> {
 /// and `AsyncWrite` traits as well, otherwise this function will not work
 /// properly.
 pub fn connect_async<C, S>(connector: &C, domain: &str, stream: S) -> ConnectAsync<S>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
-        C : TlsConnector,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+    C: TlsConnector,
 {
     ConnectAsync {
         inner: MidHandshake {
@@ -150,9 +149,9 @@ pub fn connect_async<C, S>(connector: &C, domain: &str, stream: S) -> ConnectAsy
 /// and `AsyncWrite` traits as well, otherwise this function will not work
 /// properly.
 pub fn accept_async<A, S>(acceptor: &A, stream: S) -> AcceptAsync<S>
-    where
-        S : io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
-        A : TlsAcceptor,
+where
+    S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+    A: TlsAcceptor,
 {
     AcceptAsync {
         inner: MidHandshake {
@@ -190,16 +189,14 @@ impl<S: Read + Write + 'static> Future for MidHandshake<S> {
         match self.inner.take().expect("cannot poll MidHandshake twice") {
             Ok(stream) => Ok(TlsStream { inner: stream }.into()),
             Err(HandshakeError::Failure(e)) => Err(e),
-            Err(HandshakeError::Interrupted(s)) => {
-                match s.handshake() {
-                    Ok(stream) => Ok(TlsStream { inner: stream }.into()),
-                    Err(HandshakeError::Failure(e)) => Err(e),
-                    Err(HandshakeError::Interrupted(s)) => {
-                        self.inner = Some(Err(HandshakeError::Interrupted(s)));
-                        Ok(Async::NotReady)
-                    }
+            Err(HandshakeError::Interrupted(s)) => match s.handshake() {
+                Ok(stream) => Ok(TlsStream { inner: stream }.into()),
+                Err(HandshakeError::Failure(e)) => Err(e),
+                Err(HandshakeError::Interrupted(s)) => {
+                    self.inner = Some(Err(HandshakeError::Interrupted(s)));
+                    Ok(Async::NotReady)
                 }
-            }
+            },
         }
     }
 }

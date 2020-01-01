@@ -16,13 +16,13 @@ extern crate tokio_proto;
 use std::io::{self, Read, Write};
 use std::sync::Arc;
 
-use futures::{Future, IntoFuture, Poll};
-use tls_api::{TlsAcceptor, TlsConnector};
 use self::tokio_proto::multiplex;
 use self::tokio_proto::pipeline;
 use self::tokio_proto::streaming;
+use futures::{Future, IntoFuture, Poll};
+use tls_api::{TlsAcceptor, TlsConnector};
 
-use {TlsStream, TlsAcceptorExt, TlsConnectorExt, AcceptAsync, ConnectAsync};
+use {AcceptAsync, ConnectAsync, TlsAcceptorExt, TlsConnectorExt, TlsStream};
 
 /// TLS server protocol wrapper.
 ///
@@ -53,23 +53,26 @@ impl<T> Server<T> {
 
 /// Future returned from `bind_transport` in the `ServerProto` implementation.
 pub struct ServerPipelineBind<T, I>
-    where T: pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: PipelineState<T, I>,
 }
 
 enum PipelineState<T, I>
-    where T: pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(AcceptAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> pipeline::ServerProto<I> for Server<T>
-    where T: pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type Response = T::Response;
@@ -86,8 +89,9 @@ impl<T, I> pipeline::ServerProto<I> for Server<T>
 }
 
 impl<T, I> Future for ServerPipelineBind<T, I>
-    where T: pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -96,9 +100,9 @@ impl<T, I> Future for ServerPipelineBind<T, I>
         loop {
             let next = match self.state {
                 PipelineState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 PipelineState::Next(ref mut b) => return b.poll(),
@@ -110,23 +114,26 @@ impl<T, I> Future for ServerPipelineBind<T, I>
 
 /// Future returned from `bind_transport` in the `ServerProto` implementation.
 pub struct ServerMultiplexBind<T, I>
-    where T: multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: MultiplexState<T, I>,
 }
 
 enum MultiplexState<T, I>
-    where T: multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(AcceptAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> multiplex::ServerProto<I> for Server<T>
-    where T: multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type Response = T::Response;
@@ -143,8 +150,9 @@ impl<T, I> multiplex::ServerProto<I> for Server<T>
 }
 
 impl<T, I> Future for ServerMultiplexBind<T, I>
-    where T: multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -153,9 +161,9 @@ impl<T, I> Future for ServerMultiplexBind<T, I>
         loop {
             let next = match self.state {
                 MultiplexState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 MultiplexState::Next(ref mut b) => return b.poll(),
@@ -167,23 +175,26 @@ impl<T, I> Future for ServerMultiplexBind<T, I>
 
 /// Future returned from `bind_transport` in the `ServerProto` implementation.
 pub struct ServerStreamingPipelineBind<T, I>
-    where T: streaming::pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: StreamingPipelineState<T, I>,
 }
 
 enum StreamingPipelineState<T, I>
-    where T: streaming::pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(AcceptAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> streaming::pipeline::ServerProto<I> for Server<T>
-    where T: streaming::pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type RequestBody = T::RequestBody;
@@ -203,8 +214,9 @@ impl<T, I> streaming::pipeline::ServerProto<I> for Server<T>
 }
 
 impl<T, I> Future for ServerStreamingPipelineBind<T, I>
-    where T: streaming::pipeline::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -213,9 +225,9 @@ impl<T, I> Future for ServerStreamingPipelineBind<T, I>
         loop {
             let next = match self.state {
                 StreamingPipelineState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 StreamingPipelineState::Next(ref mut b) => return b.poll(),
@@ -227,23 +239,26 @@ impl<T, I> Future for ServerStreamingPipelineBind<T, I>
 
 /// Future returned from `bind_transport` in the `ServerProto` implementation.
 pub struct ServerStreamingMultiplexBind<T, I>
-    where T: streaming::multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: StreamingMultiplexState<T, I>,
 }
 
 enum StreamingMultiplexState<T, I>
-    where T: streaming::multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(AcceptAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> streaming::multiplex::ServerProto<I> for Server<T>
-    where T: streaming::multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type RequestBody = T::RequestBody;
@@ -263,8 +278,9 @@ impl<T, I> streaming::multiplex::ServerProto<I> for Server<T>
 }
 
 impl<T, I> Future for ServerStreamingMultiplexBind<T, I>
-    where T: streaming::multiplex::ServerProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ServerProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -273,9 +289,9 @@ impl<T, I> Future for ServerStreamingMultiplexBind<T, I>
         loop {
             let next = match self.state {
                 StreamingMultiplexState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 StreamingMultiplexState::Next(ref mut b) => return b.poll(),
@@ -303,9 +319,7 @@ impl<T> Client<T> {
     ///
     /// The `connector` provided will be used to configure the TLS connection. Further I/O
     /// will go through the negotiated TLS stream through the `protocol` specified.
-    pub fn new(protocol: T,
-               connector: TlsConnector,
-               hostname: &str) -> Client<T> {
+    pub fn new(protocol: T, connector: TlsConnector, hostname: &str) -> Client<T> {
         Client {
             inner: Arc::new(protocol),
             connector: connector,
@@ -316,23 +330,26 @@ impl<T> Client<T> {
 
 /// Future returned from `bind_transport` in the `ClientProto` implementation.
 pub struct ClientPipelineBind<T, I>
-    where T: pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: ClientPipelineState<T, I>,
 }
 
 enum ClientPipelineState<T, I>
-    where T: pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(ConnectAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> pipeline::ClientProto<I> for Client<T>
-    where T: pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type Response = T::Response;
@@ -350,8 +367,9 @@ impl<T, I> pipeline::ClientProto<I> for Client<T>
 }
 
 impl<T, I> Future for ClientPipelineBind<T, I>
-    where T: pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -360,9 +378,9 @@ impl<T, I> Future for ClientPipelineBind<T, I>
         loop {
             let next = match self.state {
                 ClientPipelineState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 ClientPipelineState::Next(ref mut b) => return b.poll(),
@@ -374,23 +392,26 @@ impl<T, I> Future for ClientPipelineBind<T, I>
 
 /// Future returned from `bind_transport` in the `ClientProto` implementation.
 pub struct ClientMultiplexBind<T, I>
-    where T: multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: ClientMultiplexState<T, I>,
 }
 
 enum ClientMultiplexState<T, I>
-    where T: multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(ConnectAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> multiplex::ClientProto<I> for Client<T>
-    where T: multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type Response = T::Response;
@@ -408,8 +429,9 @@ impl<T, I> multiplex::ClientProto<I> for Client<T>
 }
 
 impl<T, I> Future for ClientMultiplexBind<T, I>
-    where T: multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -418,9 +440,9 @@ impl<T, I> Future for ClientMultiplexBind<T, I>
         loop {
             let next = match self.state {
                 ClientMultiplexState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 ClientMultiplexState::Next(ref mut b) => return b.poll(),
@@ -432,23 +454,26 @@ impl<T, I> Future for ClientMultiplexBind<T, I>
 
 /// Future returned from `bind_transport` in the `ClientProto` implementation.
 pub struct ClientStreamingPipelineBind<T, I>
-    where T: streaming::pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: ClientStreamingPipelineState<T, I>,
 }
 
 enum ClientStreamingPipelineState<T, I>
-    where T: streaming::pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(ConnectAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> streaming::pipeline::ClientProto<I> for Client<T>
-    where T: streaming::pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type RequestBody = T::RequestBody;
@@ -469,8 +494,9 @@ impl<T, I> streaming::pipeline::ClientProto<I> for Client<T>
 }
 
 impl<T, I> Future for ClientStreamingPipelineBind<T, I>
-    where T: streaming::pipeline::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::pipeline::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -479,9 +505,9 @@ impl<T, I> Future for ClientStreamingPipelineBind<T, I>
         loop {
             let next = match self.state {
                 ClientStreamingPipelineState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 ClientStreamingPipelineState::Next(ref mut b) => return b.poll(),
@@ -493,23 +519,26 @@ impl<T, I> Future for ClientStreamingPipelineBind<T, I>
 
 /// Future returned from `bind_transport` in the `ClientProto` implementation.
 pub struct ClientStreamingMultiplexBind<T, I>
-    where T: streaming::multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     state: ClientStreamingMultiplexState<T, I>,
 }
 
 enum ClientStreamingMultiplexState<T, I>
-    where T: streaming::multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     First(ConnectAsync<I>, Arc<T>),
     Next(<T::BindTransport as IntoFuture>::Future),
 }
 
 impl<T, I> streaming::multiplex::ClientProto<I> for Client<T>
-    where T: streaming::multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Request = T::Request;
     type RequestBody = T::RequestBody;
@@ -530,8 +559,9 @@ impl<T, I> streaming::multiplex::ClientProto<I> for Client<T>
 }
 
 impl<T, I> Future for ClientStreamingMultiplexBind<T, I>
-    where T: streaming::multiplex::ClientProto<TlsStream<I>>,
-          I: Read + Write + 'static,
+where
+    T: streaming::multiplex::ClientProto<TlsStream<I>>,
+    I: Read + Write + 'static,
 {
     type Item = T::Transport;
     type Error = io::Error;
@@ -540,9 +570,9 @@ impl<T, I> Future for ClientStreamingMultiplexBind<T, I>
         loop {
             let next = match self.state {
                 ClientStreamingMultiplexState::First(ref mut a, ref state) => {
-                    let res = a.poll().map_err(|e| {
-                        io::Error::new(io::ErrorKind::Other, e)
-                    });
+                    let res = a
+                        .poll()
+                        .map_err(|e| io::Error::new(io::ErrorKind::Other, e));
                     state.bind_transport(try_ready!(res))
                 }
                 ClientStreamingMultiplexState::Next(ref mut b) => return b.poll(),

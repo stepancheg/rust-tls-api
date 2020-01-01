@@ -13,15 +13,14 @@
 extern crate tls_api;
 extern crate void;
 
+use std::error::Error as std_Error;
+use std::fmt;
 use std::io;
 use std::result;
-use std::fmt;
-use std::error::Error as std_Error;
 
 use void::Void;
 
 use tls_api::Result;
-
 
 pub struct Pkcs12(Void);
 pub struct Certificate(Void);
@@ -84,9 +83,13 @@ impl tls_api::TlsConnector for TlsConnector {
         Err(tls_api::Error::new(Error))
     }
 
-    fn connect<S>(&self, _domain: &str, _stream: S)
-        -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-            where S: io::Read + io::Write + fmt::Debug + 'static
+    fn connect<S>(
+        &self,
+        _domain: &str,
+        _stream: S,
+    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    where
+        S: io::Read + io::Write + fmt::Debug + 'static,
     {
         Err(tls_api::HandshakeError::Failure(tls_api::Error::new(Error)))
     }
@@ -117,9 +120,12 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
-    fn accept<S>(&self, _stream: S)
-            -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
-        where S: io::Read + io::Write + fmt::Debug + 'static
+    fn accept<S>(
+        &self,
+        _stream: S,
+    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    where
+        S: io::Read + io::Write + fmt::Debug + 'static,
     {
         Err(tls_api::HandshakeError::Failure(tls_api::Error::new(Error)))
     }
