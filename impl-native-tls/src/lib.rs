@@ -3,15 +3,28 @@ extern crate tls_api;
 
 use std::fmt;
 use std::io;
-use std::result;
 
+use crate::handshake::HandshakeFuture;
+use std::future::Future;
+use std::io::Read;
+use std::io::Write;
+use std::pin::Pin;
+use std::task::Context;
+use std::task::Poll;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::Error;
 use tls_api::Result;
+use tokio::io::AsyncRead;
+use tokio::io::AsyncWrite;
+
+mod handshake;
 
 pub struct TlsConnectorBuilder {
     pub builder: native_tls::TlsConnectorBuilder,
     pub verify_hostname: bool,
 }
+
 pub struct TlsConnector {
     pub connector: native_tls::TlsConnector,
     pub verify_hostname: bool,
@@ -70,78 +83,75 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 }
 
 #[derive(Debug)]
-struct TlsStream<S: io::Read + io::Write + fmt::Debug>(native_tls::TlsStream<S>);
+struct TlsStream<S: AsyncRead + AsyncWrite + fmt::Debug + Unpin>(
+    native_tls::TlsStream<AsyncIoAsSyncIo<S>>,
+);
 
-impl<S: io::Read + io::Write + fmt::Debug> TlsStream<S> {}
-
-impl<S: io::Read + io::Write + fmt::Debug> io::Read for TlsStream<S> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.0.read(buf)
-    }
-}
-
-impl<S: io::Read + io::Write + fmt::Debug> io::Write for TlsStream<S> {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.0.write(buf)
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        self.0.flush()
-    }
-}
-
-impl<S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static> tls_api::TlsStreamImpl<S>
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Unpin + Sync + Send> AsyncIoAsSyncIoWrapper<S>
     for TlsStream<S>
 {
-    fn shutdown(&mut self) -> io::Result<()> {
-        self.0.shutdown()
-    }
-
-    fn get_mut(&mut self) -> &mut S {
+    fn get_mut(&mut self) -> &mut AsyncIoAsSyncIo<S> {
         self.0.get_mut()
     }
+}
 
-    fn get_ref(&self) -> &S {
-        self.0.get_ref()
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send> AsyncWrite for TlsStream<S> {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.0.write(buf))
     }
 
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.0.flush())
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.0.shutdown())
+    }
+}
+
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send> AsyncRead for TlsStream<S> {
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<io::Result<usize>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.0.read(buf))
+    }
+}
+
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send + 'static>
+    tls_api::TlsStreamImpl<S> for TlsStream<S>
+{
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
         None
     }
+
+    fn get_mut(&mut self) -> &mut S {
+        self.0.get_mut().get_inner_mut()
+    }
+
+    fn get_ref(&self) -> &S {
+        self.0.get_ref().get_inner_ref()
+    }
 }
 
-struct MidHandshakeTlsStream<S: io::Read + io::Write + 'static>(
+struct MidHandshakeTlsStream<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send + 'static>(
     Option<native_tls::MidHandshakeTlsStream<S>>,
 );
 
-impl<S: io::Read + io::Write> fmt::Debug for MidHandshakeTlsStream<S> {
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send + 'static> fmt::Debug
+    for MidHandshakeTlsStream<S>
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("MidHandshakeTlsStream").finish()
-    }
-}
-
-impl<S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static>
-    tls_api::MidHandshakeTlsStreamImpl<S> for MidHandshakeTlsStream<S>
-{
-    fn handshake(&mut self) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>> {
-        self.0
-            .take()
-            .unwrap()
-            .handshake()
-            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
-            .map_err(map_handshake_error)
-    }
-}
-
-fn map_handshake_error<S>(e: native_tls::HandshakeError<S>) -> tls_api::HandshakeError<S>
-where
-    S: io::Read + io::Write + Send + Sync + fmt::Debug + 'static,
-{
-    match e {
-        native_tls::HandshakeError::Failure(e) => tls_api::HandshakeError::Failure(Error::new(e)),
-        native_tls::HandshakeError::WouldBlock(s) => tls_api::HandshakeError::Interrupted(
-            tls_api::MidHandshakeTlsStream::new(MidHandshakeTlsStream(Some(s))),
-        ),
     }
 }
 
@@ -156,18 +166,18 @@ impl tls_api::TlsConnector for TlsConnector {
         })
     }
 
-    fn connect<S>(
-        &self,
-        domain: &str,
+    fn connect<'a, S>(
+        &'a self,
+        domain: &'a str,
         stream: S,
-    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        self.connector
-            .connect(domain, stream)
-            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
-            .map_err(map_handshake_error)
+        Box::pin(HandshakeFuture::Initial(
+            move |s| self.connector.connect(domain, s),
+            AsyncIoAsSyncIo::new(stream),
+        ))
     }
 }
 
@@ -208,16 +218,16 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
-    fn accept<S>(
-        &self,
+    fn accept<'a, S>(
+        &'a self,
         stream: S,
-    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        self.0
-            .accept(stream)
-            .map(|s| tls_api::TlsStream::new(TlsStream(s)))
-            .map_err(map_handshake_error)
+        Box::pin(HandshakeFuture::Initial(
+            move |s| self.0.accept(s),
+            AsyncIoAsSyncIo::new(stream),
+        ))
     }
 }

@@ -1,7 +1,6 @@
+//! Common implementation of tests for all TLS API implementations
+
 extern crate futures;
-extern crate tokio_core;
-extern crate tokio_io;
-extern crate tokio_tls_api;
 
 extern crate pem;
 extern crate untrusted;
@@ -13,12 +12,9 @@ extern crate env_logger;
 
 extern crate tls_api;
 
-mod tokio_google;
+#[macro_use]
+mod t;
 
-use std::io::Read;
-use std::io::Write;
-use std::net::TcpListener;
-use std::net::TcpStream;
 use std::thread;
 
 use tls_api::Certificate;
@@ -28,20 +24,29 @@ use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tls_api::TlsStream;
 
-pub fn test_google<C: TlsConnector>() {
+use std::net::ToSocketAddrs;
+use tokio::io::AsyncReadExt;
+use tokio::io::AsyncWriteExt;
+use tokio::net::TcpListener;
+use tokio::net::TcpStream;
+
+use tokio::runtime::Runtime;
+
+async fn test_google_impl<C: TlsConnector>() {
     drop(env_logger::try_init());
 
+    // First up, resolve google.com
+    let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
+
     let connector: C = C::builder().expect("builder").build().expect("build");
-    let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
-    let mut tls_stream: TlsStream<_> = connector.connect("google.com", tcp_stream).expect("tls");
+    let tcp_stream = t!(TcpStream::connect(addr).await);
+    let mut tls_stream: TlsStream<_> = t!(connector.connect("google.com", tcp_stream).await);
 
     info!("handshake complete");
 
-    tls_stream
-        .write_all(b"GET / HTTP/1.0\r\n\r\n")
-        .expect("write");
+    t!(tls_stream.write_all(b"GET / HTTP/1.0\r\n\r\n").await);
     let mut result = vec![];
-    tls_stream.read_to_end(&mut result).expect("read_to_end");
+    t!(tls_stream.read_to_end(&mut result).await);
 
     println!("{}", String::from_utf8_lossy(&result));
     assert!(
@@ -52,24 +57,46 @@ pub fn test_google<C: TlsConnector>() {
     assert!(result.ends_with(b"</HTML>\r\n") || result.ends_with(b"</html>"));
 }
 
-pub fn connect_bad_hostname<C: TlsConnector>() {
-    drop(env_logger::try_init());
-
-    let connector: C = C::builder().expect("builder").build().expect("build");
-    let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
-    connector.connect("goggle.com", tcp_stream).unwrap_err();
+pub fn test_google<C: TlsConnector>() {
+    t!(Runtime::new()).block_on(test_google_impl::<C>())
 }
 
-pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
+async fn connect_bad_hostname_impl<C: TlsConnector>() -> tls_api::Error {
     drop(env_logger::try_init());
+
+    // First up, resolve google.com
+    let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
+
+    let connector: C = C::builder().expect("builder").build().expect("build");
+    let tcp_stream = t!(TcpStream::connect(addr).await);
+    connector
+        .connect("goggle.com", tcp_stream)
+        .await
+        .unwrap_err()
+}
+
+pub fn connect_bad_hostname<C: TlsConnector>() -> tls_api::Error {
+    t!(Runtime::new()).block_on(connect_bad_hostname_impl::<C>())
+}
+
+async fn connect_bad_hostname_ignored_impl<C: TlsConnector>() {
+    drop(env_logger::try_init());
+
+    // First up, resolve google.com
+    let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
+
+    let tcp_stream = t!(TcpStream::connect(addr).await);
 
     let mut builder = C::builder().expect("builder");
     builder
         .set_verify_hostname(false)
         .expect("set_verify_hostname");
     let connector: C = builder.build().expect("build");
-    let tcp_stream = TcpStream::connect("google.com:443").expect("connect");
-    connector.connect("ignore", tcp_stream).expect("tls");
+    t!(connector.connect("ignore", tcp_stream).await);
+}
+
+pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
+    t!(Runtime::new()).block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
 pub struct RsaPrivateKey(pub Vec<u8>);
@@ -143,7 +170,7 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
 // https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
 const BIND_HOST: &str = "127.0.0.1";
 
-pub fn server<C, A, F>(acceptor: F)
+async fn server_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
@@ -155,37 +182,47 @@ where
 
     let acceptor: A = acceptor.build().expect("acceptor build");
 
-    let listener = TcpListener::bind((BIND_HOST, 0)).expect("bind");
+    let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
     let port = listener.local_addr().expect("local_addr").port();
 
     let j = thread::spawn(move || {
-        let socket = listener.accept().expect("accept").0;
-        let mut socket = acceptor.accept(socket).expect("tls accept");
+        let future = async {
+            let socket = t!(listener.accept().await).0;
+            let mut socket = t!(acceptor.accept(socket).await);
 
-        let mut buf = [0; 5];
-        socket.read_exact(&mut buf).expect("server read_exact");
-        assert_eq!(&buf, b"hello");
+            let mut buf = [0; 5];
+            t!(socket.read_exact(&mut buf).await);
+            assert_eq!(&buf, b"hello");
 
-        socket.write_all(b"world").expect("server write");
+            t!(socket.write_all(b"world").await);
+        };
+        t!(Runtime::new()).block_on(future);
     });
 
-    let socket = TcpStream::connect((BIND_HOST, port)).expect("connect");
+    let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
     let connector: C::Builder = new_connector_with_root_ca::<C>();
     let connector: C = connector.build().expect("acceptor build");
-    let mut socket = connector
-        .connect("foobar.com", socket)
-        .expect("tls connect");
+    let mut socket = t!(connector.connect("foobar.com", socket).await);
 
-    socket.write_all(b"hello").expect("client write");
+    t!(socket.write_all(b"hello").await);
     let mut buf = vec![];
-    socket.read_to_end(&mut buf).expect("client read");
+    t!(socket.read_to_end(&mut buf).await);
     assert_eq!(buf, b"world");
 
     j.join().expect("thread join");
 }
 
-pub fn alpn<C, A, F>(acceptor: F)
+pub fn server<C, A, F>(acceptor: F)
+where
+    C: TlsConnector,
+    A: TlsAcceptor,
+    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+{
+    t!(Runtime::new()).block_on(server_impl::<C, A, F>(acceptor))
+}
+
+async fn alpn_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
@@ -209,25 +246,28 @@ where
         .set_alpn_protocols(&[b"abc", b"de", b"f"])
         .expect("set_alpn_protocols");
 
-    let acceptor: A = acceptor.build().expect("acceptor build");
+    let acceptor: A = t!(acceptor.build());
 
-    let listener = TcpListener::bind((BIND_HOST, 0)).expect("bind");
+    let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
     let port = listener.local_addr().expect("local_addr").port();
 
     let j = thread::spawn(move || {
-        let socket = listener.accept().expect("accept").0;
-        let mut socket = acceptor.accept(socket).expect("tls accept");
+        let f = async {
+            let socket = t!(listener.accept().await).0;
+            let mut socket = t!(acceptor.accept(socket).await);
 
-        assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
+            assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
 
-        let mut buf = [0; 5];
-        socket.read_exact(&mut buf).expect("server read_exact");
-        assert_eq!(&buf, b"hello");
+            let mut buf = [0; 5];
+            t!(socket.read_exact(&mut buf).await);
+            assert_eq!(&buf, b"hello");
 
-        socket.write_all(b"world").expect("server write");
+            t!(socket.write_all(b"world").await);
+        };
+        t!(Runtime::new()).block_on(f);
     });
 
-    let socket = TcpStream::connect((BIND_HOST, port)).expect("connect");
+    let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
     let mut connector: C::Builder = new_connector_with_root_ca::<C>();
 
@@ -236,19 +276,23 @@ where
         .expect("set_alpn_protocols");
 
     let connector: C = connector.build().expect("acceptor build");
-    let mut socket = connector
-        .connect("foobar.com", socket)
-        .expect("tls connect");
+    let mut socket = t!(connector.connect("foobar.com", socket).await);
 
     assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
 
-    socket.write_all(b"hello").expect("client write");
+    t!(socket.write_all(b"hello").await);
     let mut buf = vec![];
-    socket.read_to_end(&mut buf).expect("client read");
+    t!(socket.read_to_end(&mut buf).await);
     assert_eq!(buf, b"world");
 
     j.join().expect("thread join");
 }
 
-pub use crate::tokio_google::fetch_google as tokio_fetch_google;
-pub use crate::tokio_google::wrong_hostname_error as tokio_wrong_hostname_error;
+pub fn alpn<C, A, F>(acceptor: F)
+where
+    C: TlsConnector,
+    A: TlsAcceptor,
+    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+{
+    t!(Runtime::new()).block_on(alpn_impl::<C, A, F>(acceptor))
+}

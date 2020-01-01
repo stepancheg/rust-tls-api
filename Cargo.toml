@@ -6,7 +6,6 @@ members = [
     "impl-openssl",
     "impl-rustls",
     "impl-stub",
-    "tokio-tls-api",
-    "tokio-tls-api-examples",
+    "examples",
     "interop",
 ]

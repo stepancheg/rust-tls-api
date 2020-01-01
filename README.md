@@ -18,8 +18,6 @@ Several crates:
 * tls-api-security-framework — _missing_ implementation of TLS API over
   [security framework](https://github.com/sfackler/rust-security-framework) crate
 * tls-api-stub — stub API implementation which returns an error on any operation
-* tokio-tls-api — fork of [tokio-tls](https://github.com/tokio-rs/tokio-tls)
-  which uses tls-api instead of native-tls
 
 ## The problem
 

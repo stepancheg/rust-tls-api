@@ -20,7 +20,5 @@ pem        = "0.6.*"
 webpki     = "0.19.1"
 untrusted  = "0.6.*"
 
-futures       = "0.1"
-tokio-core    = "0.1"
-tokio-io      = "0.1"
-tokio-tls-api = { path = "../tokio-tls-api", version = "=0.3.0-pre" }
+futures = { version = "0.3.0", features = ["async-await"] }
+tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"] }

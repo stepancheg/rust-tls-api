@@ -1,28 +1,27 @@
 [package]
-name = "tokio-tls-api"
-version = "0.3.0-pre"
+name = "tls-api-examples"
+version = "0.0.0"
 authors = ["Carl Lerche <me@carllerche.com>",
            "Alex Crichton <alex@alexcrichton.com>"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/stepancheg/rust-tls-api"
-documentation = "https://docs.rs/tokio-tls-api"
 description = """
-An implementation of TLS/SSL streams for Tokio giving an implementation of TLS
-for nonblocking I/O streams.
+Example of tls-api
 """
 categories = ["asynchronous", "network-programming"]
+publish = false
 edition = "2018"
 
 [dependencies]
-futures = "0.1"
-tls-api = { path = "../api", version = "=0.3.0-pre" }
-tokio-io = "0.1.6"
-tokio-proto = { version = "0.1", optional = true }
+futures = { version = "0.3.0", features = ["async-await"] }
+tokio = { version = "~0.2.6", features = ["full"] }
+tls-api = { path = "../api" }
 
 [dev-dependencies]
 env_logger = { version = "0.5", default-features = false }
 cfg-if = "0.1"
-tokio-tcp = "0.1.0"
+tls-api-native-tls = { path = "../impl-native-tls" }
+tokio = { version = "~0.2.6", features = ["net"] }
 
 [target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]
 openssl = "0.10.20"

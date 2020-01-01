@@ -3,19 +3,31 @@ extern crate tls_api_rustls;
 extern crate tls_api_test;
 extern crate webpki;
 
+use std::io;
+
 #[test]
 fn test_google() {
-    tls_api_test::test_google::<tls_api_rustls::TlsConnector>();
+    tls_api_test::test_google::<tls_api_rustls::TlsConnector>()
 }
 
 #[test]
 fn connect_bad_hostname() {
-    tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector>();
+    let err = tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector>();
+    let err: Box<io::Error> = err.into_inner().downcast().expect("io::Error");
+    let err: &rustls::TLSError = err
+        .get_ref()
+        .expect("cause")
+        .downcast_ref()
+        .expect("rustls::TLSError");
+    match err {
+        rustls::TLSError::WebPKIError(webpki::Error::CertNotValidForName) => {}
+        err => panic!("wrong error: {:?}", err),
+    }
 }
 
 #[test]
 fn connect_bad_hostname_ignored() {
-    tls_api_test::connect_bad_hostname_ignored::<tls_api_rustls::TlsConnector>();
+    tls_api_test::connect_bad_hostname_ignored::<tls_api_rustls::TlsConnector>()
 }
 
 fn new_acceptor(
@@ -40,19 +52,4 @@ fn alpn() {
     tls_api_test::alpn::<tls_api_rustls::TlsConnector, tls_api_rustls::TlsAcceptor, _>(
         new_acceptor,
     );
-}
-
-#[test]
-fn tokio_fetch_google() {
-    tls_api_test::tokio_fetch_google::<tls_api_rustls::TlsConnector>();
-}
-
-#[test]
-fn tokio_wrong_hostname() {
-    let err = tls_api_test::tokio_wrong_hostname_error::<tls_api_rustls::TlsConnector>();
-    let err: rustls::TLSError = *err.into_inner().downcast().expect("rustls::TLSError");
-    match err {
-        rustls::TLSError::WebPKIError(webpki::Error::CertNotValidForName) => {}
-        err => panic!("wrong error: {:?}", err),
-    }
 }

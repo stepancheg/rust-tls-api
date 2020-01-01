@@ -2,12 +2,19 @@
 
 use std::error;
 use std::fmt;
+use std::future::Future;
 use std::io;
+use std::pin::Pin;
 use std::result;
+use std::task::Context;
+use std::task::Poll;
+use tokio::prelude::*;
+
+pub mod async_as_sync;
 
 // Error
 
-pub struct Error(Box<dyn error::Error + Send + Sync>);
+pub struct Error(Box<dyn error::Error + Send + Sync + 'static>);
 
 /// An error returned from the TLS implementation.
 impl Error {
@@ -16,7 +23,7 @@ impl Error {
     }
 
     pub fn new_other(message: &str) -> Error {
-        Error::new(io::Error::new(io::ErrorKind::Other, message))
+        Self::new(io::Error::new(io::ErrorKind::Other, message))
     }
 
     pub fn into_inner(self) -> Box<dyn error::Error + Send + Sync> {
@@ -94,11 +101,11 @@ impl Certificate {
     }
 }
 
-pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug + Send + Sync + 'static {
+pub trait TlsStreamImpl<S>:
+    AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send + Sync + 'static
+{
     /// Get negotiated ALPN protocol.
     fn get_alpn_protocol(&self) -> Option<Vec<u8>>;
-
-    fn shutdown(&mut self) -> io::Result<()>;
 
     fn get_mut(&mut self) -> &mut S;
 
@@ -115,15 +122,11 @@ pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug + Send + Sync + 's
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
 #[derive(Debug)]
-pub struct TlsStream<S>(Box<dyn TlsStreamImpl<S> + 'static>);
+pub struct TlsStream<S: 'static>(Box<dyn TlsStreamImpl<S> + 'static>);
 
 impl<S: 'static> TlsStream<S> {
     pub fn new<I: TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
-    }
-
-    pub fn shutdown(&mut self) -> io::Result<()> {
-        self.0.shutdown()
     }
 
     pub fn get_mut(&mut self) -> &mut S {
@@ -139,52 +142,32 @@ impl<S: 'static> TlsStream<S> {
     }
 }
 
-impl<S> io::Read for TlsStream<S> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.0.read(buf)
+impl<S> AsyncRead for TlsStream<S> {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<io::Result<usize>> {
+        Pin::new(&mut self.0).poll_read(cx, buf)
     }
 }
 
-impl<S> io::Write for TlsStream<S> {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.0.write(buf)
+impl<S> AsyncWrite for TlsStream<S> {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        Pin::new(&mut self.0).poll_write(cx, buf)
     }
 
-    fn flush(&mut self) -> io::Result<()> {
-        self.0.flush()
-    }
-}
-
-pub trait MidHandshakeTlsStreamImpl<S>: fmt::Debug + Sync + Send + 'static {
-    fn handshake(&mut self) -> result::Result<TlsStream<S>, HandshakeError<S>>;
-}
-
-#[derive(Debug)]
-pub struct MidHandshakeTlsStream<S>(Box<dyn MidHandshakeTlsStreamImpl<S> + 'static>);
-
-impl<S: 'static> MidHandshakeTlsStream<S> {
-    pub fn new<I: MidHandshakeTlsStreamImpl<S> + 'static>(stream: I) -> MidHandshakeTlsStream<S> {
-        MidHandshakeTlsStream(Box::new(stream))
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.0).poll_flush(cx)
     }
 
-    pub fn handshake(mut self) -> result::Result<TlsStream<S>, HandshakeError<S>> {
-        self.0.handshake()
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.0).poll_shutdown(cx)
     }
-}
-
-/// An error returned from `ClientBuilder::handshake`.
-#[derive(Debug)]
-pub enum HandshakeError<S> {
-    /// A fatal error.
-    Failure(Error),
-
-    /// A stream interrupted midway through the handshake process due to a
-    /// `WouldBlock` error.
-    ///
-    /// Note that this is not a fatal error and it should be safe to call
-    /// `handshake` at a later time once the stream is ready to perform I/O
-    /// again.
-    Interrupted(MidHandshakeTlsStream<S>),
 }
 
 /// A builder for `TlsConnector`s.
@@ -216,13 +199,13 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
 
     fn builder() -> Result<Self::Builder>;
 
-    fn connect<S>(
-        &self,
-        domain: &str,
+    fn connect<'a, S>(
+        &'a self,
+        domain: &'a str,
         stream: S,
-    ) -> result::Result<TlsStream<S>, HandshakeError<S>>
+    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 }
 
 /// A builder for `TlsAcceptor`s.
@@ -249,9 +232,12 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         <Self::Builder as TlsAcceptorBuilder>::supports_alpn()
     }
 
-    fn accept<S>(&self, stream: S) -> result::Result<TlsStream<S>, HandshakeError<S>>
+    fn accept<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + Send + Sync + 'static;
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 }
 
 fn _check_kinds() {
@@ -263,6 +249,4 @@ fn _check_kinds() {
     is_send::<Error>();
     is_sync::<TlsStream<TcpStream>>();
     is_send::<TlsStream<TcpStream>>();
-    is_sync::<MidHandshakeTlsStream<TcpStream>>();
-    is_send::<MidHandshakeTlsStream<TcpStream>>();
 }

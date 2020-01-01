@@ -9,7 +9,9 @@ fn test_google() {
 
 #[test]
 fn connect_bad_hostname() {
-    tls_api_test::connect_bad_hostname::<tls_api_openssl::TlsConnector>();
+    let err = tls_api_test::connect_bad_hostname::<tls_api_openssl::TlsConnector>();
+    let debug = format!("{:?}", err);
+    assert!(debug.contains("certificate verify failed"), debug);
 }
 
 #[test]
@@ -36,26 +38,4 @@ fn alpn() {
     tls_api_test::alpn::<tls_api_openssl::TlsConnector, tls_api_openssl::TlsAcceptor, _>(
         new_acceptor,
     );
-}
-
-#[test]
-fn tokio_fetch_google() {
-    tls_api_test::tokio_fetch_google::<tls_api_openssl::TlsConnector>();
-}
-
-#[test]
-fn tokio_wrong_hostname() {
-    let err = tls_api_test::tokio_wrong_hostname_error::<tls_api_openssl::TlsConnector>();
-
-    let err: openssl::ssl::Error = *err.into_inner().downcast().expect("openssl::ssl::Error");
-
-    let err = err.ssl_error().unwrap();
-
-    for err in err.errors() {
-        if err.reason() == Some("certificate verify failed") {
-            return;
-        }
-    }
-
-    panic!("wrong error: {}", err);
 }

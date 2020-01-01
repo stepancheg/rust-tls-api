@@ -15,14 +15,18 @@ extern crate void;
 
 use std::error::Error as std_Error;
 use std::fmt;
-use std::io;
-use std::result;
 
 use void::Void;
 
+use std::future::Future;
+use std::pin::Pin;
 use tls_api::Result;
+use tls_api::TlsStream;
+use tokio::io::AsyncRead;
+use tokio::io::AsyncWrite;
 
 pub struct Pkcs12(Void);
+
 pub struct Certificate(Void);
 
 pub struct TlsConnectorBuilder(Void);
@@ -83,15 +87,15 @@ impl tls_api::TlsConnector for TlsConnector {
         Err(tls_api::Error::new(Error))
     }
 
-    fn connect<S>(
-        &self,
-        _domain: &str,
+    fn connect<'a, S>(
+        &'a self,
+        _domain: &'a str,
         _stream: S,
-    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    ) -> Pin<Box<dyn Future<Output = tls_api::Result<TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Err(tls_api::HandshakeError::Failure(tls_api::Error::new(Error)))
+        Box::pin(async { Err(tls_api::Error::new(Error)) })
     }
 }
 
@@ -120,13 +124,13 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
-    fn accept<S>(
-        &self,
+    fn accept<'a, S>(
+        &'a self,
         _stream: S,
-    ) -> result::Result<tls_api::TlsStream<S>, tls_api::HandshakeError<S>>
+    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + 'a>>
     where
-        S: io::Read + io::Write + fmt::Debug + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Err(tls_api::HandshakeError::Failure(tls_api::Error::new(Error)))
+        Box::pin(async { Err(tls_api::Error::new(Error)) })
     }
 }
