@@ -7,7 +7,7 @@ use std::result;
 
 // Error
 
-pub struct Error(Box<error::Error + Send + Sync>);
+pub struct Error(Box<dyn error::Error + Send + Sync>);
 
 /// An error returned from the TLS implementation.
 impl Error {
@@ -19,18 +19,18 @@ impl Error {
         Error::new(io::Error::new(io::ErrorKind::Other, message))
     }
 
-    pub fn into_inner(self) -> Box<error::Error + Send + Sync> {
+    pub fn into_inner(self) -> Box<dyn error::Error + Send + Sync> {
         self.0
     }
 }
 
 impl error::Error for Error {
-    fn description(&self) -> &str {
-        self.0.description()
-    }
-
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         self.0.source()
+    }
+
+    fn description(&self) -> &str {
+        self.0.description()
     }
 }
 
@@ -119,7 +119,7 @@ pub trait TlsStreamImpl<S>: io::Read + io::Write + fmt::Debug + Send + Sync + 's
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
 #[derive(Debug)]
-pub struct TlsStream<S>(Box<TlsStreamImpl<S> + 'static>);
+pub struct TlsStream<S>(Box<dyn TlsStreamImpl<S> + 'static>);
 
 impl<S: 'static> TlsStream<S> {
     pub fn new<I: TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
@@ -164,7 +164,7 @@ pub trait MidHandshakeTlsStreamImpl<S>: fmt::Debug + Sync + Send + 'static {
 }
 
 #[derive(Debug)]
-pub struct MidHandshakeTlsStream<S>(Box<MidHandshakeTlsStreamImpl<S> + 'static>);
+pub struct MidHandshakeTlsStream<S>(Box<dyn MidHandshakeTlsStreamImpl<S> + 'static>);
 
 impl<S: 'static> MidHandshakeTlsStream<S> {
     pub fn new<I: MidHandshakeTlsStreamImpl<S> + 'static>(stream: I) -> MidHandshakeTlsStream<S> {
