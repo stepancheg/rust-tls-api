@@ -1,4 +1,3 @@
-extern crate futures;
 extern crate tls_api;
 extern crate tls_api_native_tls;
 extern crate tokio;

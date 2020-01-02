@@ -1,7 +1,5 @@
 //! Common implementation of tests for all TLS API implementations
 
-extern crate futures;
-
 extern crate pem;
 extern crate untrusted;
 extern crate webpki;

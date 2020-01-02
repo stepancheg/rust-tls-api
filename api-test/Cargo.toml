@@ -20,5 +20,4 @@ pem        = "0.6.*"
 webpki     = "0.19.1"
 untrusted  = "0.6.*"
 
-futures = { version = "0.3.0", features = ["async-await"] }
 tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"] }
