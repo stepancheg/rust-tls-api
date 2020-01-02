@@ -1,6 +1,6 @@
 ## [Unreleased]
 
-## [0.3.1] - 2020-01-20
+## [0.3.1] - 2020-01-02
 
 - Remove unused dependency on `futures` crate
 
