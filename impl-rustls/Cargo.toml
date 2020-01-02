@@ -13,7 +13,6 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 
 [dependencies]
 rustls = { version = "0.15.2", features = ["dangerous_configuration"] }
-futures = { version = "0.3.0", features = ["async-await"] }
 tokio = { version = "~0.2.6", features = [] }
 tls-api = { path = "../api", version = "=0.4.0-pre" }
 webpki       = "0.19.1"

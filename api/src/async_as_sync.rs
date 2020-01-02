@@ -1,11 +1,11 @@
 //! Utility used in different implementations of TLS API.
 
-use futures::task::Context;
 use std::io::Read;
 use std::io::Write;
 use std::marker;
 use std::pin::Pin;
 use std::ptr;
+use std::task::Context;
 use std::task::Poll;
 use std::{error, fmt, io};
 use tokio::io::AsyncRead;

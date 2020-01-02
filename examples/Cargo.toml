@@ -13,7 +13,6 @@ publish = false
 edition = "2018"
 
 [dependencies]
-futures = { version = "0.3.0", features = ["async-await"] }
 tokio = { version = "~0.2.6", features = ["full"] }
 tls-api = { path = "../api" }
 
