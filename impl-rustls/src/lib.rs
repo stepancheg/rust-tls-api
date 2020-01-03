@@ -250,7 +250,7 @@ impl tls_api::TlsConnector for TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + 'a>>
+    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
@@ -315,7 +315,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     fn accept<'a, S>(
         &'a self,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + 'a>>
+    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
