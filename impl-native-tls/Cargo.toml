@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-native-tls"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over native-tls crate"
 license = "MIT/Apache-2.0"
@@ -13,9 +13,9 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 
 [dependencies]
 native-tls = "0.2"
-tls-api = { path = "../api", version = "=0.3.1" }
+tls-api = { path = "../api", version = "=0.3.2" }
 
 tokio = { version = "~0.2.6", features = [] }
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", version = "=0.3.1" }
+tls-api-test = { path = "../api-test", version = "=0.3.2" }
