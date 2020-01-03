@@ -203,7 +203,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + 'a>>
+    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + Send + 'a>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 }
@@ -235,7 +235,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     fn accept<'a, S>(
         &'a self,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + 'a>>
+    ) -> Pin<Box<dyn Future<Output = Result<TlsStream<S>>> + Send + 'a>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 }
@@ -243,10 +243,32 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 fn _check_kinds() {
     use std::net::TcpStream;
 
-    fn is_sync<T: Sync>() {}
-    fn is_send<T: Send>() {}
-    is_sync::<Error>();
-    is_send::<Error>();
-    is_sync::<TlsStream<TcpStream>>();
-    is_send::<TlsStream<TcpStream>>();
+    fn assert_sync<T: Sync>() {}
+    fn assert_send<T: Send>() {}
+    fn assert_send_value<T: Send>(t: T) -> T {
+        t
+    }
+
+    assert_sync::<Error>();
+    assert_send::<Error>();
+    assert_sync::<TlsStream<TcpStream>>();
+    assert_send::<TlsStream<TcpStream>>();
+
+    fn connect_future_is_send<C, S>(c: &C, s: S)
+    where
+        C: TlsConnector,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+    {
+        let f = c.connect("dom", s);
+        assert_send_value(f);
+    }
+
+    fn accept_future_is_send<A, S>(a: &A, s: S)
+    where
+        A: TlsAcceptor,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+    {
+        let f = a.accept(s);
+        assert_send_value(f);
+    }
 }
