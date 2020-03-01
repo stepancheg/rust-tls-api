@@ -38,7 +38,6 @@ fn new_acceptor(
     tls_api_rustls::TlsAcceptorBuilder::from_certs_and_key(&certs, &(ck.1).0).expect("builder")
 }
 
-#[ignore] // TODO
 #[test]
 fn server() {
     tls_api_test::server::<tls_api_rustls::TlsConnector, tls_api_rustls::TlsAcceptor, _>(
@@ -46,7 +45,6 @@ fn server() {
     );
 }
 
-#[ignore] // TODO
 #[test]
 fn alpn() {
     tls_api_test::alpn::<tls_api_rustls::TlsConnector, tls_api_rustls::TlsAcceptor, _>(

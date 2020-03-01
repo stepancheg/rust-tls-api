@@ -12,6 +12,7 @@ extern crate tls_api;
 
 #[macro_use]
 mod t;
+mod openssl_test_key_gen;
 
 use std::thread;
 
@@ -100,8 +101,14 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
 pub struct RsaPrivateKey(pub Vec<u8>);
 pub struct Certificatex(pub Vec<u8>);
 
-/// File contents and password
-pub struct Pkcs12(pub Vec<u8>, pub String);
+/// PKCS12 and password
+#[derive(Clone)]
+pub struct Pkcs12 {
+    /// File contents
+    pub der: Vec<u8>,
+    /// Password
+    pub password: String,
+}
 
 pub struct CertificatesAndKey(pub Vec<Certificatex>, pub RsaPrivateKey);
 
@@ -125,7 +132,7 @@ impl CertificatesAndKey {
         let mut pks: Vec<_> = pems
             .iter()
             .filter_map(|p| {
-                if p.tag == "RSA PRIVATE KEY" {
+                if p.tag == "RSA PRIVATE KEY" || p.tag == "PRIVATE KEY" {
                     Some(RsaPrivateKey(p.contents.clone()))
                 } else {
                     None
@@ -133,7 +140,7 @@ impl CertificatesAndKey {
             })
             .collect();
 
-        assert!(pks.len() == 1);
+        assert!(pks.len() == 1, "found {} keys", pks.len());
 
         CertificatesAndKey(certs, pks.swap_remove(0))
     }
@@ -144,23 +151,25 @@ where
     A: TlsAcceptor,
     F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
 {
-    let pkcs12 = include_bytes!("../test/identity.p12");
-    let pkcs12 = Pkcs12(pkcs12.to_vec(), "mypass".to_owned());
+    let keys = &openssl_test_key_gen::keys().server;
 
-    let pem = include_bytes!("../test/identity.pem");
-    let pem = CertificatesAndKey::parse_pem(pem);
+    let pem = CertificatesAndKey::parse_pem(&keys.pem);
 
-    acceptor(&pkcs12, &pem)
+    acceptor(
+        &Pkcs12 {
+            der: keys.pkcs12.clone(),
+            password: keys.pkcs12_password.clone(),
+        },
+        &pem,
+    )
 }
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
-    let root_ca = include_bytes!("../test/root-ca.der");
-    let root_ca = Certificate::from_der(root_ca.to_vec());
+    let keys = openssl_test_key_gen::keys();
+    let root_ca = Certificate::from_der(keys.client.cert_der.clone());
 
     let mut connector = C::builder().expect("connector builder");
-    connector
-        .add_root_certificate(root_ca)
-        .expect("add root certificate");
+    t!(connector.add_root_certificate(root_ca));
     connector
 }
 
@@ -201,7 +210,7 @@ where
 
     let connector: C::Builder = new_connector_with_root_ca::<C>();
     let connector: C = connector.build().expect("acceptor build");
-    let mut socket = t!(connector.connect("foobar.com", socket).await);
+    let mut socket = t!(connector.connect("localhost", socket).await);
 
     t!(socket.write_all(b"hello").await);
     let mut buf = vec![];
@@ -274,7 +283,7 @@ where
         .expect("set_alpn_protocols");
 
     let connector: C = connector.build().expect("acceptor build");
-    let mut socket = t!(connector.connect("foobar.com", socket).await);
+    let mut socket = t!(connector.connect("localhost", socket).await);
 
     assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
 
