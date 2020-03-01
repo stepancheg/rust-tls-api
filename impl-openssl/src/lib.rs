@@ -214,9 +214,7 @@ impl tls_api::TlsConnector for TlsConnector {
             Ok(client_configuration) => client_configuration,
             Err(e) => return Box::pin(async { Err(tls_api::Error::new(e)) }),
         };
-        let client_configuration = client_configuration
-            .verify_hostname(self.verify_hostname)
-            .use_server_name_indication(false);
+        let client_configuration = client_configuration.verify_hostname(self.verify_hostname);
         Box::pin(HandshakeFuture::Initial(
             move |stream| client_configuration.connect(domain, stream),
             AsyncIoAsSyncIo::new(stream),
