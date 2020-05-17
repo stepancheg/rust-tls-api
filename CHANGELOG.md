@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.4.0] - 2020-05-17
+
+- Upgrade rustls dependency to 0.17.0
+
 ## [0.3.2] - 2020-01-03
 
 - Make futures returned from `connect` and `accept` `Send`
