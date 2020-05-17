@@ -1,6 +1,3 @@
-extern crate tls_api_native_tls;
-extern crate tls_api_test;
-
 #[test]
 fn test_google() {
     tls_api_test::test_google::<tls_api_native_tls::TlsConnector>()

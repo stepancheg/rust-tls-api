@@ -1,7 +1,3 @@
-extern crate openssl;
-extern crate tls_api_openssl;
-extern crate tls_api_test;
-
 #[test]
 fn test_google() {
     tls_api_test::test_google::<tls_api_openssl::TlsConnector>();

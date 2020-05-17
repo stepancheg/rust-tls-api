@@ -1,8 +1,3 @@
-extern crate rustls;
-extern crate tls_api_rustls;
-extern crate tls_api_test;
-extern crate webpki;
-
 use std::io;
 
 #[test]

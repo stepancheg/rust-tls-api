@@ -1,14 +1,7 @@
 //! Common implementation of tests for all TLS API implementations
 
-extern crate pem;
-extern crate untrusted;
-extern crate webpki;
-
 #[macro_use]
 extern crate log;
-extern crate env_logger;
-
-extern crate tls_api;
 
 #[macro_use]
 mod t;

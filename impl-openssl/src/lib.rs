@@ -1,6 +1,3 @@
-extern crate openssl;
-extern crate tls_api;
-
 use std::fmt;
 use std::io;
 use std::io::Read;

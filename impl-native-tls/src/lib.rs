@@ -1,6 +1,3 @@
-extern crate native_tls;
-extern crate tls_api;
-
 use std::fmt;
 use std::io;
 

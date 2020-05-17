@@ -1,7 +1,3 @@
-extern crate tls_api;
-extern crate tls_api_native_tls;
-extern crate tokio;
-
 use std::net::ToSocketAddrs;
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;

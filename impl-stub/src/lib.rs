@@ -10,9 +10,6 @@
 //! let no_connector: Option<TlsConnector> = None;
 //! ```
 
-extern crate tls_api;
-extern crate void;
-
 use std::error::Error as std_Error;
 use std::fmt;
 

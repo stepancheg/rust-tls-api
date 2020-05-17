@@ -1,8 +1,3 @@
-extern crate tls_api_native_tls;
-extern crate tls_api_openssl;
-extern crate tls_api_rustls;
-extern crate tls_api_test;
-
 fn openssl_new_acceptor(
     pkcs12: &tls_api_test::Pkcs12,
     _: &tls_api_test::CertificatesAndKey,

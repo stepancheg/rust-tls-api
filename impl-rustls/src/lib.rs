@@ -1,8 +1,3 @@
-extern crate rustls;
-extern crate tls_api;
-extern crate webpki;
-extern crate webpki_roots;
-
 use std::fmt;
 use std::io;
 use std::io::Read;
