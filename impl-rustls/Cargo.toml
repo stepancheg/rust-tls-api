@@ -12,11 +12,11 @@ edition = "2018"
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-rustls = { version = "0.15.2", features = ["dangerous_configuration"] }
+rustls = { version = "0.17.0", features = ["dangerous_configuration"] }
 tokio = { version = "~0.2.6", features = [] }
 tls-api = { path = "../api", version = "=0.4.0-pre" }
-webpki       = "0.19.1"
-webpki-roots = "0.16.0"
+webpki       = "0.21.2"
+webpki-roots = "0.19.0"
 
 [dev-dependencies]
 tls-api-test = { path = "../api-test", version = "=0.4.0-pre" }

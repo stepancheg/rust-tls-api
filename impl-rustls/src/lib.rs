@@ -249,12 +249,11 @@ impl tls_api::TlsConnector for TlsConnector {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        let dns_name = match DNSNameRef::try_from_ascii_str(domain)
-            .map_err(|()| tls_api::Error::new_other("invalid domain name"))
-        {
-            Ok(dns_name) => dns_name,
-            Err(e) => return Box::pin(async { Err(e) }),
-        };
+        let dns_name =
+            match DNSNameRef::try_from_ascii_str(domain).map_err(|e| tls_api::Error::new(e)) {
+                Ok(dns_name) => dns_name,
+                Err(e) => return Box::pin(async { Err(e) }),
+            };
         let tls_stream = TlsStream {
             stream: AsyncIoAsSyncIo::new(stream),
             session: rustls::ClientSession::new(&self.config, dns_name),

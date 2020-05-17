@@ -17,7 +17,7 @@ log        = "0.4"
 env_logger = "0.5"
 
 pem        = "0.6.*"
-webpki     = "0.19.1"
+webpki     = "0.21.2"
 untrusted  = "0.6.*"
 
 tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"] }
