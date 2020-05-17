@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-test"
-version = "0.4.0-pre"
+version = "0.5.0-pre"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
@@ -12,7 +12,7 @@ edition = "2018"
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { path = "../api", version = "=0.4.0-pre" }
+tls-api = { path = "../api", version = "=0.5.0-pre" }
 log        = "0.4"
 env_logger = "0.5"
 

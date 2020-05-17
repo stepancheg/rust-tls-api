@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-openssl"
-version = "0.4.0-pre"
+version = "0.5.0-pre"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over openssl crate"
 license = "MIT/Apache-2.0"
@@ -17,7 +17,7 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 openssl-sys = { version = "0.9.43" }
 openssl     = { version = "0.10.20", features = ["v102", "v110"] }
 tokio = { version = "~0.2.6", features = [] }
-tls-api = { path = "../api", version = "=0.4.0-pre" }
+tls-api = { path = "../api", version = "=0.5.0-pre" }
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", version = "=0.4.0-pre" }
+tls-api-test = { path = "../api-test", version = "=0.5.0-pre" }
