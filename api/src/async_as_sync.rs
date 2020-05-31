@@ -8,8 +8,9 @@ use std::ptr;
 use std::task::Context;
 use std::task::Poll;
 use std::{error, fmt, io};
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
+
+use crate::runtime::AsyncRead;
+use crate::runtime::AsyncWrite;
 
 /// Async IO object as sync IO.
 ///

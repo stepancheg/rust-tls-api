@@ -8,9 +8,11 @@ use std::pin::Pin;
 use std::result;
 use std::task::Context;
 use std::task::Poll;
-use tokio::prelude::*;
 
 pub mod async_as_sync;
+pub mod runtime;
+
+use runtime::{AsyncRead, AsyncWrite};
 
 // Error
 
@@ -165,8 +167,14 @@ impl<S> AsyncWrite for TlsStream<S> {
         Pin::new(&mut self.0).poll_flush(cx)
     }
 
-    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.0).poll_shutdown(cx)
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_close(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.0).poll_close(ctx)
+    }
+
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_shutdown(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.0).poll_shutdown(ctx)
     }
 }
 

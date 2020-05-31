@@ -17,10 +17,10 @@ use void::Void;
 
 use std::future::Future;
 use std::pin::Pin;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 use tls_api::Result;
 use tls_api::TlsStream;
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
 
 pub struct Pkcs12(Void);
 

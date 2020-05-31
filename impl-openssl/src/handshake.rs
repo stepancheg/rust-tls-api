@@ -9,8 +9,8 @@ use std::result;
 use std::task::Context;
 use std::task::Poll;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 
 pub(crate) enum HandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),

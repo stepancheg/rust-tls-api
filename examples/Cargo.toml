@@ -13,13 +13,19 @@ publish = false
 edition = "2018"
 
 [dependencies]
-tokio = { version = "~0.2.6", features = ["full"] }
-tls-api = { path = "../api" }
+tls-api = { path = "../api", default-features = false }
+tokio = { version = "~0.2.6", features = ["full"], optional = true }
+async-std = { version = "1.6.0", features = ["attributes"], optional = true }
+tls-api-native-tls = { path = "../impl-native-tls", default-features = false }
+
+[features]
+default = ["runtime-tokio"]
+runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-native-tls/runtime-async-std"]
+runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-native-tls/runtime-tokio"]
 
 [dev-dependencies]
 env_logger = { version = "0.5", default-features = false }
 cfg-if = "0.1"
-tls-api-native-tls = { path = "../impl-native-tls" }
 tokio = { version = "~0.2.6", features = ["net"] }
 
 [target.'cfg(all(not(target_os = "macos"), not(windows), not(target_os = "ios")))'.dev-dependencies]

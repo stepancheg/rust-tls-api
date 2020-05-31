@@ -1,12 +1,20 @@
 use std::net::ToSocketAddrs;
-use tokio::io::AsyncReadExt;
-use tokio::io::AsyncWriteExt;
+use tls_api::runtime::AsyncReadExt;
+use tls_api::runtime::AsyncWriteExt;
 
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
+
+#[cfg(feature = "runtime-async-std")]
+use async_std::main;
+#[cfg(feature = "runtime-async-std")]
+use async_std::net::TcpStream;
+#[cfg(feature = "runtime-tokio")]
+use tokio::main;
+#[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpStream;
 
-#[tokio::main]
+#[crate::main]
 async fn main() {
     let addr = "www.rust-lang.org:443"
         .to_socket_addrs()

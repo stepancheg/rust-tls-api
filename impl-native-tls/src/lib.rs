@@ -10,10 +10,10 @@ use std::task::Context;
 use std::task::Poll;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 use tls_api::Error;
 use tls_api::Result;
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
 
 mod handshake;
 
@@ -107,7 +107,14 @@ impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send> AsyncWrite fo
             .with_context_sync_to_async(cx, |stream| stream.0.flush())
     }
 
+    #[cfg(feature = "runtime-tokio")]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.0.shutdown())
+    }
+
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
             .with_context_sync_to_async(cx, |stream| stream.0.shutdown())
     }

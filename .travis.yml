@@ -11,6 +11,10 @@ rust:
 script:
   - rustc --version
   - RUST_BACKTRACE=1 cargo test --all
+  - 'for k in api api-test impl-native-tls impl-openssl impl-rustls impl-stub examples interop ; do sh -e -c "cd $k; echo Build async-stc crate $k ; RUST_BACKTRACE=1 cargo test --no-default-features --features runtime-async-std"; done'
+  # Once package-features is stable you can change the above to:
+  #- RUST_BACKTRACE=1 cargo test --all --no-default-features --features runtime-async-std
+  # You can test it on nightly: cargo +nightly test -Z package-features --all --no-default-features --features runtime-async-std
   # `cargo test --benches` and `#[feature(test)]` only works on nightly
   #- test "$TRAVIS_RUST_VERSION" != "nightly" || RUST_BACKTRACE=1 cargo test --benches
 

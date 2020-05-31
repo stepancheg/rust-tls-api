@@ -12,7 +12,7 @@ edition = "2018"
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { path = "../api", version = "=0.5.0-pre" }
+tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
 log        = "0.4"
 env_logger = "0.5"
 
@@ -20,4 +20,10 @@ pem        = "0.6.*"
 webpki     = "0.21.2"
 untrusted  = "0.6.*"
 
-tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"] }
+tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"], optional = true }
+async-std = { version = "1.6.0", features = ["attributes"], optional = true }
+
+[features]
+default = ["runtime-tokio"]
+runtime-async-std = ["async-std", "tls-api/runtime-async-std"]
+runtime-tokio = ["tokio", "tls-api/runtime-tokio"]

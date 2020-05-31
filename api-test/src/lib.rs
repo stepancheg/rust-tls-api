@@ -9,6 +9,8 @@ mod openssl_test_key_gen;
 
 use std::thread;
 
+use tls_api::runtime::AsyncReadExt;
+use tls_api::runtime::AsyncWriteExt;
 use tls_api::Certificate;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
@@ -17,12 +19,29 @@ use tls_api::TlsConnectorBuilder;
 use tls_api::TlsStream;
 
 use std::net::ToSocketAddrs;
-use tokio::io::AsyncReadExt;
-use tokio::io::AsyncWriteExt;
-use tokio::net::TcpListener;
-use tokio::net::TcpStream;
 
+#[cfg(feature = "runtime-async-std")]
+use async_std::net::TcpListener;
+#[cfg(feature = "runtime-async-std")]
+use async_std::net::TcpStream;
+#[cfg(feature = "runtime-async-std")]
+use async_std::task::block_on;
+#[cfg(feature = "runtime-tokio")]
+use std::future::Future;
+#[cfg(feature = "runtime-tokio")]
+use tokio::net::TcpListener;
+#[cfg(feature = "runtime-tokio")]
+use tokio::net::TcpStream;
+#[cfg(feature = "runtime-tokio")]
 use tokio::runtime::Runtime;
+
+#[cfg(feature = "runtime-tokio")]
+pub fn block_on<F, T>(future: F) -> T
+where
+    F: Future<Output = T>,
+{
+    t!(Runtime::new()).block_on(future)
+}
 
 async fn test_google_impl<C: TlsConnector>() {
     drop(env_logger::try_init());
@@ -50,7 +69,7 @@ async fn test_google_impl<C: TlsConnector>() {
 }
 
 pub fn test_google<C: TlsConnector>() {
-    t!(Runtime::new()).block_on(test_google_impl::<C>())
+    block_on(test_google_impl::<C>())
 }
 
 async fn connect_bad_hostname_impl<C: TlsConnector>() -> tls_api::Error {
@@ -68,7 +87,7 @@ async fn connect_bad_hostname_impl<C: TlsConnector>() -> tls_api::Error {
 }
 
 pub fn connect_bad_hostname<C: TlsConnector>() -> tls_api::Error {
-    t!(Runtime::new()).block_on(connect_bad_hostname_impl::<C>())
+    block_on(connect_bad_hostname_impl::<C>())
 }
 
 async fn connect_bad_hostname_ignored_impl<C: TlsConnector>() {
@@ -88,7 +107,7 @@ async fn connect_bad_hostname_ignored_impl<C: TlsConnector>() {
 }
 
 pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
-    t!(Runtime::new()).block_on(connect_bad_hostname_ignored_impl::<C>())
+    block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
 pub struct RsaPrivateKey(pub Vec<u8>);
@@ -181,7 +200,7 @@ where
     let acceptor = new_acceptor::<A, _>(acceptor);
 
     let acceptor: A = acceptor.build().expect("acceptor build");
-
+    #[allow(unused_mut)]
     let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
     let port = listener.local_addr().expect("local_addr").port();
 
@@ -196,7 +215,7 @@ where
 
             t!(socket.write_all(b"world").await);
         };
-        t!(Runtime::new()).block_on(future);
+        block_on(future);
     });
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
@@ -219,7 +238,7 @@ where
     A: TlsAcceptor,
     F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
 {
-    t!(Runtime::new()).block_on(server_impl::<C, A, F>(acceptor))
+    block_on(server_impl::<C, A, F>(acceptor))
 }
 
 async fn alpn_impl<C, A, F>(acceptor: F)
@@ -248,6 +267,7 @@ where
 
     let acceptor: A = t!(acceptor.build());
 
+    #[allow(unused_mut)]
     let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
     let port = listener.local_addr().expect("local_addr").port();
 
@@ -264,7 +284,7 @@ where
 
             t!(socket.write_all(b"world").await);
         };
-        t!(Runtime::new()).block_on(f);
+        block_on(f);
     });
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
@@ -294,5 +314,5 @@ where
     A: TlsAcceptor,
     F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
 {
-    t!(Runtime::new()).block_on(alpn_impl::<C, A, F>(acceptor))
+    block_on(alpn_impl::<C, A, F>(acceptor))
 }

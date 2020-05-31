@@ -5,8 +5,8 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::{fmt, io, mem};
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 
 pub(crate) enum HandshakeFuture<S, T>
 where

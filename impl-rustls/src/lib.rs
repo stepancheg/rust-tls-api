@@ -14,10 +14,10 @@ use std::task::Context;
 use std::task::Poll;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 use tls_api::Error;
 use tls_api::Result;
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
 use webpki::DNSNameRef;
 
 mod handshake;
@@ -124,7 +124,13 @@ where
         })
     }
 
+    #[cfg(feature = "runtime-tokio")]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.poll_flush(cx)
+    }
+
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.poll_flush(cx)
     }
 }
