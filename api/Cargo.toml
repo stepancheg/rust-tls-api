@@ -15,4 +15,10 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 [dependencies]
 log        = "0.4"
 
-tokio = { version = "~0.2.6", features = [] }
+futures-util = { version = "0.3.1", features = ["io"], optional = true }
+tokio = { version = "~0.2.6", features = ["io-util"], optional = true }
+
+
+[features]
+runtime-async-std = ["futures-util"]
+runtime-tokio = ["tokio"]

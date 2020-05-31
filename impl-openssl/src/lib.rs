@@ -14,8 +14,8 @@ use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::Error;
 use tls_api::Result;
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
+use tls_api::runtime::AsyncRead;
+use tls_api::runtime::AsyncWrite;
 
 mod handshake;
 
@@ -156,6 +156,7 @@ impl<S: AsyncRead + AsyncWrite + fmt::Debug + Unpin> AsyncWrite for TlsStream<S>
         self.with_context_sync_to_async(cx, |stream| stream.0.flush())
     }
 
+    #[cfg(feature = "runtime-tokio")]
     fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.with_context_sync_to_async(cx, |stream| match stream.0.shutdown() {
             Ok(_) => Ok(()),
@@ -163,6 +164,16 @@ impl<S: AsyncRead + AsyncWrite + fmt::Debug + Unpin> AsyncWrite for TlsStream<S>
             Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
         })
     }
+
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.with_context_sync_to_async(cx, |stream| match stream.0.shutdown() {
+            Ok(_) => Ok(()),
+            Err(ref e) if e.code() == openssl::ssl::ErrorCode::ZERO_RETURN => Ok(()),
+            Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
+        })
+    }
+
 }
 
 impl<S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static>
