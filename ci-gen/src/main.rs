@@ -53,18 +53,39 @@ fn runtimes() -> Vec<&'static str> {
     vec!["runtime-tokio", "runtime-async-std"]
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
+struct Os {
+    name: &'static str,
+    ghwf: &'static str,
+}
+
+const LINUX: Os = Os {
+    name: "linux",
+    ghwf: "ubuntu-latest",
+};
+const MACOS: Os = Os {
+    name: "macos",
+    ghwf: "macos-latest",
+};
+
 fn jobs() -> Yaml {
     let mut r = Vec::new();
     for rt in runtimes() {
-        for channel in &["stable", "beta", "nightly"] {
-            r.push((
-                format!("{}-{}", rt, channel),
-                Yaml::map(vec![
-                    ("name", Yaml::string(format!("{} {}", rt, channel))),
-                    ("runs-on", Yaml::string("ubuntu-latest")),
-                    ("steps", Yaml::list(steps(rt, channel))),
-                ]),
-            ))
+        for &channel in &["stable", "beta", "nightly"] {
+            for &os in &[LINUX, MACOS] {
+                if channel == "beta" && os == MACOS {
+                    // skip some jobs because macos is not expensive
+                    continue;
+                }
+                r.push((
+                    format!("{}-{}-{}", rt, os.name, channel),
+                    Yaml::map(vec![
+                        ("name", Yaml::string(format!("{} {}", rt, channel))),
+                        ("runs-on", Yaml::string(os.ghwf)),
+                        ("steps", Yaml::list(steps(rt, channel))),
+                    ]),
+                ))
+            }
         }
     }
     Yaml::map(r)
