@@ -3,10 +3,8 @@ pub use futures_util::io::AsyncRead;
 #[cfg(feature = "runtime-async-std")]
 pub use futures_util::io::AsyncWrite;
 #[cfg(feature = "runtime-async-std")]
-#[allow(unused_imports)]
 pub use futures_util::io::AsyncReadExt;
 #[cfg(feature = "runtime-async-std")]
-#[allow(unused_imports)]
 pub use futures_util::io::AsyncWriteExt;
 
 #[cfg(feature = "runtime-tokio")]
