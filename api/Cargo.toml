@@ -20,5 +20,6 @@ tokio = { version = "~0.2.6", features = ["io-util"], optional = true }
 
 
 [features]
+default = ["runtime-tokio"]
 runtime-async-std = ["futures-util"]
 runtime-tokio = ["tokio"]
