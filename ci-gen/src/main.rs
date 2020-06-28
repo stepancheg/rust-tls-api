@@ -1,22 +1,12 @@
+use crate::ghwf::Step;
+use crate::yaml::{Yaml, YamlWriter};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use crate::yaml::{Yaml, YamlWriter};
 
+mod ghwf;
 mod yaml;
-
-fn name_uses(name: &str, uses: &str) -> Yaml {
-    Yaml::map(vec![("name", name), ("uses", uses)])
-}
-
-fn name_uses_with(name: &str, uses: &str, with: Yaml) -> Yaml {
-    Yaml::map(vec![
-        ("name", Yaml::string(name)),
-        ("uses", Yaml::string(uses)),
-        ("with", with),
-    ])
-}
 
 fn crates_list() -> Vec<String> {
     assert!(Path::new("./ci-gen").exists());
@@ -32,10 +22,10 @@ fn crates_list() -> Vec<String> {
     r
 }
 
-fn steps(rt: &str) -> Vec<Yaml> {
+fn steps(rt: &str) -> Vec<Step> {
     let mut r = vec![
-        name_uses("Checkout sources", "actions/checkout@v2"),
-        name_uses_with(
+        Step::name_uses("Checkout sources", "actions/checkout@v2"),
+        Step::name_uses_with(
             "Install toolchain",
             "actions-rs/toolchain@v1",
             Yaml::map(vec![
@@ -50,7 +40,7 @@ fn steps(rt: &str) -> Vec<Yaml> {
         if c != "ci-gen" {
             args.push_str(&format!(" --no-default-features --features={}", rt));
         }
-        r.push(name_uses_with(
+        r.push(Step::name_uses_with(
             &format!("cargo test {}", c),
             "actions-rs/cargo@v1",
             Yaml::map(vec![("command", "test"), ("args", &args)]),
