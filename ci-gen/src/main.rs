@@ -74,7 +74,7 @@ fn jobs() -> Yaml {
         for &channel in &["stable", "beta", "nightly"] {
             for &os in &[LINUX, MACOS] {
                 if channel == "beta" && os == MACOS {
-                    // skip some jobs because macos is not expensive
+                    // skip some jobs because macos is expensive
                     continue;
                 }
                 r.push((
