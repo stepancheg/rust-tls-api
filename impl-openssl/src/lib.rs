@@ -43,7 +43,7 @@ fn encode_alpn_protos(protos: &[&[u8]]) -> Result<Vec<u8>> {
     let mut r = Vec::new();
     for proto in protos {
         if proto.len() > 255 {
-            return Err(Error::new_other("prototol len"));
+            return Err(Error::new_other("protocol len"));
         }
         r.push(proto.len() as u8);
         r.extend_from_slice(proto);
