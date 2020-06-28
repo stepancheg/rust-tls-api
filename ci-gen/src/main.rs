@@ -22,7 +22,7 @@ fn crates_list() -> Vec<String> {
     r
 }
 
-fn steps(rt: &str) -> Vec<Step> {
+fn steps(rt: &str, channel: &str) -> Vec<Step> {
     let mut r = vec![
         Step::name_uses("Checkout sources", "actions/checkout@v2"),
         Step::name_uses_with(
@@ -30,7 +30,7 @@ fn steps(rt: &str) -> Vec<Step> {
             "actions-rs/toolchain@v1",
             Yaml::map(vec![
                 ("profile", "minimal"),
-                ("toolchain", "${{ matrix.channel }}"),
+                ("toolchain", channel),
                 ("override", "true"),
             ]),
         ),
@@ -56,27 +56,16 @@ fn runtimes() -> Vec<&'static str> {
 fn jobs() -> Yaml {
     let mut r = Vec::new();
     for rt in runtimes() {
-        r.push((
-            format!("{}", rt),
-            Yaml::map(vec![
-                (
-                    "name",
-                    Yaml::string(format!("{} ${{{{ matrix.channel }}}}", rt)),
-                ),
-                ("runs-on", Yaml::string("ubuntu-latest")),
-                (
-                    "strategy",
-                    Yaml::map(vec![(
-                        "matrix",
-                        Yaml::map(vec![(
-                            "channel",
-                            Yaml::list(&["stable", "beta", "nightly"]),
-                        )]),
-                    )]),
-                ),
-                ("steps", Yaml::list(steps(rt))),
-            ]),
-        ))
+        for channel in &["stable", "beta", "nightly"] {
+            r.push((
+                format!("{}-{}", rt, channel),
+                Yaml::map(vec![
+                    ("name", Yaml::string(format!("{} {}", rt, channel))),
+                    ("runs-on", Yaml::string("ubuntu-latest")),
+                    ("steps", Yaml::list(steps(rt, channel))),
+                ]),
+            ))
+        }
     }
     Yaml::map(r)
 }

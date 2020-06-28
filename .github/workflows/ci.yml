@@ -5,15 +5,9 @@ on:
     - pull_request
 name: CI
 jobs:
-    runtime-tokio:
-        name: runtime-tokio ${{ matrix.channel }}
+    runtime-tokio-stable:
+        name: runtime-tokio stable
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                channel:
-                    - stable
-                    - beta
-                    - nightly
         steps:
             - name: Checkout sources
               uses: actions/checkout@v2
@@ -21,7 +15,7 @@ jobs:
               uses: actions-rs/toolchain@v1
               with:
                   profile: minimal
-                  toolchain: ${{ matrix.channel }}
+                  toolchain: stable
                   override: true
             - name: cargo test api
               uses: actions-rs/cargo@v1
@@ -68,15 +62,9 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
-    runtime-async-std:
-        name: runtime-async-std ${{ matrix.channel }}
+    runtime-tokio-beta:
+        name: runtime-tokio beta
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                channel:
-                    - stable
-                    - beta
-                    - nightly
         steps:
             - name: Checkout sources
               uses: actions/checkout@v2
@@ -84,7 +72,235 @@ jobs:
               uses: actions-rs/toolchain@v1
               with:
                   profile: minimal
-                  toolchain: ${{ matrix.channel }}
+                  toolchain: beta
+                  override: true
+            - name: cargo test api
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test api-test
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api-test/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test ci-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=ci-gen/Cargo.toml
+            - name: cargo test examples
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=examples/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-native-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-openssl
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-rustls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-stub
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-stub/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test interop
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+    runtime-tokio-nightly:
+        name: runtime-tokio nightly
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v2
+            - name: Install toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  profile: minimal
+                  toolchain: nightly
+                  override: true
+            - name: cargo test api
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test api-test
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api-test/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test ci-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=ci-gen/Cargo.toml
+            - name: cargo test examples
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=examples/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-native-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-openssl
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-rustls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test impl-stub
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-stub/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test interop
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+    runtime-async-std-stable:
+        name: runtime-async-std stable
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v2
+            - name: Install toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  profile: minimal
+                  toolchain: stable
+                  override: true
+            - name: cargo test api
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test api-test
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api-test/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test ci-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=ci-gen/Cargo.toml
+            - name: cargo test examples
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=examples/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-native-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-openssl
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-rustls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-stub
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-stub/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test interop
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+    runtime-async-std-beta:
+        name: runtime-async-std beta
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v2
+            - name: Install toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  profile: minimal
+                  toolchain: beta
+                  override: true
+            - name: cargo test api
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test api-test
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=api-test/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test ci-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=ci-gen/Cargo.toml
+            - name: cargo test examples
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=examples/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-native-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-openssl
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-rustls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test impl-stub
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-stub/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test interop
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+    runtime-async-std-nightly:
+        name: runtime-async-std nightly
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v2
+            - name: Install toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  profile: minimal
+                  toolchain: nightly
                   override: true
             - name: cargo test api
               uses: actions-rs/cargo@v1
