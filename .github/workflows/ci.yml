@@ -6,7 +6,7 @@ on:
 name: CI
 jobs:
     runtime-tokio-linux-stable:
-        name: runtime-tokio stable
+        name: runtime-tokio linux stable
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -63,7 +63,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-macos-stable:
-        name: runtime-tokio stable
+        name: runtime-tokio macos stable
         runs-on: macos-latest
         steps:
             - name: Checkout sources
@@ -120,7 +120,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-linux-beta:
-        name: runtime-tokio beta
+        name: runtime-tokio linux beta
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -177,7 +177,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-linux-nightly:
-        name: runtime-tokio nightly
+        name: runtime-tokio linux nightly
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -234,7 +234,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-macos-nightly:
-        name: runtime-tokio nightly
+        name: runtime-tokio macos nightly
         runs-on: macos-latest
         steps:
             - name: Checkout sources
@@ -291,7 +291,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-async-std-linux-stable:
-        name: runtime-async-std stable
+        name: runtime-async-std linux stable
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -348,7 +348,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-macos-stable:
-        name: runtime-async-std stable
+        name: runtime-async-std macos stable
         runs-on: macos-latest
         steps:
             - name: Checkout sources
@@ -405,7 +405,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-linux-beta:
-        name: runtime-async-std beta
+        name: runtime-async-std linux beta
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -462,7 +462,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-linux-nightly:
-        name: runtime-async-std nightly
+        name: runtime-async-std linux nightly
         runs-on: ubuntu-latest
         steps:
             - name: Checkout sources
@@ -519,7 +519,7 @@ jobs:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-macos-nightly:
-        name: runtime-async-std nightly
+        name: runtime-async-std macos nightly
         runs-on: macos-latest
         steps:
             - name: Checkout sources

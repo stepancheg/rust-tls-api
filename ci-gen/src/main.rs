@@ -80,7 +80,7 @@ fn jobs() -> Yaml {
                 r.push((
                     format!("{}-{}-{}", rt, os.name, channel),
                     Yaml::map(vec![
-                        ("name", Yaml::string(format!("{} {}", rt, channel))),
+                        ("name", Yaml::string(format!("{} {} {}", rt, os.name, channel))),
                         ("runs-on", Yaml::string(os.ghwf)),
                         ("steps", Yaml::list(steps(rt, channel))),
                     ]),
