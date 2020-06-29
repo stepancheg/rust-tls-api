@@ -23,6 +23,8 @@ untrusted  = "0.6.*"
 tokio = { version = "~0.2.6", features = ["tcp", "io-util", "dns"], optional = true }
 async-std = { version = "1.6.0", features = ["attributes"], optional = true }
 
+test-cert-gen = "0.1.0"
+
 [features]
 default = ["runtime-tokio"]
 runtime-async-std = ["async-std", "tls-api/runtime-async-std"]

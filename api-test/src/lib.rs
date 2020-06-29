@@ -5,7 +5,6 @@ extern crate log;
 
 #[macro_use]
 mod t;
-mod openssl_test_key_gen;
 
 use std::thread;
 
@@ -163,7 +162,7 @@ where
     A: TlsAcceptor,
     F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
 {
-    let keys = &openssl_test_key_gen::keys().server;
+    let keys = &test_cert_gen::keys().server;
 
     let pem = CertificatesAndKey::parse_pem(&keys.pem);
 
@@ -177,7 +176,7 @@ where
 }
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
-    let keys = openssl_test_key_gen::keys();
+    let keys = test_cert_gen::keys();
     let root_ca = Certificate::from_der(keys.client.cert_der.clone());
 
     let mut connector = C::builder().expect("connector builder");
