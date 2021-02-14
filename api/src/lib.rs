@@ -12,7 +12,8 @@ use std::task::Poll;
 pub mod async_as_sync;
 pub mod runtime;
 
-use runtime::{AsyncRead, AsyncWrite};
+use runtime::AsyncRead;
+use runtime::AsyncWrite;
 
 // Error
 

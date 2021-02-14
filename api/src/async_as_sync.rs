@@ -1,5 +1,8 @@
 //! Utility used in different implementations of TLS API.
 
+use std::error;
+use std::fmt;
+use std::io;
 use std::io::Read;
 use std::io::Write;
 use std::marker;
@@ -7,7 +10,6 @@ use std::pin::Pin;
 use std::ptr;
 use std::task::Context;
 use std::task::Poll;
-use std::{error, fmt, io};
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;

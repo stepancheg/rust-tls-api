@@ -1,10 +1,13 @@
 //! Handshake future
 
 use crate::TlsStream;
+use std::fmt;
 use std::future::Future;
+use std::io;
+use std::mem;
 use std::pin::Pin;
-use std::task::{Context, Poll};
-use std::{fmt, io, mem};
+use std::task::Context;
+use std::task::Poll;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 

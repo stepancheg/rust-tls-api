@@ -1,5 +1,6 @@
 use crate::ghwf::Step;
-use crate::yaml::{Yaml, YamlWriter};
+use crate::yaml::Yaml;
+use crate::yaml::YamlWriter;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
