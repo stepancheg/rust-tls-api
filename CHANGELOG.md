@@ -14,7 +14,7 @@
 
 ## [0.3.0] - 2020-01-02
 
-- Upgraded to tokio 2.0
+- Upgraded to tokio 0.2
 - Tokio is unconditional dependency now (and API is async only now)
 
 ## [0.2.1] - 2020-01-01
