@@ -1,3 +1,10 @@
+use crate::actions::cargo_test;
+use crate::actions::checkout_sources;
+use crate::actions::checkout_sources_depth;
+use crate::actions::rust_install_toolchain;
+use crate::actions::RustToolchain;
+use crate::ghwf::Env;
+use crate::ghwf::Job;
 use crate::ghwf::Step;
 use crate::yaml::Yaml;
 use crate::yaml::YamlWriter;
@@ -6,6 +13,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+mod actions;
 mod ghwf;
 mod yaml;
 
@@ -23,29 +31,14 @@ fn crates_list() -> Vec<String> {
     r
 }
 
-fn steps(rt: &str, channel: &str) -> Vec<Step> {
-    let mut r = vec![
-        Step::name_uses("Checkout sources", "actions/checkout@v2"),
-        Step::name_uses_with(
-            "Install toolchain",
-            "actions-rs/toolchain@v1",
-            Yaml::map(vec![
-                ("profile", "minimal"),
-                ("toolchain", channel),
-                ("override", "true"),
-            ]),
-        ),
-    ];
+fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
+    let mut r = vec![checkout_sources(), rust_install_toolchain(channel)];
     for c in crates_list() {
         let mut args = format!("--manifest-path={}/Cargo.toml", c);
         if c != "ci-gen" {
             args.push_str(&format!(" --no-default-features --features={}", rt));
         }
-        r.push(Step::name_uses_with(
-            &format!("cargo test {}", c),
-            "actions-rs/cargo@v1",
-            Yaml::map(vec![("command", "test"), ("args", &args)]),
-        ));
+        r.push(cargo_test(&format!("cargo test {}", c), &args));
     }
     r
 }
@@ -57,42 +50,85 @@ fn runtimes() -> Vec<&'static str> {
 #[derive(PartialEq, Eq, Copy, Clone)]
 struct Os {
     name: &'static str,
-    ghwf: &'static str,
+    ghwf: Env,
 }
 
 const LINUX: Os = Os {
     name: "linux",
-    ghwf: "ubuntu-latest",
+    ghwf: Env::UbuntuLatest,
 };
 const MACOS: Os = Os {
     name: "macos",
-    ghwf: "macos-latest",
+    ghwf: Env::MacosLatest,
 };
+const _WINDOWS: Os = Os {
+    name: "windows",
+    ghwf: Env::WindowsLatest,
+};
+
+fn super_linter_job() -> Job {
+    let mut steps = Vec::new();
+    steps.push(checkout_sources_depth(Some(0)));
+    steps.push(
+        Step::uses("super-linter", "github/super-linter@v3")
+            .env("VALIDATE_ALL_CODEBASE", "false")
+            .env("DEFAULT_BRANCH", "master")
+            .env("GITHUB_TOKEN", "${{ secrets.GITHUB_TOKEN }}")
+            // Too many false positives
+            .env("VALIDATE_JSCPD", "false")
+            // Too many dull reports like how we should pluralise variable names
+            .env("VALIDATE_PROTOBUF", "false"),
+    );
+    Job {
+        id: "super-linter".to_owned(),
+        name: "super-linter".to_owned(),
+        runs_on: LINUX.ghwf,
+        steps,
+        ..Default::default()
+    }
+}
+
+fn rustfmt_job() -> Job {
+    let os = LINUX;
+    let mut steps = Vec::new();
+    steps.push(checkout_sources());
+    Job {
+        id: "rustfmt-check".to_owned(),
+        name: "rustfmt check".to_owned(),
+        runs_on: os.ghwf,
+        steps,
+        ..Default::default()
+    }
+}
 
 fn jobs() -> Yaml {
     let mut r = Vec::new();
     for rt in runtimes() {
-        for &channel in &["stable", "beta", "nightly"] {
+        for &channel in &[
+            RustToolchain::Stable,
+            RustToolchain::Beta,
+            RustToolchain::Nightly,
+        ] {
             for &os in &[LINUX, MACOS] {
-                if channel == "beta" && os == MACOS {
+                if channel == RustToolchain::Beta && os == MACOS {
                     // skip some jobs because macos is expensive
                     continue;
                 }
-                r.push((
-                    format!("{}-{}-{}", rt, os.name, channel),
-                    Yaml::map(vec![
-                        (
-                            "name",
-                            Yaml::string(format!("{} {} {}", rt, os.name, channel)),
-                        ),
-                        ("runs-on", Yaml::string(os.ghwf)),
-                        ("steps", Yaml::list(steps(rt, channel))),
-                    ]),
-                ))
+                r.push(Job {
+                    id: format!("{}-{}-{}", rt, os.name, channel),
+                    name: format!("{} {} {}", rt, os.name, channel),
+                    runs_on: os.ghwf,
+                    steps: steps(rt, channel),
+                    ..Default::default()
+                });
             }
         }
     }
-    Yaml::map(r)
+
+    r.push(rustfmt_job());
+    r.push(super_linter_job());
+
+    Yaml::map(r.into_iter().map(Job::into))
 }
 
 fn main() {
