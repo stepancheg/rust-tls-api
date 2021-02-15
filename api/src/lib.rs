@@ -18,6 +18,8 @@ use runtime::AsyncWrite;
 mod cert;
 pub use cert::Cert;
 pub use cert::Pem;
+pub use cert::Pkcs12;
+pub use cert::Pkcs12AndPassword;
 pub use cert::X509Cert;
 
 // Error

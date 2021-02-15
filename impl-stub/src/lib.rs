@@ -22,10 +22,6 @@ use tls_api::runtime::AsyncWrite;
 use tls_api::Result;
 use tls_api::TlsStream;
 
-pub struct Pkcs12(Void);
-
-pub struct Certificate(Void);
-
 pub struct TlsConnectorBuilder(Void);
 pub struct TlsConnector(Void);
 

@@ -16,6 +16,7 @@ use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::Cert;
 use tls_api::Error;
+use tls_api::Pkcs12AndPassword;
 use tls_api::Result;
 
 mod handshake;
@@ -231,9 +232,12 @@ impl tls_api::TlsConnector for TlsConnector {
 // TlsAcceptor and TlsAcceptorBuilder
 
 impl TlsAcceptorBuilder {
-    pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
-        let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(Error::new)?;
-        let pkcs12 = pkcs12.parse(password).map_err(Error::new)?;
+    pub fn from_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> Result<TlsAcceptorBuilder> {
+        let pkcs12 =
+            openssl::pkcs12::Pkcs12::from_der(&pkcs12_and_password.pkcs12.0).map_err(Error::new)?;
+        let pkcs12 = pkcs12
+            .parse(&pkcs12_and_password.password)
+            .map_err(Error::new)?;
 
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())

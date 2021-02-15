@@ -11,6 +11,7 @@ runtime-async-std = ["tls-api-test/runtime-async-std", "tls-api-openssl/runtime-
 runtime-tokio = ["tls-api-test/runtime-tokio", "tls-api-openssl/runtime-tokio", "tls-api-rustls/runtime-tokio", "tls-api-native-tls/runtime-tokio"]
 
 [dependencies]
+tls-api            = { path = "../api" }
 tls-api-test       = { path = "../api-test", default-features = false }
 tls-api-openssl    = { path = "../impl-openssl", default-features = false }
 tls-api-rustls     = { path = "../impl-rustls", default-features = false }

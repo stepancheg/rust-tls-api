@@ -13,6 +13,8 @@ use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 use tls_api::Cert;
 use tls_api::Pem;
+use tls_api::Pkcs12;
+use tls_api::Pkcs12AndPassword;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
@@ -115,15 +117,6 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
 pub struct RsaPrivateKey(pub Vec<u8>);
 pub struct Certificatex(pub Vec<u8>);
 
-/// PKCS12 and password
-#[derive(Clone)]
-pub struct Pkcs12 {
-    /// File contents
-    pub der: Vec<u8>,
-    /// Password
-    pub password: String,
-}
-
 pub struct CertificatesAndKey(pub Vec<Certificatex>, pub RsaPrivateKey);
 
 impl CertificatesAndKey {
@@ -165,15 +158,15 @@ impl CertificatesAndKey {
 fn new_acceptor<A, F>(acceptor: F) -> A::Builder
 where
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
 {
     let keys = &test_cert_gen::keys().server;
 
     let pem = CertificatesAndKey::parse_pem(&keys.pem);
 
     acceptor(
-        &Pkcs12 {
-            der: keys.pkcs12.clone(),
+        &Pkcs12AndPassword {
+            pkcs12: Pkcs12(keys.pkcs12.clone()),
             password: keys.pkcs12_password.clone(),
         },
         &pem,
@@ -197,7 +190,7 @@ async fn server_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
 {
     drop(env_logger::try_init());
 
@@ -240,7 +233,7 @@ pub fn server<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
 {
     block_on(server_impl::<C, A, F>(acceptor))
 }
@@ -249,7 +242,7 @@ async fn alpn_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
 {
     drop(env_logger::try_init());
 
@@ -316,7 +309,7 @@ pub fn alpn<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
 {
     block_on(alpn_impl::<C, A, F>(acceptor))
 }

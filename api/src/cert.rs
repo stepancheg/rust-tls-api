@@ -70,3 +70,12 @@ impl Cert {
         }
     }
 }
+
+/// DER-encoded
+pub struct Pkcs12(pub Vec<u8>);
+
+/// Pair of PKCS #12 and password.
+pub struct Pkcs12AndPassword {
+    pub pkcs12: Pkcs12,
+    pub password: String,
+}

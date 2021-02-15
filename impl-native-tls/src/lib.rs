@@ -14,6 +14,7 @@ use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::Cert;
 use tls_api::Error;
+use tls_api::Pkcs12AndPassword;
 use tls_api::Result;
 
 mod handshake;
@@ -187,8 +188,9 @@ impl tls_api::TlsConnector for TlsConnector {
 // TlsAcceptor and TlsAcceptorBuilder
 
 impl TlsAcceptorBuilder {
-    pub fn from_pkcs12(pkcs12: &[u8], password: &str) -> Result<TlsAcceptorBuilder> {
-        let pkcs12 = native_tls::Identity::from_pkcs12(pkcs12, password).map_err(Error::new)?;
+    pub fn from_pkcs12(pkcs12: &Pkcs12AndPassword) -> Result<TlsAcceptorBuilder> {
+        let pkcs12 = native_tls::Identity::from_pkcs12(&pkcs12.pkcs12.0, &pkcs12.password)
+            .map_err(Error::new)?;
 
         Ok(native_tls::TlsAcceptor::builder(pkcs12)).map(TlsAcceptorBuilder)
     }
