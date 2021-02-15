@@ -28,3 +28,4 @@ runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", version = "=0.5.0-pre", default-features = false }

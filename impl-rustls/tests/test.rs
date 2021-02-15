@@ -1,5 +1,5 @@
 use std::io;
-use tls_api::Pkcs12AndPassword;
+use test_cert_gen::ServerKeys;
 
 #[test]
 fn test_google() {
@@ -26,12 +26,10 @@ fn connect_bad_hostname_ignored() {
     tls_api_test::connect_bad_hostname_ignored::<tls_api_rustls::TlsConnector>()
 }
 
-fn new_acceptor(
-    _: &Pkcs12AndPassword,
-    ck: &tls_api_test::CertificatesAndKey,
-) -> tls_api_rustls::TlsAcceptorBuilder {
-    let certs: Vec<&[u8]> = ck.0.iter().map(|c| c.0.as_ref()).collect();
-    tls_api_rustls::TlsAcceptorBuilder::from_certs_and_key(&certs, &(ck.1).0).expect("builder")
+fn new_acceptor(server_keys: &ServerKeys) -> tls_api_rustls::TlsAcceptorBuilder {
+    let cert = &server_keys.server_cert_and_key.cert;
+    let key = &server_keys.server_cert_and_key.key;
+    tls_api_rustls::TlsAcceptorBuilder::from_cert_and_key(cert, key).expect("builder")
 }
 
 #[test]

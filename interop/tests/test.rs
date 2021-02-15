@@ -1,25 +1,19 @@
-use tls_api::Pkcs12AndPassword;
+use test_cert_gen::ServerKeys;
 
-fn openssl_new_acceptor(
-    pkcs12: &Pkcs12AndPassword,
-    _: &tls_api_test::CertificatesAndKey,
-) -> tls_api_openssl::TlsAcceptorBuilder {
-    tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(pkcs12).expect("builder")
+fn openssl_new_acceptor(server_keys: &ServerKeys) -> tls_api_openssl::TlsAcceptorBuilder {
+    tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&server_keys.server_cert_and_key_pkcs12)
+        .expect("builder")
 }
 
-fn native_tls_new_acceptor(
-    pkcs12: &Pkcs12AndPassword,
-    _: &tls_api_test::CertificatesAndKey,
-) -> tls_api_native_tls::TlsAcceptorBuilder {
-    tls_api_native_tls::TlsAcceptorBuilder::from_pkcs12(pkcs12).expect("builder")
+fn native_tls_new_acceptor(server_keys: &ServerKeys) -> tls_api_native_tls::TlsAcceptorBuilder {
+    tls_api_native_tls::TlsAcceptorBuilder::from_pkcs12(&server_keys.server_cert_and_key_pkcs12)
+        .expect("builder")
 }
 
-fn rustls_new_acceptor(
-    _: &Pkcs12AndPassword,
-    ck: &tls_api_test::CertificatesAndKey,
-) -> tls_api_rustls::TlsAcceptorBuilder {
-    let certs: Vec<&[u8]> = ck.0.iter().map(|c| c.0.as_ref()).collect();
-    tls_api_rustls::TlsAcceptorBuilder::from_certs_and_key(&certs, &(ck.1).0).expect("builder")
+fn rustls_new_acceptor(server_keys: &ServerKeys) -> tls_api_rustls::TlsAcceptorBuilder {
+    let cert = &server_keys.server_cert_and_key.cert;
+    let key = &server_keys.server_cert_and_key.key;
+    tls_api_rustls::TlsAcceptorBuilder::from_cert_and_key(&cert, &key).expect("builder")
 }
 
 #[test]

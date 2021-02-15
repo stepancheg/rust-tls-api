@@ -235,18 +235,20 @@ fn to_openssl_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> Result<ParsedPk
 }
 
 impl TlsAcceptorBuilder {
-    pub fn from_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> Result<TlsAcceptorBuilder> {
-        let pkcs12 = to_openssl_pkcs12(pkcs12_and_password)?;
-
+    pub fn from_pkcs12(server_pkcs12: &Pkcs12AndPassword) -> Result<TlsAcceptorBuilder> {
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
                 .map_err(Error::new)?;
 
+        let pkcs12 = to_openssl_pkcs12(server_pkcs12)?;
         if let Some(chain) = pkcs12.chain {
             for x509 in chain {
                 builder.add_extra_chain_cert(x509).map_err(Error::new)?;
             }
+        } else {
+            // panic!("no chain");
         }
+
         builder.set_certificate(&pkcs12.cert).map_err(Error::new)?;
         builder.set_private_key(&pkcs12.pkey).map_err(Error::new)?;
 

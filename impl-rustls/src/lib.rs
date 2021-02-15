@@ -17,7 +17,9 @@ use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::Error;
+use tls_api::PrivateKey;
 use tls_api::Result;
+use tls_api::X509Cert;
 use webpki::DNSNameRef;
 
 mod handshake;
@@ -258,14 +260,11 @@ impl tls_api::TlsConnector for TlsConnector {
 // TlsAcceptor and TlsAcceptorBuilder
 
 impl TlsAcceptorBuilder {
-    pub fn from_certs_and_key(certs: &[&[u8]], key: &[u8]) -> Result<TlsAcceptorBuilder> {
+    pub fn from_cert_and_key(cert: &X509Cert, key: &PrivateKey) -> Result<TlsAcceptorBuilder> {
         let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
-        let certs = certs
-            .into_iter()
-            .map(|c| rustls::Certificate(c.to_vec()))
-            .collect();
+        let cert = rustls::Certificate(cert.as_bytes().to_vec());
         config
-            .set_single_cert(certs, rustls::PrivateKey(key.to_vec()))
+            .set_single_cert(vec![cert], rustls::PrivateKey(key.as_bytes().to_vec()))
             .map_err(tls_api::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }

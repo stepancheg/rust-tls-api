@@ -3,13 +3,15 @@ use std::fs;
 fn main() {
     let keys = test_cert_gen::gen_keys();
 
-    fs::write("server.pem", keys.server.root_ca_pem.concat().concat()).unwrap();
-    fs::write("server.pkcs12", &keys.server.root_ca_pkcs12.pkcs12.0).unwrap();
+    println!("writing server cert to server.pem");
     fs::write(
-        "server.pkcs12.password",
-        &keys.server.root_ca_pkcs12.password,
+        "server.pem",
+        keys.server.server_cert_and_key.to_pem_incorrect(),
     )
     .unwrap();
 
-    fs::write("client.der", keys.client.cert_der.as_bytes()).unwrap();
+    println!("writing root ca to ca.der");
+    fs::write("ca.der", keys.client.ca_der.as_bytes()).unwrap();
+    println!("writing root ca to ca.pem");
+    fs::write("ca.pem", keys.client.ca_der.to_pem()).unwrap();
 }

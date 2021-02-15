@@ -8,6 +8,12 @@ license = "MIT/Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["runtime-tokio"]
+runtime-async-std = ["tls-api/runtime-async-std"]
+runtime-tokio = ["tls-api/runtime-tokio"]
+
 [dependencies]
 tempdir = "0.3.7"
+pem = "0.8.3"
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }

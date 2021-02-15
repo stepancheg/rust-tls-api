@@ -11,8 +11,6 @@ use std::thread;
 
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
-use tls_api::Pem;
-use tls_api::Pkcs12AndPassword;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
@@ -29,6 +27,7 @@ use async_std::net::TcpStream;
 use async_std::task::block_on;
 #[cfg(feature = "runtime-tokio")]
 use std::future::Future;
+use test_cert_gen::ServerKeys;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpListener;
 #[cfg(feature = "runtime-tokio")]
@@ -111,62 +110,19 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
     block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
-pub struct RsaPrivateKey(pub Vec<u8>);
-pub struct Certificatex(pub Vec<u8>);
-
-pub struct CertificatesAndKey(pub Vec<Certificatex>, pub RsaPrivateKey);
-
-impl CertificatesAndKey {
-    fn parse_pem(pem: &[u8]) -> CertificatesAndKey {
-        let pems = Pem::parse(str::from_utf8(pem).unwrap());
-
-        let certs: Vec<_> = pems
-            .0
-            .iter()
-            .filter_map(|p| {
-                if p.tag == "CERTIFICATE" {
-                    Some(Certificatex(p.contents.clone()))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        assert!(certs.len() > 0);
-
-        let mut pks: Vec<_> = pems
-            .0
-            .iter()
-            .filter_map(|p| {
-                if p.tag == "RSA PRIVATE KEY" || p.tag == "PRIVATE KEY" {
-                    Some(RsaPrivateKey(p.contents.clone()))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        assert!(pks.len() == 1, "found {} keys", pks.len());
-
-        CertificatesAndKey(certs, pks.swap_remove(0))
-    }
-}
-
 fn new_acceptor<A, F>(acceptor: F) -> A::Builder
 where
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     let keys = &test_cert_gen::keys().server;
 
-    let pem = CertificatesAndKey::parse_pem(&keys.root_ca_pem.concat().concat().as_bytes());
-
-    acceptor(&keys.root_ca_pkcs12, &pem)
+    acceptor(keys)
 }
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
-    let root_ca = &keys.client.cert_der;
+    let root_ca = &keys.client.ca_der;
 
     let mut connector = C::builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca));
@@ -181,7 +137,7 @@ async fn server_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     drop(env_logger::try_init());
 
@@ -228,7 +184,7 @@ pub fn server<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     block_on(server_impl::<C, A, F>(acceptor))
 }
@@ -237,7 +193,7 @@ async fn alpn_impl<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     drop(env_logger::try_init());
 
@@ -304,7 +260,7 @@ pub fn alpn<C, A, F>(acceptor: F)
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&Pkcs12AndPassword, &CertificatesAndKey) -> A::Builder,
+    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     block_on(alpn_impl::<C, A, F>(acceptor))
 }

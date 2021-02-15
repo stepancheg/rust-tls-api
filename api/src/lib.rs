@@ -16,9 +16,10 @@ use runtime::AsyncRead;
 use runtime::AsyncWrite;
 
 mod cert;
-pub use cert::Pem;
+pub use cert::pem_to_cert_key_pair;
 pub use cert::Pkcs12;
 pub use cert::Pkcs12AndPassword;
+pub use cert::PrivateKey;
 pub use cert::X509Cert;
 
 // Error

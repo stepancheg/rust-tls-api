@@ -1,4 +1,4 @@
-use tls_api::Pkcs12AndPassword;
+use test_cert_gen::ServerKeys;
 
 #[test]
 fn test_google() {
@@ -17,11 +17,9 @@ fn connect_bad_hostname_ignored() {
     tls_api_test::connect_bad_hostname_ignored::<tls_api_openssl::TlsConnector>();
 }
 
-fn new_acceptor(
-    pkcs12: &Pkcs12AndPassword,
-    _: &tls_api_test::CertificatesAndKey,
-) -> tls_api_openssl::TlsAcceptorBuilder {
-    tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(pkcs12).expect("builder")
+fn new_acceptor(server_keys: &ServerKeys) -> tls_api_openssl::TlsAcceptorBuilder {
+    tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&server_keys.server_cert_and_key_pkcs12)
+        .expect("builder")
 }
 
 #[test]
