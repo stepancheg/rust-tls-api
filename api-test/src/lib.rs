@@ -6,12 +6,14 @@ extern crate log;
 #[macro_use]
 mod t;
 
+use std::str;
 use std::thread;
 
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 use tls_api::Cert;
 use tls_api::Der;
+use tls_api::Pem;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
@@ -126,9 +128,10 @@ pub struct CertificatesAndKey(pub Vec<Certificatex>, pub RsaPrivateKey);
 
 impl CertificatesAndKey {
     fn parse_pem(pem: &[u8]) -> CertificatesAndKey {
-        let pems = pem::parse_many(pem);
+        let pems = Pem::parse(str::from_utf8(pem).unwrap());
 
         let certs: Vec<_> = pems
+            .0
             .iter()
             .filter_map(|p| {
                 if p.tag == "CERTIFICATE" {
@@ -142,6 +145,7 @@ impl CertificatesAndKey {
         assert!(certs.len() > 0);
 
         let mut pks: Vec<_> = pems
+            .0
             .iter()
             .filter_map(|p| {
                 if p.tag == "RSA PRIVATE KEY" || p.tag == "PRIVATE KEY" {

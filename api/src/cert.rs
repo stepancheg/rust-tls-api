@@ -16,6 +16,10 @@ impl Clone for Pem {
 }
 
 impl Pem {
+    pub fn parse(input: &str) -> Pem {
+        Pem(pem::parse_many(input))
+    }
+
     pub fn concat(&self) -> String {
         let mut r = String::new();
         for p in &self.0 {
