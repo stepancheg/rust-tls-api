@@ -9,4 +9,5 @@ members = [
     "examples",
     "interop",
     "ci-gen",
+    "test-cert-gen",
 ]

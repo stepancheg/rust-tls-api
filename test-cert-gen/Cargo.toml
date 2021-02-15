@@ -1,0 +1,13 @@
+[package]
+name = "test-cert-gen"
+version = "0.5.0-pre"
+authors = ["Stiopa Koltsov <stepan.koltsov@gmail.com>"]
+edition = "2018"
+description = "Utility to generate certificates for tests (e. g. for TLS)"
+license = "MIT/Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tempdir = "0.3.7"
+tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }

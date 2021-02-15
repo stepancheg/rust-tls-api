@@ -1,5 +1,17 @@
+use std::ops::Add;
+
 #[derive(Debug, PartialEq)]
 pub struct Pem(pub Vec<pem::Pem>);
+
+impl Add for &'_ Pem {
+    type Output = Pem;
+
+    fn add(self, rhs: &Pem) -> Pem {
+        let mut r = self.clone();
+        r.0.extend(rhs.clone().0);
+        r
+    }
+}
 
 // TODO: https://github.com/jcreekmore/pem-rs/pull/26
 impl Clone for Pem {
