@@ -60,7 +60,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         let cert = match cert {
             Cert::Der(d) => native_tls::Certificate::from_der(&d.0).map_err(Error::new)?,
             Cert::Pem(p) => {
-                native_tls::Certificate::from_pem(p.0.as_bytes()).map_err(Error::new)?
+                native_tls::Certificate::from_pem(p.concat().as_bytes()).map_err(Error::new)?
             }
         };
 

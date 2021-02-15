@@ -206,7 +206,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     fn add_root_certificate(&mut self, cert: tls_api::Cert) -> Result<&mut Self> {
         match cert {
             Cert::Pem(p) => {
-                let cert = rustls::internal::pemfile::certs(&mut p.0.as_bytes())
+                let cert = rustls::internal::pemfile::certs(&mut p.concat().as_bytes())
                     .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
                 if !cert.is_empty() {
                     self.config
