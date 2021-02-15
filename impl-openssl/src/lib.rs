@@ -4,6 +4,7 @@ use std::io::Read;
 use std::io::Write;
 
 use crate::handshake::HandshakeFuture;
+use openssl::pkcs12::ParsedPkcs12;
 #[cfg(has_alpn)]
 use openssl::ssl::AlpnError;
 use std::future::Future;
@@ -231,13 +232,17 @@ impl tls_api::TlsConnector for TlsConnector {
 
 // TlsAcceptor and TlsAcceptorBuilder
 
+fn to_openssl_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> Result<ParsedPkcs12> {
+    let pkcs12 =
+        openssl::pkcs12::Pkcs12::from_der(&pkcs12_and_password.pkcs12.0).map_err(Error::new)?;
+    pkcs12
+        .parse(&pkcs12_and_password.password)
+        .map_err(Error::new)
+}
+
 impl TlsAcceptorBuilder {
     pub fn from_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> Result<TlsAcceptorBuilder> {
-        let pkcs12 =
-            openssl::pkcs12::Pkcs12::from_der(&pkcs12_and_password.pkcs12.0).map_err(Error::new)?;
-        let pkcs12 = pkcs12
-            .parse(&pkcs12_and_password.password)
-            .map_err(Error::new)?;
+        let pkcs12 = to_openssl_pkcs12(pkcs12_and_password)?;
 
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
