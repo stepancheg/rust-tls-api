@@ -10,7 +10,8 @@ use std::thread;
 
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
-use tls_api::Certificate;
+use tls_api::Cert;
+use tls_api::Der;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
@@ -177,7 +178,7 @@ where
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
-    let root_ca = Certificate::from_der(keys.client.cert_der.clone());
+    let root_ca = Cert::Der(Der(keys.client.cert_der.clone()));
 
     let mut connector = C::builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca));

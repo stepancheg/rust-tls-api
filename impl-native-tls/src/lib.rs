@@ -12,6 +12,7 @@ use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::Cert;
 use tls_api::Error;
 use tls_api::Result;
 
@@ -55,13 +56,11 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Certificate) -> Result<&mut Self> {
-        let cert = match cert.format {
-            tls_api::CertificateFormat::DER => {
-                native_tls::Certificate::from_der(&cert.bytes).map_err(Error::new)?
-            }
-            tls_api::CertificateFormat::PEM => {
-                native_tls::Certificate::from_pem(&cert.bytes).map_err(Error::new)?
+    fn add_root_certificate(&mut self, cert: tls_api::Cert) -> Result<&mut Self> {
+        let cert = match cert {
+            Cert::Der(d) => native_tls::Certificate::from_der(&d.0).map_err(Error::new)?,
+            Cert::Pem(p) => {
+                native_tls::Certificate::from_pem(p.0.as_bytes()).map_err(Error::new)?
             }
         };
 

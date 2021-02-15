@@ -16,8 +16,9 @@ use runtime::AsyncRead;
 use runtime::AsyncWrite;
 
 mod cert;
-pub use cert::Certificate;
-pub use cert::CertificateFormat;
+pub use cert::Cert;
+pub use cert::Der;
+pub use cert::Pem;
 
 // Error
 
@@ -162,7 +163,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     fn set_verify_hostname(&mut self, verify: bool) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: Certificate) -> Result<&mut Self>;
+    fn add_root_certificate(&mut self, cert: Cert) -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;
 }
