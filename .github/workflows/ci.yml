@@ -62,6 +62,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-macos-stable:
         name: runtime-tokio macos stable
         runs-on: macos-latest
@@ -119,6 +124,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-linux-beta:
         name: runtime-tokio linux beta
         runs-on: ubuntu-latest
@@ -176,6 +186,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-linux-nightly:
         name: runtime-tokio linux nightly
         runs-on: ubuntu-latest
@@ -233,6 +248,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-tokio-macos-nightly:
         name: runtime-tokio macos nightly
         runs-on: macos-latest
@@ -290,6 +310,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-tokio
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
     runtime-async-std-linux-stable:
         name: runtime-async-std linux stable
         runs-on: ubuntu-latest
@@ -347,6 +372,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-macos-stable:
         name: runtime-async-std macos stable
         runs-on: macos-latest
@@ -404,6 +434,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-linux-beta:
         name: runtime-async-std linux beta
         runs-on: ubuntu-latest
@@ -461,6 +496,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-linux-nightly:
         name: runtime-async-std linux nightly
         runs-on: ubuntu-latest
@@ -518,6 +558,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
     runtime-async-std-macos-nightly:
         name: runtime-async-std macos nightly
         runs-on: macos-latest
@@ -575,6 +620,11 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=interop/Cargo.toml --no-default-features --features=runtime-async-std
+            - name: cargo test test-cert-gen
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
     rustfmt-check:
         name: rustfmt check
         runs-on: ubuntu-latest
