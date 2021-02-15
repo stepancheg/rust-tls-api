@@ -12,13 +12,13 @@ use std::thread;
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 use tls_api::Cert;
-use tls_api::Der;
 use tls_api::Pem;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tls_api::TlsStream;
+use tls_api::X509Cert;
 
 use std::net::ToSocketAddrs;
 
@@ -182,7 +182,7 @@ where
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
-    let root_ca = Cert::Der(Der::new(keys.client.cert_der.clone()));
+    let root_ca = Cert::Der(X509Cert::new(keys.client.cert_der.clone()));
 
     let mut connector = C::builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca));

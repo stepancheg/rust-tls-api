@@ -17,8 +17,8 @@ use runtime::AsyncWrite;
 
 mod cert;
 pub use cert::Cert;
-pub use cert::Der;
 pub use cert::Pem;
+pub use cert::X509Cert;
 
 // Error
 

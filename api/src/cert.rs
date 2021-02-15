@@ -29,16 +29,17 @@ impl Pem {
     }
 }
 
+/// DER-encoded X.509 certificate.
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct Der(Vec<u8>);
+pub struct X509Cert(Vec<u8>);
 
-impl Der {
+impl X509Cert {
     // TODO: result
-    pub fn new(cert_der: impl Into<Vec<u8>>) -> Der {
+    pub fn new(cert_der: impl Into<Vec<u8>>) -> X509Cert {
         let cert_der = cert_der.into();
         // Validate
         webpki::EndEntityCert::from(&cert_der).unwrap();
-        Der(cert_der)
+        X509Cert(cert_der)
     }
 
     pub fn as_bytes(&self) -> &[u8] {
@@ -50,11 +51,11 @@ impl Der {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Cert {
     Pem(Pem),
-    Der(Der),
+    Der(X509Cert),
 }
 
 impl Cert {
-    pub fn into_der(self) -> Option<Der> {
+    pub fn into_der(self) -> Option<X509Cert> {
         // TODO: there are methods to convert PEM->DER which might be used here
         match self {
             Cert::Der(d) => Some(d),
