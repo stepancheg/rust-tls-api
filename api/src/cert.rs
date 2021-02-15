@@ -30,7 +30,21 @@ impl Pem {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct Der(pub Vec<u8>);
+pub struct Der(Vec<u8>);
+
+impl Der {
+    // TODO: result
+    pub fn new(cert_der: impl Into<Vec<u8>>) -> Der {
+        let cert_der = cert_der.into();
+        // Validate
+        webpki::EndEntityCert::from(&cert_der).unwrap();
+        Der(cert_der)
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
 
 // X.509 certificate
 #[derive(Debug, PartialEq, Clone)]

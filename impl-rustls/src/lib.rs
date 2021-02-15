@@ -216,7 +216,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
                 }
             }
             Cert::Der(d) => {
-                let cert = rustls::Certificate(d.0);
+                let cert = rustls::Certificate(d.as_bytes().to_vec());
                 self.config
                     .root_store
                     .add(&cert)
