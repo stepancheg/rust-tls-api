@@ -11,3 +11,5 @@ members = [
     "ci-gen",
     "test-cert-gen",
 ]
+
+[patch.crates-io]
