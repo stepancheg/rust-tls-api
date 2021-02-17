@@ -193,19 +193,23 @@ where
     let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
     let port = listener.local_addr().expect("local_addr").port();
 
-    let j = thread::spawn(move || {
-        let future = async {
-            let socket = t!(listener.accept().await).0;
-            let mut socket = t!(acceptor.accept(socket).await);
+    let server_thread_name = format!("{}-server", thread::current().name().unwrap_or("test"));
+    let j = thread::Builder::new()
+        .name(server_thread_name)
+        .spawn(move || {
+            let future = async {
+                let socket = t!(listener.accept().await).0;
+                let mut socket = t!(acceptor.accept(socket).await);
 
-            let mut buf = [0; 5];
-            t!(socket.read_exact(&mut buf).await);
-            assert_eq!(&buf, b"hello");
+                let mut buf = [0; 5];
+                t!(socket.read_exact(&mut buf).await);
+                assert_eq!(&buf, b"hello");
 
-            t!(socket.write_all(b"world").await);
-        };
-        block_on(future);
-    });
+                t!(socket.write_all(b"world").await);
+            };
+            block_on(future);
+        })
+        .unwrap();
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
