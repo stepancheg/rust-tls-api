@@ -19,6 +19,7 @@ mod acceptor;
 mod connector;
 mod error;
 mod stream;
+mod stream_dyn;
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
