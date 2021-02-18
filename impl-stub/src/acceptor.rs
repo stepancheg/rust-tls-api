@@ -35,7 +35,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<'a, S>(&'a self, _stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         BoxFuture::new(async { Err(tls_api::Error::new(Error)) })
     }

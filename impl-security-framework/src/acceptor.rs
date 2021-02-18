@@ -33,9 +33,13 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         let _ = stream;
         unimplemented!()
+        // BoxFuture::new(HandshakeFuture::Initial(
+        //     move |s| self.0.handshake(s),
+        //     AsyncIoAsSyncIo::new(stream),
+        // ))
     }
 }

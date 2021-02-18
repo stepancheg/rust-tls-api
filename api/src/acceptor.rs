@@ -51,11 +51,11 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static;
 
     fn accept_dyn<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStreamDyn>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         BoxFuture::new(async move { self.accept(stream).await.map(TlsStreamDyn::new) })
     }
