@@ -1,4 +1,3 @@
-mod handshake;
 mod stream;
 
 mod acceptor;

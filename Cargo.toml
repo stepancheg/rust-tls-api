@@ -5,6 +5,7 @@ members = [
     "impl-native-tls",
     "impl-openssl",
     "impl-rustls",
+    "impl-security-framework",
     "impl-stub",
     "examples",
     "interop",
