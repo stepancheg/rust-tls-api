@@ -19,7 +19,7 @@ pub(crate) enum HandshakeFuture<F, S: Unpin> {
 
 impl<F, A> Future for HandshakeFuture<F, A>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     F: FnOnce(
         AsyncIoAsSyncIo<A>,
     ) -> result::Result<
@@ -49,7 +49,9 @@ where
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(native_tls::HandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::MidHandshake(mut stream) => {
@@ -66,7 +68,9 @@ where
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(native_tls::HandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),

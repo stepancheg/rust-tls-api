@@ -132,11 +132,11 @@ pub fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
     }
 }
 
-pub trait AsyncWrapperOps<A>: fmt::Debug + Unpin + Send + Sync + 'static
+pub trait AsyncWrapperOps<A>: fmt::Debug + Unpin + Send + 'static
 where
     A: Unpin,
 {
-    type SyncWrapper: Read + Write + Unpin + Send + Sync + 'static;
+    type SyncWrapper: Read + Write + Unpin + Send + 'static;
 
     fn debug(w: &Self::SyncWrapper) -> &dyn fmt::Debug;
 
@@ -301,7 +301,7 @@ where
 
 impl<A, O> TlsStreamImpl<A> for TlsStreamOverSyncIo<A, O>
 where
-    A: fmt::Debug + Unpin + Send + Sync + 'static,
+    A: fmt::Debug + Unpin + Send + 'static,
     O: AsyncWrapperOps<A>,
 {
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
