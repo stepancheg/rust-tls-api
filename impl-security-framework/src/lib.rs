@@ -2,6 +2,7 @@ mod stream;
 
 mod acceptor;
 mod connector;
+mod handshake;
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;

@@ -1,4 +1,5 @@
 //! Utility used in different implementations of TLS API.
+//! Not needed for regular users of the library.
 
 use std::error;
 use std::fmt;

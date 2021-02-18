@@ -1,10 +1,10 @@
-//! Handshake future
-
+use security_framework::secure_transport::ClientHandshakeError;
+use security_framework::secure_transport::MidHandshakeClientBuilder;
+use security_framework::secure_transport::SslStream;
 use std::fmt;
 use std::future::Future;
 use std::mem;
 use std::pin::Pin;
-use std::result;
 use std::task::Context;
 use std::task::Poll;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
@@ -13,7 +13,7 @@ use tls_api::runtime::AsyncWrite;
 
 pub(crate) enum HandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
-    MidHandshake(native_tls::MidHandshakeTlsStream<AsyncIoAsSyncIo<S>>),
+    MidHandshake(MidHandshakeClientBuilder<AsyncIoAsSyncIo<S>>),
     Done,
 }
 
@@ -22,10 +22,8 @@ where
     S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
     F: FnOnce(
         AsyncIoAsSyncIo<S>,
-    ) -> result::Result<
-        native_tls::TlsStream<AsyncIoAsSyncIo<S>>,
-        native_tls::HandshakeError<AsyncIoAsSyncIo<S>>,
-    >,
+    )
+        -> Result<SslStream<AsyncIoAsSyncIo<S>>, ClientHandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
     type Output = tls_api::Result<tls_api::TlsStream<S>>;
@@ -44,12 +42,14 @@ where
                                 stream,
                             ))));
                         }
-                        Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
+                        Err(ClientHandshakeError::Interrupted(mut mid)) => {
                             mid.get_mut().unset_context();
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(ClientHandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::MidHandshake(mut stream) => {
@@ -61,12 +61,14 @@ where
                                 stream,
                             ))));
                         }
-                        Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
+                        Err(ClientHandshakeError::Interrupted(mut mid)) => {
                             mid.get_mut().unset_context();
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(ClientHandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),
