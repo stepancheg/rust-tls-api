@@ -38,7 +38,9 @@ fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
         if c != "ci-gen" {
             args.push_str(&format!(" --no-default-features --features={}", rt));
         }
-        r.push(cargo_test(&format!("cargo test {}", c), &args));
+        let mut step = cargo_test(&format!("cargo test {}", c), &args);
+        step.timeout_minutes = Some(2);
+        r.push(step);
     }
     r
 }

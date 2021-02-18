@@ -34,6 +34,7 @@ pub struct Step {
     pub run: Option<String>,
     pub shell: Option<String>,
     pub env: Vec<(String, String)>,
+    pub timeout_minutes: Option<u32>,
 }
 
 impl Step {
@@ -93,6 +94,7 @@ impl Into<Yaml> for Step {
             run,
             shell,
             env,
+            timeout_minutes,
         } = self;
         let mut entries = Vec::new();
         entries.push(("name", Yaml::string(name)));
@@ -110,6 +112,9 @@ impl Into<Yaml> for Step {
         }
         if !env.is_empty() {
             entries.push(("env", Yaml::map(env)));
+        }
+        if let Some(timeout_minutes) = timeout_minutes {
+            entries.push(("timeout-minutes", Yaml::String(timeout_minutes.to_string())));
         }
         Yaml::map(entries)
     }
