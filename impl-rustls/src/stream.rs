@@ -1,3 +1,4 @@
+use rustls::StreamOwned;
 use std::fmt;
 use std::io;
 use std::io::Read;
@@ -15,8 +16,7 @@ where
     S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: rustls::Session + Unpin + 'static,
 {
-    pub stream: AsyncIoAsSyncIo<S>,
-    pub session: T,
+    pub stream: StreamOwned<T, AsyncIoAsSyncIo<S>>,
 }
 
 // TODO: do not require Sync from TlsStream
@@ -36,7 +36,7 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("TlsStream")
-            .field("stream", &self.stream)
+            .field("stream", &self.stream.sock)
             .field("session", &"...")
             .finish()
     }
@@ -48,7 +48,7 @@ where
     T: rustls::Session + Unpin + 'static,
 {
     fn get_mut(&mut self) -> &mut AsyncIoAsSyncIo<S> {
-        &mut self.stream
+        &mut self.stream.sock
     }
 }
 
@@ -63,13 +63,7 @@ where
         cx: &mut Context<'_>,
         buf: &mut tokio::io::ReadBuf,
     ) -> Poll<io::Result<()>> {
-        self.with_context_sync_to_async_tokio(cx, buf, |s, buf| {
-            rustls::Stream {
-                sock: &mut s.stream,
-                sess: &mut s.session,
-            }
-            .read(buf)
-        })
+        self.with_context_sync_to_async_tokio(cx, buf, |s, buf| s.stream.read(buf))
     }
 
     #[cfg(feature = "runtime-async-std")]
@@ -98,23 +92,11 @@ where
         cx: &mut Context<'_>,
         buf: &[u8],
     ) -> Poll<io::Result<usize>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .write(buf)
-        })
+        self.with_context_sync_to_async(cx, |stream| stream.stream.write(buf))
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .flush()
-        })
+        self.with_context_sync_to_async(cx, |stream| stream.stream.flush())
     }
 
     #[cfg(feature = "runtime-tokio")]
@@ -134,14 +116,14 @@ where
     T: rustls::Session + Unpin + 'static,
 {
     fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        self.session.get_alpn_protocol().map(Vec::from)
+        self.stream.sess.get_alpn_protocol().map(Vec::from)
     }
 
     fn get_mut(&mut self) -> &mut S {
-        self.stream.get_inner_mut()
+        self.stream.sock.get_inner_mut()
     }
 
     fn get_ref(&self) -> &S {
-        self.stream.get_inner_ref()
+        self.stream.sock.get_inner_ref()
     }
 }

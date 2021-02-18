@@ -1,4 +1,5 @@
 use crate::handshake::HandshakeFuture;
+use rustls::StreamOwned;
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
@@ -108,8 +109,10 @@ impl tls_api::TlsConnector for TlsConnector {
                 Err(e) => return Box::pin(async { Err(e) }),
             };
         let tls_stream = crate::TlsStream {
-            stream: AsyncIoAsSyncIo::new(stream),
-            session: rustls::ClientSession::new(&self.config, dns_name),
+            stream: StreamOwned {
+                sess: rustls::ClientSession::new(&self.config, dns_name),
+                sock: AsyncIoAsSyncIo::new(stream),
+            },
         };
 
         Box::pin(HandshakeFuture::MidHandshake(tls_stream))

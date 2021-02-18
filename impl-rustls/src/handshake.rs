@@ -33,15 +33,15 @@ where
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::MidHandshake(mut stream) => {
                     // sanity check
-                    assert!(stream.session.is_handshaking());
-                    stream.stream.set_context(cx);
-                    match stream.session.complete_io(&mut stream.stream) {
+                    assert!(stream.stream.sess.is_handshaking());
+                    stream.stream.sock.set_context(cx);
+                    match stream.stream.sess.complete_io(&mut stream.stream.sock) {
                         Ok(_) => {
-                            stream.stream.unset_context();
+                            stream.stream.sock.unset_context();
                             return Poll::Ready(Ok(tls_api::TlsStream::new(stream)));
                         }
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                            stream.stream.unset_context();
+                            stream.stream.sock.unset_context();
                             *self_mut = HandshakeFuture::MidHandshake(stream);
                             return Poll::Pending;
                         }
