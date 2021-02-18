@@ -5,7 +5,7 @@ use tls_api::X509Cert;
 use tls_api_test::block_on;
 
 #[cfg(feature = "runtime-async-std")]
-use async_std::net::TcpListener;
+use async_std::net::TcpStream;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpStream;
 

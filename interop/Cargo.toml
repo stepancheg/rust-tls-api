@@ -7,11 +7,12 @@ edition = "2018"
 description = "Test different implementations compatible with each other"
 
 [features]
+default = ["runtime-tokio"]
 runtime-async-std = ["tls-api-test/runtime-async-std", "tls-api-openssl/runtime-async-std", "tls-api-rustls/runtime-async-std", "tls-api-native-tls/runtime-async-std"]
 runtime-tokio = ["tls-api-test/runtime-tokio", "tls-api-openssl/runtime-tokio", "tls-api-rustls/runtime-tokio", "tls-api-native-tls/runtime-tokio"]
 
 [dependencies]
-tls-api            = { path = "../api" }
+tls-api            = { path = "../api", default-features = false }
 tls-api-test       = { path = "../api-test", default-features = false }
 tls-api-openssl    = { path = "../impl-openssl", default-features = false }
 tls-api-rustls     = { path = "../impl-rustls", default-features = false }
