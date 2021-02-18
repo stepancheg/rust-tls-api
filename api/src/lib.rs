@@ -29,6 +29,7 @@ pub use error::Error;
 pub use error::Result;
 pub use stream::TlsStream;
 pub use stream::TlsStreamImpl;
+pub use stream_dyn::TlsStreamDyn;
 
 fn _check_kinds() {
     use std::net::TcpStream;
