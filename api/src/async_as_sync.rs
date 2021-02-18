@@ -14,6 +14,8 @@ use std::task::Poll;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
+use crate::TlsStreamImpl;
+use std::marker::PhantomData;
 
 /// Async IO object as sync IO.
 ///
@@ -190,5 +192,177 @@ pub fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
         )),
         Poll::Ready(Err(e)) => Err(e),
         Poll::Pending => Err(io::Error::from(io::ErrorKind::WouldBlock)),
+    }
+}
+
+pub trait AsyncWrapperOps<A>: fmt::Debug + Unpin + Send + Sync + 'static
+where
+    A: Unpin,
+{
+    type SyncWrapper: Read + Write + fmt::Debug + Unpin + Send + Sync + 'static;
+
+    fn get_mut(w: &mut Self::SyncWrapper) -> &mut AsyncIoAsSyncIo<A>;
+    fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A>;
+
+    fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()>;
+
+    fn get_alpn_protocols(w: &Self::SyncWrapper) -> Option<Vec<u8>>;
+}
+
+#[derive(Debug)]
+pub struct TlsStreamOverSyncIo<A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    pub stream: O::SyncWrapper,
+    _phantom: PhantomData<(A, O)>,
+}
+
+struct Guard2<'a, A, O>(&'a mut TlsStreamOverSyncIo<A, O>)
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>;
+
+impl<'a, A, O> Drop for Guard2<'a, A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    fn drop(&mut self) {
+        unsafe {
+            let s = O::get_mut(&mut self.0.stream);
+            s.unset_context();
+        }
+    }
+}
+
+impl<A, O> TlsStreamOverSyncIo<A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    pub fn new(stream: O::SyncWrapper) -> TlsStreamOverSyncIo<A, O> {
+        TlsStreamOverSyncIo {
+            stream,
+            _phantom: PhantomData,
+        }
+    }
+
+    fn with_context<F, R>(&mut self, cx: &mut Context<'_>, f: F) -> R
+    where
+        F: FnOnce(&mut Self) -> R,
+    {
+        unsafe {
+            let s = O::get_mut(&mut self.stream);
+            s.set_context(cx);
+            let g = Guard2(self);
+            f(g.0)
+        }
+    }
+
+    fn with_context_sync_to_async<F, R>(
+        &mut self,
+        cx: &mut Context<'_>,
+        f: F,
+    ) -> Poll<io::Result<R>>
+    where
+        F: FnOnce(&mut Self) -> io::Result<R>,
+    {
+        result_to_poll(Self::with_context(self, cx, f))
+    }
+
+    #[cfg(feature = "runtime-tokio")]
+    fn with_context_sync_to_async_tokio<F>(
+        &mut self,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf,
+        f: F,
+    ) -> Poll<io::Result<()>>
+    where
+        F: FnOnce(&mut Self, &mut [u8]) -> io::Result<usize>,
+    {
+        self.with_context_sync_to_async(cx, |s| {
+            let unfilled = buf.initialize_unfilled();
+            let read = f(s, unfilled)?;
+            buf.advance(read);
+            Ok(())
+        })
+    }
+}
+
+impl<A, O> AsyncRead for TlsStreamOverSyncIo<A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf,
+    ) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async_tokio(cx, buf, |s, buf| s.stream.read(buf))
+    }
+
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<io::Result<usize>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |s| s.stream.read(buf))
+    }
+}
+
+impl<A, O> AsyncWrite for TlsStreamOverSyncIo<A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.stream.write(buf))
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
+    }
+
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| O::shutdown(&mut stream.stream))
+    }
+
+    #[cfg(feature = "runtime-async-std")]
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async(cx, |stream| O::shutdown(&mut stream.stream))
+    }
+}
+
+impl<A, O> TlsStreamImpl<A> for TlsStreamOverSyncIo<A, O>
+where
+    A: fmt::Debug + Unpin + Send + Sync + 'static,
+    O: AsyncWrapperOps<A>,
+{
+    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+        O::get_alpn_protocols(&self.stream)
+    }
+
+    fn get_mut(&mut self) -> &mut A {
+        O::get_mut(&mut self.stream).get_inner_mut()
+    }
+
+    fn get_ref(&self) -> &A {
+        O::get_ref(&self.stream).get_inner_ref()
     }
 }

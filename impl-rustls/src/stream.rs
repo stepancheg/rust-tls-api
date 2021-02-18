@@ -72,13 +72,7 @@ where
         cx: &mut Context<'_>,
         buf: &mut [u8],
     ) -> Poll<io::Result<usize>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .read(buf)
-        })
+        self.with_context_sync_to_async(cx, |s| s.stream.read(buf))
     }
 }
 

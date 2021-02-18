@@ -1,5 +1,6 @@
 //! Handshake future
 
+use crate::stream::NativeTlsOps;
 use std::fmt;
 use std::future::Future;
 use std::mem;
@@ -17,18 +18,18 @@ pub(crate) enum HandshakeFuture<F, S: Unpin> {
     Done,
 }
 
-impl<F, S> Future for HandshakeFuture<F, S>
+impl<F, A> Future for HandshakeFuture<F, A>
 where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
     F: FnOnce(
-        AsyncIoAsSyncIo<S>,
+        AsyncIoAsSyncIo<A>,
     ) -> result::Result<
-        native_tls::TlsStream<AsyncIoAsSyncIo<S>>,
-        native_tls::HandshakeError<AsyncIoAsSyncIo<S>>,
+        native_tls::TlsStream<AsyncIoAsSyncIo<A>>,
+        native_tls::HandshakeError<AsyncIoAsSyncIo<A>>,
     >,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStream<S>>;
+    type Output = tls_api::Result<tls_api::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let self_mut = self.get_mut();
@@ -40,9 +41,12 @@ where
                     match f(stream) {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
-                                stream,
-                            ))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                tls_api::async_as_sync::TlsStreamOverSyncIo::<
+                                    A,
+                                    NativeTlsOps<native_tls::TlsStream<AsyncIoAsSyncIo<A>>, A>,
+                                >::new(stream),
+                            )));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
@@ -57,9 +61,12 @@ where
                     match stream.handshake() {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
-                                stream,
-                            ))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                tls_api::async_as_sync::TlsStreamOverSyncIo::<
+                                    A,
+                                    NativeTlsOps<native_tls::TlsStream<AsyncIoAsSyncIo<A>>, A>,
+                                >::new(stream),
+                            )));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
