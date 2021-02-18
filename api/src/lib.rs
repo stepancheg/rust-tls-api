@@ -44,7 +44,7 @@ fn _check_kinds() {
 
     assert_sync::<Error>();
     assert_send::<Error>();
-    assert_sync::<TlsStream<TcpStream>>();
+    // assert_sync::<TlsStream<TcpStream>>();
     assert_send::<TlsStream<TcpStream>>();
 
     fn connect_future_is_send<C, S>(c: &C, s: S)

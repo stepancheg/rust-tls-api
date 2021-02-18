@@ -8,9 +8,7 @@ use std::task::Poll;
 
 /// Trait to be used by API implementors (like openssl),
 /// not meant to be used directly.
-pub trait TlsStreamImpl<S>:
-    AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send + Sync + 'static
-{
+pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send + 'static {
     /// Get negotiated ALPN protocol.
     fn get_alpn_protocol(&self) -> Option<Vec<u8>>;
 
@@ -29,10 +27,10 @@ pub trait TlsStreamImpl<S>:
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
 #[derive(Debug)]
-pub struct TlsStream<S: 'static>(Box<dyn TlsStreamImpl<S> + 'static>);
+pub struct TlsStream<S: 'static>(Box<dyn TlsStreamImpl<S>>);
 
 impl<S: 'static> TlsStream<S> {
-    pub fn new<I: TlsStreamImpl<S> + 'static>(imp: I) -> TlsStream<S> {
+    pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
     }
 
