@@ -39,7 +39,7 @@ fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
             args.push_str(&format!(" --no-default-features --features={}", rt));
         }
         let mut step = cargo_test(&format!("cargo test {}", c), &args);
-        step.timeout_minutes = Some(2);
+        step.timeout_minutes = Some(5);
         r.push(step);
     }
     r
