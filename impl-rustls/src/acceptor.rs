@@ -2,13 +2,12 @@ use crate::handshake::HandshakeFuture;
 use rustls::NoClientAuth;
 use rustls::StreamOwned;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 use tls_api::PrivateKey;
 use tls_api::X509Cert;
 
@@ -54,10 +53,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(config))
     }
 
-    fn accept<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
+    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
@@ -66,6 +62,6 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
             sess: rustls::ServerSession::new(&self.0),
         });
 
-        Box::pin(HandshakeFuture::MidHandshake(tls_stream))
+        BoxFuture::new(HandshakeFuture::MidHandshake(tls_stream))
     }
 }

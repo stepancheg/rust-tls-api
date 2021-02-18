@@ -7,8 +7,6 @@ use crate::PrivateKey;
 use crate::TlsStream;
 use crate::X509Cert;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 
 /// A builder for `TlsAcceptor`s.
 pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
@@ -51,10 +49,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         ))
     }
 
-    fn accept<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> Pin<Box<dyn Future<Output = crate::Result<TlsStream<S>>> + Send + 'a>>
+    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 

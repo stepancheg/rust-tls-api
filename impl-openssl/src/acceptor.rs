@@ -3,11 +3,10 @@ use crate::handshake::HandshakeFuture;
 use crate::HAS_ALPN;
 use openssl::pkcs12::ParsedPkcs12;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 use tls_api::Pkcs12AndPassword;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
@@ -96,14 +95,11 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(builder))
     }
 
-    fn accept<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
+    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Box::pin(HandshakeFuture::Initial(
+        BoxFuture::new(HandshakeFuture::Initial(
             move |stream| self.0.accept(stream),
             AsyncIoAsSyncIo::new(stream),
         ))
