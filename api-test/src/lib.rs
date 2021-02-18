@@ -19,8 +19,6 @@ use tls_api::TlsStream;
 
 use std::net::ToSocketAddrs;
 
-use test_cert_gen::ServerKeys;
-
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpListener;
 #[cfg(feature = "runtime-async-std")]
@@ -109,14 +107,22 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
     block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
-fn new_acceptor<A, F>(acceptor: F) -> A::Builder
+fn new_acceptor<A>() -> A::Builder
 where
     A: TlsAcceptor,
-    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     let keys = &test_cert_gen::keys().server;
 
-    acceptor(keys)
+    if A::Builder::SUPPORTS_PKCS12_KEYS {
+        t!(A::builder_from_pkcs12(&keys.server_cert_and_key_pkcs12))
+    } else if A::Builder::SUPPORTS_DER_KEYS {
+        t!(A::builder_from_der_key(
+            &keys.server_cert_and_key.cert,
+            &keys.server_cert_and_key.key
+        ))
+    } else {
+        panic!("no keys supported for builder")
+    }
 }
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
@@ -132,15 +138,14 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
 // https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
 const BIND_HOST: &str = "127.0.0.1";
 
-async fn server_impl<C, A, F>(acceptor: F)
+async fn server_impl<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     drop(env_logger::try_init());
 
-    let acceptor = new_acceptor::<A, _>(acceptor);
+    let acceptor = new_acceptor::<A>();
 
     let acceptor: A = acceptor.build().expect("acceptor build");
     #[allow(unused_mut)]
@@ -179,20 +184,18 @@ where
     j.join().expect("thread join");
 }
 
-pub fn server<C, A, F>(acceptor: F)
+pub fn server<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&ServerKeys) -> A::Builder,
 {
-    block_on(server_impl::<C, A, F>(acceptor))
+    block_on(server_impl::<C, A>())
 }
 
-async fn alpn_impl<C, A, F>(acceptor: F)
+async fn alpn_impl<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&ServerKeys) -> A::Builder,
 {
     drop(env_logger::try_init());
 
@@ -206,7 +209,7 @@ where
         return;
     }
 
-    let mut acceptor: A::Builder = new_acceptor::<A, _>(acceptor);
+    let mut acceptor: A::Builder = new_acceptor::<A>();
 
     acceptor
         .set_alpn_protocols(&[b"abc", b"de", b"f"])
@@ -255,11 +258,10 @@ where
     j.join().expect("thread join");
 }
 
-pub fn alpn<C, A, F>(acceptor: F)
+pub fn alpn<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
-    F: FnOnce(&ServerKeys) -> A::Builder,
 {
-    block_on(alpn_impl::<C, A, F>(acceptor))
+    block_on(alpn_impl::<C, A>())
 }

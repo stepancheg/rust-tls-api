@@ -15,20 +15,6 @@ use tls_api::X509Cert;
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
 
-impl TlsAcceptorBuilder {
-    pub fn from_cert_and_key(
-        cert: &X509Cert,
-        key: &PrivateKey,
-    ) -> tls_api::Result<TlsAcceptorBuilder> {
-        let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
-        let cert = rustls::Certificate(cert.as_bytes().to_vec());
-        config
-            .set_single_cert(vec![cert], rustls::PrivateKey(key.as_bytes().to_vec()))
-            .map_err(tls_api::Error::new)?;
-        Ok(TlsAcceptorBuilder(config))
-    }
-}
-
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
 
@@ -55,6 +41,18 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
+
+    fn builder_from_der_key(
+        cert: &X509Cert,
+        key: &PrivateKey,
+    ) -> tls_api::Result<TlsAcceptorBuilder> {
+        let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
+        let cert = rustls::Certificate(cert.as_bytes().to_vec());
+        config
+            .set_single_cert(vec![cert], rustls::PrivateKey(key.as_bytes().to_vec()))
+            .map_err(tls_api::Error::new)?;
+        Ok(TlsAcceptorBuilder(config))
+    }
 
     fn accept<'a, S>(
         &'a self,

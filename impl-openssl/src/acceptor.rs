@@ -22,34 +22,6 @@ fn to_openssl_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> tls_api::Result
         .map_err(tls_api::Error::new)
 }
 
-impl TlsAcceptorBuilder {
-    pub fn from_pkcs12(server_pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
-        let mut builder =
-            openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
-                .map_err(tls_api::Error::new)?;
-
-        let pkcs12 = to_openssl_pkcs12(server_pkcs12)?;
-        if let Some(chain) = pkcs12.chain {
-            for x509 in chain {
-                builder
-                    .add_extra_chain_cert(x509)
-                    .map_err(tls_api::Error::new)?;
-            }
-        } else {
-            // panic!("no chain");
-        }
-
-        builder
-            .set_certificate(&pkcs12.cert)
-            .map_err(tls_api::Error::new)?;
-        builder
-            .set_private_key(&pkcs12.pkey)
-            .map_err(tls_api::Error::new)?;
-
-        Ok(TlsAcceptorBuilder(builder))
-    }
-}
-
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
 
@@ -85,7 +57,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         Ok(TlsAcceptor(self.0.build()))
     }
 
-    const SUPPORTS_DER_KEYS: bool = true;
+    const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
     const SUPPORTS_PKCS12_KEYS: bool = true;
 }
 
@@ -97,6 +69,32 @@ impl TlsAcceptorBuilder {
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
+
+    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
+        let mut builder =
+            openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
+                .map_err(tls_api::Error::new)?;
+
+        let pkcs12 = to_openssl_pkcs12(pkcs12)?;
+        if let Some(chain) = pkcs12.chain {
+            for x509 in chain {
+                builder
+                    .add_extra_chain_cert(x509)
+                    .map_err(tls_api::Error::new)?;
+            }
+        } else {
+            // panic!("no chain");
+        }
+
+        builder
+            .set_certificate(&pkcs12.cert)
+            .map_err(tls_api::Error::new)?;
+        builder
+            .set_private_key(&pkcs12.pkey)
+            .map_err(tls_api::Error::new)?;
+
+        Ok(TlsAcceptorBuilder(builder))
+    }
 
     fn accept<'a, S>(
         &'a self,
