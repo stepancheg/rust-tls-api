@@ -59,6 +59,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
               with:
@@ -130,6 +136,12 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
@@ -203,6 +215,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
               with:
@@ -274,6 +292,12 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
@@ -347,6 +371,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
               with:
@@ -418,6 +448,12 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
@@ -491,6 +527,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
               with:
@@ -562,6 +604,12 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
@@ -635,6 +683,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
               with:
@@ -706,6 +760,12 @@ jobs:
               with:
                   command: test
                   args: --manifest-path=impl-rustls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
+            - name: cargo test impl-security-framework
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-security-framework/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
             - name: cargo test impl-stub
               uses: actions-rs/cargo@v1
