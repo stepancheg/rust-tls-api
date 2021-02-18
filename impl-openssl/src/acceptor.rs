@@ -84,6 +84,9 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     fn build(self) -> tls_api::Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0.build()))
     }
+
+    const SUPPORTS_DER_KEYS: bool = true;
+    const SUPPORTS_PKCS12_KEYS: bool = true;
 }
 
 impl TlsAcceptorBuilder {

@@ -36,6 +36,8 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     // TODO: https://github.com/sfackler/rust-openssl/pull/646
     const SUPPORTS_ALPN: bool = true;
+    const SUPPORTS_DER_KEYS: bool = true;
+    const SUPPORTS_PKCS12_KEYS: bool = false;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();

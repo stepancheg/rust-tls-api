@@ -27,6 +27,8 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Underlying = native_tls::TlsAcceptorBuilder;
 
     const SUPPORTS_ALPN: bool = false;
+    const SUPPORTS_DER_KEYS: bool = false;
+    const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
         Err(tls_api::Error::new_other(
@@ -45,6 +47,13 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
+
+    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<Self::Builder> {
+        Ok(TlsAcceptorBuilder(native_tls::TlsAcceptor::builder(
+            native_tls::Identity::from_pkcs12(&pkcs12.pkcs12.0, &pkcs12.password)
+                .map_err(tls_api::Error::new)?,
+        )))
+    }
 
     fn accept<'a, S>(
         &'a self,

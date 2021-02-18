@@ -12,6 +12,8 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
     type Underlying = ServerBuilder;
     const SUPPORTS_ALPN: bool = false;
+    const SUPPORTS_DER_KEYS: bool = false;
+    const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
         // TODO
