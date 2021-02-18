@@ -24,7 +24,7 @@ use async_std::net::TcpListener;
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpStream;
 #[cfg(feature = "runtime-async-std")]
-use async_std::task::block_on;
+pub use async_std::task::block_on;
 #[cfg(feature = "runtime-tokio")]
 use std::future::Future;
 use test_cert_gen::ServerKeys;
