@@ -326,6 +326,8 @@ mod test {
     use std::io::Write;
     use std::process::Command;
     use std::process::Stdio;
+    use std::sync::mpsc;
+    use std::thread;
 
     #[test]
     fn test() {
@@ -367,7 +369,6 @@ mod test {
     }
 
     #[test]
-    #[ignore] // TODO: hangs in CI; why?
     fn client_server() {
         let temp_dir = tempdir::TempDir::new("client_server").unwrap();
 
@@ -391,22 +392,28 @@ mod test {
             .stdout(Stdio::piped())
             .spawn()
             .unwrap();
-        let mut s_client = Command::new("openssl")
-            .arg("s_client")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .arg("-connect")
-            .arg(format!("localhost:{}", port))
-            .arg("-verify_return_error")
-            .spawn()
-            .unwrap();
 
-        s_client
-            .stdin
-            .as_mut()
-            .unwrap()
-            .write_all(b"ping\n")
-            .unwrap();
+        let (signal_tx, signal_rx) = mpsc::channel();
+
+        let client = thread::spawn(move || {
+            let mut s_client = Command::new("openssl")
+                .arg("s_client")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .arg("-connect")
+                .arg(format!("localhost:{}", port))
+                .arg("-verify_return_error")
+                .spawn()
+                .unwrap();
+            s_client
+                .stdin
+                .as_mut()
+                .unwrap()
+                .write_all(b"ping\n")
+                .unwrap();
+            let _ = signal_rx.recv();
+            s_client.kill().unwrap();
+        });
 
         let lines = BufReader::new(s_server.stdout.as_mut().unwrap()).lines();
         for line in lines {
@@ -418,6 +425,7 @@ mod test {
         }
 
         s_server.kill().unwrap();
-        s_client.kill().unwrap();
+        let _ = signal_tx.send(());
+        client.join().unwrap();
     }
 }
