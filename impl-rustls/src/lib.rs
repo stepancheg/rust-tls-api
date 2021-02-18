@@ -1,7 +1,4 @@
 use std::fmt;
-use std::io;
-use std::io::Read;
-use std::io::Write;
 use std::result;
 use std::str;
 use std::sync::Arc;
@@ -10,10 +7,6 @@ use crate::handshake::HandshakeFuture;
 use rustls::NoClientAuth;
 use std::future::Future;
 use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::Error;
@@ -23,6 +16,10 @@ use tls_api::X509Cert;
 use webpki::DNSNameRef;
 
 mod handshake;
+mod stream;
+
+pub(crate) use stream::TlsStream;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
 
 pub struct TlsConnectorBuilder {
     pub config: rustls::ClientConfig,
@@ -34,142 +31,6 @@ pub struct TlsConnector {
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
-
-pub struct TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    stream: AsyncIoAsSyncIo<S>,
-    session: T,
-}
-
-// TODO: do not require Sync from TlsStream
-unsafe impl<S, T> Sync for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-}
-
-// TlsStream
-
-impl<S, T> fmt::Debug for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("TlsStream")
-            .field("stream", &self.stream)
-            .field("session", &"...")
-            .finish()
-    }
-}
-
-impl<S, T> AsyncIoAsSyncIoWrapper<S> for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    fn get_mut(&mut self) -> &mut AsyncIoAsSyncIo<S> {
-        &mut self.stream
-    }
-}
-
-impl<S, T> AsyncRead for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_read(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut tokio::io::ReadBuf,
-    ) -> Poll<io::Result<()>> {
-        self.with_context_sync_to_async_tokio(cx, buf, |s, buf| {
-            rustls::Stream {
-                sock: &mut s.stream,
-                sess: &mut s.session,
-            }
-            .read(buf)
-        })
-    }
-
-    #[cfg(feature = "runtime-async-std")]
-    fn poll_read(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<io::Result<usize>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .read(buf)
-        })
-    }
-}
-
-impl<S, T> AsyncWrite for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<io::Result<usize>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .write(buf)
-        })
-    }
-
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        self.with_context_sync_to_async(cx, |stream| {
-            rustls::Stream {
-                sock: &mut stream.stream,
-                sess: &mut stream.session,
-            }
-            .flush()
-        })
-    }
-
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        self.poll_flush(cx)
-    }
-
-    #[cfg(feature = "runtime-async-std")]
-    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        self.poll_flush(cx)
-    }
-}
-
-impl<S, T> tls_api::TlsStreamImpl<S> for TlsStream<S, T>
-where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
-{
-    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        self.session.get_alpn_protocol().map(Vec::from)
-    }
-
-    fn get_mut(&mut self) -> &mut S {
-        self.stream.get_inner_mut()
-    }
-
-    fn get_ref(&self) -> &S {
-        self.stream.get_inner_ref()
-    }
-}
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -316,7 +177,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        let tls_stream = TlsStream {
+        let tls_stream = crate::TlsStream {
             stream: AsyncIoAsSyncIo::new(stream),
             session: rustls::ServerSession::new(&self.0),
         };

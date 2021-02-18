@@ -1,6 +1,5 @@
 //! Handshake future
 
-use crate::TlsStream;
 use std::fmt;
 use std::future::Future;
 use std::mem;
@@ -41,7 +40,9 @@ where
                     match f(stream) {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(TlsStream(stream))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
+                                stream,
+                            ))));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
@@ -56,7 +57,9 @@ where
                     match stream.handshake() {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(TlsStream(stream))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
+                                stream,
+                            ))));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
@@ -69,5 +72,17 @@ where
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),
             }
         }
+    }
+}
+
+struct MidHandshakeTlsStream<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send + 'static>(
+    Option<native_tls::MidHandshakeTlsStream<S>>,
+);
+
+impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send + 'static> fmt::Debug
+    for MidHandshakeTlsStream<S>
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("MidHandshakeTlsStream").finish()
     }
 }

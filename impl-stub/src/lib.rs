@@ -22,6 +22,8 @@ use tls_api::runtime::AsyncWrite;
 use tls_api::Result;
 use tls_api::TlsStream;
 
+mod stream;
+
 pub struct TlsConnectorBuilder(Void);
 pub struct TlsConnector(Void);
 
