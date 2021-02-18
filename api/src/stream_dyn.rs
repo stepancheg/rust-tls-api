@@ -16,6 +16,11 @@ impl<S> TlsStreamImplDyn for TlsStream<S> {
     }
 }
 
+/// Similar to [`TcpStream`], but without a type parameter.
+///
+/// Make writing code slightly more concise at cost of some runtime overhead:
+/// * extra allocation per connection
+/// * extra indirect invocation per operation
 pub struct TlsStreamDyn(Box<dyn TlsStreamImplDyn>);
 
 impl TlsStreamDyn {
