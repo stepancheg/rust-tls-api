@@ -15,7 +15,7 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 [dependencies]
 log        = "0.4"
 pem        = "0.8.2"
-webpki     = "0.21.2"
+webpki     = "0.21.4"
 futures-util = { version = "0.3.1", features = ["io"], optional = true }
 tokio = { version = "~0.2.6", features = ["io-util"], optional = true }
 
