@@ -5,6 +5,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use webpki::DNSNameRef;
@@ -108,12 +109,10 @@ impl tls_api::TlsConnector for TlsConnector {
                 Ok(dns_name) => dns_name,
                 Err(e) => return Box::pin(async { Err(e) }),
             };
-        let tls_stream = crate::TlsStream {
-            stream: StreamOwned {
-                sess: rustls::ClientSession::new(&self.config, dns_name),
-                sock: AsyncIoAsSyncIo::new(stream),
-            },
-        };
+        let tls_stream: crate::TlsStream<S, _> = TlsStreamOverSyncIo::new(StreamOwned {
+            sess: rustls::ClientSession::new(&self.config, dns_name),
+            sock: AsyncIoAsSyncIo::new(stream),
+        });
 
         Box::pin(HandshakeFuture::MidHandshake(tls_stream))
     }

@@ -11,21 +11,21 @@ use std::task::Poll;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 
-pub(crate) enum HandshakeFuture<S, T>
+pub(crate) enum HandshakeFuture<A, T>
 where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
-    MidHandshake(TlsStream<S, T>),
+    MidHandshake(TlsStream<A, T>),
     Done,
 }
 
-impl<S, T> Future for HandshakeFuture<S, T>
+impl<A, T> Future for HandshakeFuture<A, T>
 where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
-    T: rustls::Session + Unpin + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
-    type Output = tls_api::Result<tls_api::TlsStream<S>>;
+    type Output = tls_api::Result<tls_api::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         unsafe {

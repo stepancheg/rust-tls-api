@@ -15,6 +15,7 @@ use std::task::Poll;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::TlsStreamImpl;
+use std::fmt::Formatter;
 use std::marker::PhantomData;
 
 /// Async IO object as sync IO.
@@ -199,7 +200,9 @@ pub trait AsyncWrapperOps<A>: fmt::Debug + Unpin + Send + Sync + 'static
 where
     A: Unpin,
 {
-    type SyncWrapper: Read + Write + fmt::Debug + Unpin + Send + Sync + 'static;
+    type SyncWrapper: Read + Write + Unpin + Send + Sync + 'static;
+
+    fn debug(w: &Self::SyncWrapper) -> &dyn fmt::Debug;
 
     fn get_mut(w: &mut Self::SyncWrapper) -> &mut AsyncIoAsSyncIo<A>;
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A>;
@@ -209,7 +212,6 @@ where
     fn get_alpn_protocols(w: &Self::SyncWrapper) -> Option<Vec<u8>>;
 }
 
-#[derive(Debug)]
 pub struct TlsStreamOverSyncIo<A, O>
 where
     A: Unpin,
@@ -217,6 +219,18 @@ where
 {
     pub stream: O::SyncWrapper,
     _phantom: PhantomData<(A, O)>,
+}
+
+impl<A, O> fmt::Debug for TlsStreamOverSyncIo<A, O>
+where
+    A: Unpin,
+    O: AsyncWrapperOps<A>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TlsStreamOverSyncIo")
+            .field(O::debug(&self.stream))
+            .finish()
+    }
 }
 
 struct Guard2<'a, A, O>(&'a mut TlsStreamOverSyncIo<A, O>)

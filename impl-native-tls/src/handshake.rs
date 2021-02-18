@@ -1,6 +1,5 @@
 //! Handshake future
 
-use crate::stream::NativeTlsOps;
 use std::fmt;
 use std::future::Future;
 use std::mem;
@@ -42,10 +41,7 @@ where
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
                             return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                tls_api::async_as_sync::TlsStreamOverSyncIo::<
-                                    A,
-                                    NativeTlsOps<native_tls::TlsStream<AsyncIoAsSyncIo<A>>, A>,
-                                >::new(stream),
+                                crate::TlsStream::new(stream),
                             )));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {
@@ -62,10 +58,7 @@ where
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
                             return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                tls_api::async_as_sync::TlsStreamOverSyncIo::<
-                                    A,
-                                    NativeTlsOps<native_tls::TlsStream<AsyncIoAsSyncIo<A>>, A>,
-                                >::new(stream),
+                                crate::TlsStream::new(stream),
                             )));
                         }
                         Err(native_tls::HandshakeError::WouldBlock(mut mid)) => {

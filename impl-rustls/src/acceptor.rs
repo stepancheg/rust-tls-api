@@ -6,6 +6,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::PrivateKey;
@@ -60,12 +61,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        let tls_stream = crate::TlsStream {
-            stream: StreamOwned {
-                sock: AsyncIoAsSyncIo::new(stream),
-                sess: rustls::ServerSession::new(&self.0),
-            },
-        };
+        let tls_stream: crate::TlsStream<S, _> = TlsStreamOverSyncIo::new(StreamOwned {
+            sock: AsyncIoAsSyncIo::new(stream),
+            sess: rustls::ServerSession::new(&self.0),
+        });
 
         Box::pin(HandshakeFuture::MidHandshake(tls_stream))
     }
