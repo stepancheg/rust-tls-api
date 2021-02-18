@@ -19,6 +19,8 @@ use tls_api::TlsStream;
 
 use std::net::ToSocketAddrs;
 
+use test_cert_gen::ServerKeys;
+
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpListener;
 #[cfg(feature = "runtime-async-std")]
@@ -27,20 +29,17 @@ use async_std::net::TcpStream;
 pub use async_std::task::block_on;
 #[cfg(feature = "runtime-tokio")]
 use std::future::Future;
-use test_cert_gen::ServerKeys;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpListener;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpStream;
-#[cfg(feature = "runtime-tokio")]
-use tokio::runtime::Runtime;
 
 #[cfg(feature = "runtime-tokio")]
 pub fn block_on<F, T>(future: F) -> T
 where
     F: Future<Output = T>,
 {
-    t!(Runtime::new()).block_on(future)
+    t!(tokio::runtime::Runtime::new()).block_on(future)
 }
 
 async fn test_google_impl<C: TlsConnector>() {
