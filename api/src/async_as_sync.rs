@@ -6,7 +6,6 @@ use std::fmt;
 use std::io;
 use std::io::Read;
 use std::io::Write;
-use std::marker;
 use std::pin::Pin;
 use std::ptr;
 use std::task::Context;
@@ -15,7 +14,6 @@ use std::task::Poll;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::TlsStreamImpl;
-use std::fmt::Formatter;
 use std::marker::PhantomData;
 
 /// Async IO object as sync IO.
@@ -59,68 +57,6 @@ impl<S: Unpin> AsyncIoAsSyncIo<S> {
     pub unsafe fn unset_context(&mut self) {
         assert!(!self.context.is_null());
         self.context = ptr::null_mut();
-    }
-}
-
-pub trait AsyncIoAsSyncIoWrapper<S: Unpin>: Sized {
-    fn get_mut(&mut self) -> &mut AsyncIoAsSyncIo<S>;
-
-    fn with_context<F, R>(&mut self, cx: &mut Context<'_>, f: F) -> R
-    where
-        F: FnOnce(&mut Self) -> R,
-    {
-        unsafe {
-            let s = self.get_mut();
-            s.set_context(cx);
-            let g = Guard(self, marker::PhantomData);
-            f(g.0)
-        }
-    }
-
-    fn with_context_sync_to_async<F, R>(
-        &mut self,
-        cx: &mut Context<'_>,
-        f: F,
-    ) -> Poll<io::Result<R>>
-    where
-        F: FnOnce(&mut Self) -> io::Result<R>,
-    {
-        result_to_poll(self.with_context(cx, f))
-    }
-
-    #[cfg(feature = "runtime-tokio")]
-    fn with_context_sync_to_async_tokio<F>(
-        &mut self,
-        cx: &mut Context<'_>,
-        buf: &mut tokio::io::ReadBuf,
-        f: F,
-    ) -> Poll<io::Result<()>>
-    where
-        F: FnOnce(&mut Self, &mut [u8]) -> io::Result<usize>,
-    {
-        self.with_context_sync_to_async(cx, |s| {
-            let unfilled = buf.initialize_unfilled();
-            let read = f(s, unfilled)?;
-            buf.advance(read);
-            Ok(())
-        })
-    }
-}
-
-impl<S: Unpin> AsyncIoAsSyncIoWrapper<S> for AsyncIoAsSyncIo<S> {
-    fn get_mut(&mut self) -> &mut AsyncIoAsSyncIo<S> {
-        self
-    }
-}
-
-struct Guard<'a, S: Unpin, W: AsyncIoAsSyncIoWrapper<S>>(&'a mut W, marker::PhantomData<S>);
-
-impl<'a, S: Unpin, W: AsyncIoAsSyncIoWrapper<S>> Drop for Guard<'a, S, W> {
-    fn drop(&mut self) {
-        unsafe {
-            let s = self.0.get_mut();
-            s.unset_context();
-        }
     }
 }
 

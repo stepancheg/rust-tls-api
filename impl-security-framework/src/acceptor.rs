@@ -1,27 +1,29 @@
+use security_framework::secure_transport::ServerBuilder;
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 
-pub struct TlsAcceptor();
-pub struct TlsAcceptorBuilder();
+pub struct TlsAcceptor(ServerBuilder);
+pub struct TlsAcceptorBuilder(ServerBuilder);
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
-    type Underlying = ();
+    type Underlying = ServerBuilder;
     const SUPPORTS_ALPN: bool = false;
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
+        // TODO
         unimplemented!()
     }
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
-        unimplemented!()
+        &mut self.0
     }
 
     fn build(self) -> tls_api::Result<Self::Acceptor> {
-        unimplemented!()
+        Ok(TlsAcceptor(self.0))
     }
 }
 
@@ -35,6 +37,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
+        let _ = stream;
         unimplemented!()
     }
 }

@@ -38,9 +38,9 @@ where
                     match f(stream) {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
-                                stream,
-                            ))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                crate::TlsStream::new(stream),
+                            )));
                         }
                         Err(ClientHandshakeError::Interrupted(mut mid)) => {
                             mid.get_mut().unset_context();
@@ -57,9 +57,9 @@ where
                     match stream.handshake() {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream(
-                                stream,
-                            ))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                crate::TlsStream::new(stream),
+                            )));
                         }
                         Err(ClientHandshakeError::Interrupted(mut mid)) => {
                             mid.get_mut().unset_context();
