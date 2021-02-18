@@ -16,7 +16,6 @@ use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncIoAsSyncIoWrapper;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
-use tls_api::Cert;
 use tls_api::Error;
 use tls_api::Result;
 use webpki::DNSNameRef;
@@ -203,26 +202,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: tls_api::Cert) -> Result<&mut Self> {
-        match cert {
-            Cert::Pem(p) => {
-                let cert = rustls::internal::pemfile::certs(&mut p.concat().as_bytes())
-                    .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-                if !cert.is_empty() {
-                    self.config
-                        .root_store
-                        .add(&cert[0])
-                        .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-                }
-            }
-            Cert::Der(d) => {
-                let cert = rustls::Certificate(d.as_bytes().to_vec());
-                self.config
-                    .root_store
-                    .add(&cert)
-                    .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
-            }
-        }
+    fn add_root_certificate(&mut self, cert: &tls_api::X509Cert) -> Result<&mut Self> {
+        let cert = rustls::Certificate(cert.as_bytes().to_vec());
+        self.config
+            .root_store
+            .add(&cert)
+            .map_err(|e| Error::new_other(&format!("{:?}", e)))?;
         Ok(self)
     }
 

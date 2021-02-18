@@ -16,7 +16,6 @@ use runtime::AsyncRead;
 use runtime::AsyncWrite;
 
 mod cert;
-pub use cert::Cert;
 pub use cert::Pem;
 pub use cert::Pkcs12;
 pub use cert::Pkcs12AndPassword;
@@ -165,7 +164,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     fn set_verify_hostname(&mut self, verify: bool) -> Result<()>;
 
-    fn add_root_certificate(&mut self, cert: Cert) -> Result<&mut Self>;
+    fn add_root_certificate(&mut self, cert: &X509Cert) -> Result<&mut Self>;
 
     fn build(self) -> Result<Self::Connector>;
 }

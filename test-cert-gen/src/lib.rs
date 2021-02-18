@@ -183,7 +183,7 @@ fn pem_to_der(cert: &Pem) -> X509Cert {
         .output()
         .unwrap();
     assert!(cert_der.status.success());
-    X509Cert::new(cert_der.stdout)
+    X509Cert::from_der(cert_der.stdout).unwrap()
 }
 
 pub fn gen_keys() -> Keys {
