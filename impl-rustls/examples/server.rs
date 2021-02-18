@@ -1,11 +1,12 @@
-#[cfg(feature = "runtime-async-std")]
-use async_std::net::TcpListener;
 use std::fs;
 use tls_api::pem_to_cert_key_pair;
 use tls_api::runtime::AsyncWriteExt;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api_test::block_on;
+
+#[cfg(feature = "runtime-async-std")]
+use async_std::net::TcpListener;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpListener;
 
@@ -16,7 +17,8 @@ async fn run() {
     let builder = tls_api_rustls::TlsAcceptorBuilder::from_cert_and_key(&cert, &key).unwrap();
     let acceptor = builder.build().unwrap();
 
-    let listener = TcpListener::bind(("127.0.0.1", 4433)).await.unwrap();
+    #[allow(unused_mut)]
+    let mut listener = TcpListener::bind(("127.0.0.1", 4433)).await.unwrap();
     // let port = listener.local_addr().expect("local_addr").port();
 
     let socket = listener.accept().await.unwrap().0;
