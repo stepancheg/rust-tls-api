@@ -25,7 +25,6 @@ pub struct AsyncIoAsSyncIo<S: Unpin> {
     context: *mut (),
 }
 
-unsafe impl<S: Unpin + Sync> Sync for AsyncIoAsSyncIo<S> {}
 unsafe impl<S: Unpin + Send> Send for AsyncIoAsSyncIo<S> {}
 
 impl<S: Unpin> AsyncIoAsSyncIo<S> {

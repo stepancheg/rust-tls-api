@@ -14,13 +14,13 @@ pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncI
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)
 where
-    S: fmt::Debug + Unpin + Send + Sync + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
+    S: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static;
 
 impl<S, A> AsyncWrapperOps<A> for AsyncWrapperOpsImpl<S, A>
 where
-    S: fmt::Debug + Unpin + Send + Sync + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+    S: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
 {
     type SyncWrapper = SslStream<AsyncIoAsSyncIo<A>>;
 

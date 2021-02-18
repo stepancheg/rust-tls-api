@@ -39,7 +39,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         stream: S,
     ) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static;
 
     fn connect_dyn<'a, S>(
         &'a self,
@@ -47,7 +47,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         stream: S,
     ) -> BoxFuture<'a, crate::Result<TlsStreamDyn>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         BoxFuture::new(async move { self.connect(domain, stream).await.map(TlsStreamDyn::new) })
     }

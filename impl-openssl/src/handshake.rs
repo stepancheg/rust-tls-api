@@ -19,7 +19,7 @@ pub(crate) enum HandshakeFuture<F, S: Unpin> {
 
 impl<F, S> Future for HandshakeFuture<F, S>
 where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     F: FnOnce(
         AsyncIoAsSyncIo<S>,
     ) -> result::Result<
@@ -49,7 +49,12 @@ where
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(openssl::ssl::HandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e.into_error())))
+                        }
+                        Err(openssl::ssl::HandshakeError::SetupFailure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::MidHandshake(mut stream) => {
@@ -66,7 +71,12 @@ where
                             *self_mut = HandshakeFuture::MidHandshake(mid);
                             return Poll::Pending;
                         }
-                        Err(e) => return Poll::Ready(Err(tls_api::Error::new(e))),
+                        Err(openssl::ssl::HandshakeError::Failure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e.into_error())))
+                        }
+                        Err(openssl::ssl::HandshakeError::SetupFailure(e)) => {
+                            return Poll::Ready(Err(tls_api::Error::new(e)))
+                        }
                     }
                 }
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),

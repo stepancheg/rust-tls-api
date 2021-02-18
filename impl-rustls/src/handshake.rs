@@ -13,7 +13,7 @@ use tls_api::runtime::AsyncWrite;
 
 pub(crate) enum HandshakeFuture<A, T>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
     MidHandshake(TlsStream<A, T>),
@@ -22,7 +22,7 @@ where
 
 impl<A, T> Future for HandshakeFuture<A, T>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
     type Output = tls_api::Result<tls_api::TlsStream<A>>;

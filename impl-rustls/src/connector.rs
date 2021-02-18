@@ -101,7 +101,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         let dns_name =
             match DNSNameRef::try_from_ascii_str(domain).map_err(|e| tls_api::Error::new(e)) {

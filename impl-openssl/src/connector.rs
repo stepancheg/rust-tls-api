@@ -90,7 +90,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         let client_configuration = match self.connector.configure() {
             Ok(client_configuration) => client_configuration,

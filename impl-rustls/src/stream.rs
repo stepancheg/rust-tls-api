@@ -16,8 +16,8 @@ pub(crate) type TlsStream<A, T> =
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<T, S, A>(PhantomData<(T, S, A)>)
 where
-    S: fmt::Debug + Unpin + Send + Sync + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+    S: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: Session + Sized + fmt::Debug + Unpin + 'static;
 
 #[derive(Debug)]
@@ -25,8 +25,8 @@ struct StreamOwnedDebug;
 
 impl<T, S, A> AsyncWrapperOps<A> for AsyncWrapperOpsImpl<T, S, A>
 where
-    S: fmt::Debug + Unpin + Send + Sync + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+    S: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: Session + Sized + fmt::Debug + Unpin + 'static,
 {
     type SyncWrapper = StreamOwned<T, AsyncIoAsSyncIo<A>>;

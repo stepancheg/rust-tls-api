@@ -73,7 +73,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
+        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
         BoxFuture::new(HandshakeFuture::Initial(
             move |s| self.connector.connect(domain, s),

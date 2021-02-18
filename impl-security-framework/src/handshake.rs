@@ -19,7 +19,7 @@ pub(crate) enum HandshakeFuture<F, S: Unpin> {
 
 impl<F, S> Future for HandshakeFuture<F, S>
 where
-    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Sync + Send + 'static,
+    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     F: FnOnce(
         AsyncIoAsSyncIo<S>,
     )
