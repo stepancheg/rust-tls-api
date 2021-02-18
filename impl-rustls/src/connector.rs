@@ -1,13 +1,12 @@
 use crate::handshake::HandshakeFuture;
 use rustls::StreamOwned;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 use webpki::DNSNameRef;
 
 pub struct TlsConnectorBuilder {
@@ -100,20 +99,20 @@ impl tls_api::TlsConnector for TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
         let dns_name =
             match DNSNameRef::try_from_ascii_str(domain).map_err(|e| tls_api::Error::new(e)) {
                 Ok(dns_name) => dns_name,
-                Err(e) => return Box::pin(async { Err(e) }),
+                Err(e) => return BoxFuture::new(async { Err(e) }),
             };
         let tls_stream: crate::TlsStream<S, _> = TlsStreamOverSyncIo::new(StreamOwned {
             sess: rustls::ClientSession::new(&self.config, dns_name),
             sock: AsyncIoAsSyncIo::new(stream),
         });
 
-        Box::pin(HandshakeFuture::MidHandshake(tls_stream))
+        BoxFuture::new(HandshakeFuture::MidHandshake(tls_stream))
     }
 }

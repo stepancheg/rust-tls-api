@@ -1,9 +1,8 @@
 use crate::Error;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 use void::Void;
 
 pub struct TlsConnectorBuilder(Void);
@@ -48,10 +47,10 @@ impl tls_api::TlsConnector for TlsConnector {
         &'a self,
         _domain: &'a str,
         _stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Box::pin(async { Err(tls_api::Error::new(Error)) })
+        BoxFuture::new(async { Err(tls_api::Error::new(Error)) })
     }
 }

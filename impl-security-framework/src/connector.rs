@@ -2,12 +2,11 @@ use crate::handshake::HandshakeFuture;
 use security_framework::certificate::SecCertificate;
 use security_framework::secure_transport::ClientBuilder;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
 use std::str;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 use tls_api::X509Cert;
 
 pub struct TlsConnector(ClientBuilder);
@@ -65,11 +64,11 @@ impl tls_api::TlsConnector for TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> Pin<Box<dyn Future<Output = tls_api::Result<tls_api::TlsStream<S>>> + Send + 'a>>
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Box::pin(HandshakeFuture::Initial(
+        BoxFuture::new(HandshakeFuture::Initial(
             move |stream| self.0.handshake(domain, stream),
             AsyncIoAsSyncIo::new(stream),
         ))

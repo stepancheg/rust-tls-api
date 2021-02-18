@@ -18,6 +18,7 @@ pub use cert::X509Cert;
 mod acceptor;
 mod connector;
 mod error;
+mod future;
 mod stream;
 mod stream_dyn;
 
@@ -27,6 +28,7 @@ pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 pub use error::Error;
 pub use error::Result;
+pub use future::BoxFuture;
 pub use stream::TlsStream;
 pub use stream::TlsStreamImpl;
 pub use stream_dyn::TlsStreamDyn;

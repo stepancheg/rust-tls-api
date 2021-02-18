@@ -1,6 +1,7 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::stream_dyn::TlsStreamDyn;
+use crate::BoxFuture;
 use crate::Pkcs12AndPassword;
 use crate::PrivateKey;
 use crate::TlsStream;
@@ -57,13 +58,10 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static;
 
-    fn accept_dyn<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> Pin<Box<dyn Future<Output = crate::Result<TlsStreamDyn>> + Send + 'a>>
+    fn accept_dyn<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStreamDyn>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + Sync + 'static,
     {
-        Box::pin(async move { self.accept(stream).await.map(TlsStreamDyn::new) })
+        BoxFuture::new(async move { self.accept(stream).await.map(TlsStreamDyn::new) })
     }
 }
