@@ -2,10 +2,7 @@
 
 use std::fmt;
 use std::future::Future;
-use std::io;
 use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
 
 pub mod async_as_sync;
 pub mod runtime;
