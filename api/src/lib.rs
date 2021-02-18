@@ -169,7 +169,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
-    fn supports_alpn() -> bool;
+    const SUPPORTS_ALPN: bool;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
@@ -184,9 +184,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsConnector: Sized + Sync + Send + 'static {
     type Builder: TlsConnectorBuilder<Connector = Self>;
 
-    fn supports_alpn() -> bool {
-        <Self::Builder as TlsConnectorBuilder>::supports_alpn()
-    }
+    const SUPPORTS_ALPN: bool = <Self::Builder as TlsConnectorBuilder>::SUPPORTS_ALPN;
 
     fn builder() -> Result<Self::Builder>;
 
@@ -206,7 +204,7 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
     // Type of underlying builder
     type Underlying;
 
-    fn supports_alpn() -> bool;
+    const SUPPORTS_ALPN: bool;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()>;
 
@@ -219,9 +217,7 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     type Builder: TlsAcceptorBuilder<Acceptor = Self>;
 
-    fn supports_alpn() -> bool {
-        <Self::Builder as TlsAcceptorBuilder>::supports_alpn()
-    }
+    const SUPPORTS_ALPN: bool = <Self::Builder as TlsAcceptorBuilder>::SUPPORTS_ALPN;
 
     fn accept<'a, S>(
         &'a self,

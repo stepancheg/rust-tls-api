@@ -71,9 +71,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    fn supports_alpn() -> bool {
-        HAS_ALPN
-    }
+    const SUPPORTS_ALPN: bool = HAS_ALPN;
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
@@ -275,9 +273,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    fn supports_alpn() -> bool {
-        HAS_ALPN
-    }
+    const SUPPORTS_ALPN: bool = HAS_ALPN;
 
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {

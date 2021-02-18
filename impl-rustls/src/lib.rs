@@ -180,9 +180,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.config
     }
 
-    fn supports_alpn() -> bool {
-        true
-    }
+    const SUPPORTS_ALPN: bool = true;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
         self.config.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
@@ -291,10 +289,8 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     type Underlying = rustls::ServerConfig;
 
-    fn supports_alpn() -> bool {
-        // TODO: https://github.com/sfackler/rust-openssl/pull/646
-        true
-    }
+    // TODO: https://github.com/sfackler/rust-openssl/pull/646
+    const SUPPORTS_ALPN: bool = true;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
         self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();

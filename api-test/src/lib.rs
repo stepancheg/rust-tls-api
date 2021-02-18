@@ -197,12 +197,12 @@ where
 {
     drop(env_logger::try_init());
 
-    if !C::supports_alpn() {
+    if !C::SUPPORTS_ALPN {
         debug!("connector does not support ALPN");
         return;
     }
 
-    if !A::supports_alpn() {
+    if !A::SUPPORTS_ALPN {
         debug!("acceptor does not support ALPN");
         return;
     }

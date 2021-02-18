@@ -40,9 +40,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    fn supports_alpn() -> bool {
-        false
-    }
+    const SUPPORTS_ALPN: bool = false;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
         Err(Error::new_other(
@@ -206,9 +204,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     type Underlying = native_tls::TlsAcceptorBuilder;
 
-    fn supports_alpn() -> bool {
-        false
-    }
+    const SUPPORTS_ALPN: bool = false;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> Result<()> {
         Err(Error::new_other(
