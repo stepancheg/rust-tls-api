@@ -226,7 +226,7 @@ where
             let socket = t!(listener.accept().await).0;
             let mut socket = t!(acceptor.accept_dyn(socket).await);
 
-            assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
+            assert_eq!(b"de", &socket.get_alpn_protocol().unwrap().unwrap()[..]);
 
             let mut buf = [0; 5];
             t!(socket.read_exact(&mut buf).await);
@@ -248,7 +248,7 @@ where
     let connector: C = connector.build().expect("acceptor build");
     let mut socket = t!(connector.connect("localhost", socket).await);
 
-    assert_eq!(b"de", &socket.get_alpn_protocol().unwrap()[..]);
+    assert_eq!(b"de", &socket.get_alpn_protocol().unwrap().unwrap()[..]);
 
     t!(socket.write_all(b"hello").await);
     let mut buf = vec![];

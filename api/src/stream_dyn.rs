@@ -7,11 +7,11 @@ use std::task::Context;
 use std::task::Poll;
 
 trait TlsStreamImplDyn: AsyncRead + AsyncWrite + Unpin + 'static {
-    fn get_alpn_protocol(&self) -> Option<Vec<u8>>;
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 }
 
 impl<S> TlsStreamImplDyn for TlsStream<S> {
-    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.get_alpn_protocol()
     }
 }
@@ -28,7 +28,7 @@ impl TlsStreamDyn {
         TlsStreamDyn(Box::new(stream))
     }
 
-    pub fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+    pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
 }

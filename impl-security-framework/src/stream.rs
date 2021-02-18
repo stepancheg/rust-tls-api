@@ -41,10 +41,15 @@ where
         w.flush()
     }
 
-    fn get_alpn_protocols(_w: &Self::SyncWrapper) -> Option<Vec<u8>> {
-        None // TODO
-             // TODO: do not ignore error
-             // w.context().alpn_protocols().ok()
-             //     .map(|v| v.into_iter().map(|s| s.into_bytes()).collect())
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
+        let mut protocols = w.context().alpn_protocols().map_err(tls_api::Error::new)?;
+        if protocols.len() <= 1 {
+            Ok(protocols.pop().map(String::into_bytes))
+        } else {
+            Err(tls_api::Error::new_other(&format!(
+                "too many ALPN protocols returned: {:?}",
+                protocols
+            )))
+        }
     }
 }

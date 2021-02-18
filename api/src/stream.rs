@@ -9,8 +9,8 @@ use std::task::Poll;
 /// Trait to be used by API implementors (like openssl),
 /// not meant to be used directly.
 pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send + 'static {
-    /// Get negotiated ALPN protocol.
-    fn get_alpn_protocol(&self) -> Option<Vec<u8>>;
+    /// Get negotiated ALPN protocol negotiated.
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 
     fn get_mut(&mut self) -> &mut S;
 
@@ -42,7 +42,12 @@ impl<S: 'static> TlsStream<S> {
         self.0.get_ref()
     }
 
-    pub fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
+    /// Get negotiated ALPN protocol.
+    ///
+    /// Return `Ok(None)` is there was no protocol negotiated.
+    /// In particular, `Ok(None)` is returned when the implementation
+    /// does not support ALPN.
+    pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
 }

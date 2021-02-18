@@ -49,7 +49,7 @@ where
         w.sess.flush()
     }
 
-    fn get_alpn_protocols(w: &Self::SyncWrapper) -> Option<Vec<u8>> {
-        w.sess.get_alpn_protocol().map(Vec::from)
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
+        Ok(w.sess.get_alpn_protocol().map(Vec::from))
     }
 }

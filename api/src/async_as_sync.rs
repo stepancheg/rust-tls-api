@@ -144,7 +144,7 @@ where
 
     fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()>;
 
-    fn get_alpn_protocols(w: &Self::SyncWrapper) -> Option<Vec<u8>>;
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> crate::Result<Option<Vec<u8>>>;
 }
 
 pub struct TlsStreamOverSyncIo<A, O>
@@ -303,8 +303,8 @@ where
     A: fmt::Debug + Unpin + Send + 'static,
     O: AsyncWrapperOps<A>,
 {
-    fn get_alpn_protocol(&self) -> Option<Vec<u8>> {
-        O::get_alpn_protocols(&self.stream)
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+        O::get_alpn_protocol(&self.stream)
     }
 
     fn get_mut(&mut self) -> &mut A {

@@ -38,8 +38,8 @@ where
         w.shutdown()
     }
 
-    fn get_alpn_protocols(_w: &Self::SyncWrapper) -> Option<Vec<u8>> {
-        None
+    fn get_alpn_protocol(_w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
+        Ok(None)
         // TODO
         // w.negotiated_alpn()
     }
