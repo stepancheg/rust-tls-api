@@ -15,7 +15,7 @@ edition = "2018"
 [dependencies]
 tls-api = { path = "../api", default-features = false }
 tokio = { version = "~0.2.6", features = ["full"], optional = true }
-async-std = { version = "1.6.0", features = ["attributes"], optional = true }
+async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 tls-api-native-tls = { path = "../impl-native-tls", default-features = false }
 
 [features]

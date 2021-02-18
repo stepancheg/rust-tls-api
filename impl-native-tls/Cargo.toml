@@ -16,7 +16,7 @@ native-tls = "0.2"
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
 
 tokio = { version = "~0.2.6", features = [], optional = true }
-async-std = { version = "1.6.0", features = ["attributes"], optional = true }
+async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
 # this is needed until package-features is stabelized (issue #5364)
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
