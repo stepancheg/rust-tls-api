@@ -115,6 +115,17 @@ impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send> AsyncWrite fo
 }
 
 impl<S: Unpin + fmt::Debug + AsyncRead + AsyncWrite + Sync + Send> AsyncRead for TlsStream<S> {
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf,
+    ) -> Poll<io::Result<()>> {
+        self.get_mut()
+            .with_context_sync_to_async_tokio(cx, buf, |stream, buf| stream.0.read(buf))
+    }
+
+    #[cfg(feature = "runtime-async-std")]
     fn poll_read(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,

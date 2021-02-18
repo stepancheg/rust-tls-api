@@ -118,6 +118,16 @@ impl<S: 'static> TlsStream<S> {
 }
 
 impl<S> AsyncRead for TlsStream<S> {
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.0).poll_read(cx, buf)
+    }
+
+    #[cfg(feature = "runtime-async-std")]
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,

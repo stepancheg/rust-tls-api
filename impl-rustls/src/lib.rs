@@ -82,6 +82,22 @@ where
     S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     T: rustls::Session + Unpin + 'static,
 {
+    #[cfg(feature = "runtime-tokio")]
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf,
+    ) -> Poll<io::Result<()>> {
+        self.with_context_sync_to_async_tokio(cx, buf, |s, buf| {
+            rustls::Stream {
+                sock: &mut s.stream,
+                sess: &mut s.session,
+            }
+            .read(buf)
+        })
+    }
+
+    #[cfg(feature = "runtime-async-std")]
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,

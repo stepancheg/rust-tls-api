@@ -83,6 +83,24 @@ pub trait AsyncIoAsSyncIoWrapper<S: Unpin>: Sized {
     {
         result_to_poll(self.with_context(cx, f))
     }
+
+    #[cfg(feature = "runtime-tokio")]
+    fn with_context_sync_to_async_tokio<F>(
+        &mut self,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf,
+        f: F,
+    ) -> Poll<io::Result<()>>
+    where
+        F: FnOnce(&mut Self, &mut [u8]) -> io::Result<usize>,
+    {
+        self.with_context_sync_to_async(cx, |s| {
+            let unfilled = buf.initialize_unfilled();
+            let read = f(s, unfilled)?;
+            buf.advance(read);
+            Ok(())
+        })
+    }
 }
 
 impl<S: Unpin> AsyncIoAsSyncIoWrapper<S> for AsyncIoAsSyncIo<S> {
@@ -116,6 +134,16 @@ impl<S: Unpin> AsyncIoAsSyncIo<S> {
 }
 
 impl<S: AsyncRead + Unpin> Read for AsyncIoAsSyncIo<S> {
+    #[cfg(feature = "runtime-tokio")]
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.with_context_inner(|cx, s| {
+            let mut read_buf = tokio::io::ReadBuf::new(buf);
+            let () = poll_to_result(s.poll_read(cx, &mut read_buf))?;
+            Ok(read_buf.filled().len())
+        })
+    }
+
+    #[cfg(feature = "runtime-async-std")]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.with_context_inner(|cx, s| poll_to_result(s.poll_read(cx, buf)))
     }

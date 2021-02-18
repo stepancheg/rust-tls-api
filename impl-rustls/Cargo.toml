@@ -16,7 +16,7 @@ rustls = { version = "0.19.0", features = ["dangerous_configuration"] }
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
 webpki       = "0.21.4"
 webpki-roots = "0.21.0"
-tokio = { version = "~0.2.6", features = [], optional = true }
+tokio = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
 # this is needed until package-features is stabelized (issue #5364)
