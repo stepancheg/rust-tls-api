@@ -49,9 +49,7 @@ where
         w.sess.flush()
     }
 
-    fn get_alpn_protocols(_w: &Self::SyncWrapper) -> Option<Vec<u8>> {
-        None
-        // TODO
-        // w.negotiated_alpn()
+    fn get_alpn_protocols(w: &Self::SyncWrapper) -> Option<Vec<u8>> {
+        w.sess.get_alpn_protocol().map(Vec::from)
     }
 }

@@ -1,6 +1,5 @@
 //! Handshake future
 
-use crate::TlsStream;
 use std::fmt;
 use std::future::Future;
 use std::mem;
@@ -41,7 +40,9 @@ where
                     match f(stream) {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(TlsStream(stream))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                crate::TlsStream::new(stream),
+                            )));
                         }
                         Err(openssl::ssl::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
@@ -56,7 +57,9 @@ where
                     match stream.handshake() {
                         Ok(mut stream) => {
                             stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(TlsStream(stream))));
+                            return Poll::Ready(Ok(tls_api::TlsStream::new(
+                                crate::TlsStream::new(stream),
+                            )));
                         }
                         Err(openssl::ssl::HandshakeError::WouldBlock(mut mid)) => {
                             mid.get_mut().unset_context();
