@@ -1,3 +1,4 @@
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 use crate::handshake::ClientHandshakeFuture;
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
