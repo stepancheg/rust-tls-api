@@ -3,7 +3,8 @@
 //! This crate is available on non-iOS or non-macOS, but most operations
 //! simply return error.
 
-#[deny(broken_intra_doc_links)]
+#![deny(broken_intra_doc_links)]
+
 mod stream;
 
 mod acceptor;

@@ -1,4 +1,5 @@
-#[deny(broken_intra_doc_links)]
+#![deny(broken_intra_doc_links)]
+
 mod acceptor;
 mod connector;
 mod handshake;
