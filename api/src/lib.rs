@@ -15,6 +15,7 @@ mod connector;
 mod error;
 mod future;
 mod socket;
+mod socket_box;
 mod stream;
 mod stream_box;
 
@@ -26,6 +27,7 @@ pub use error::Error;
 pub use error::Result;
 pub use future::BoxFuture;
 pub use socket::AsyncSocket;
+pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
 pub use stream::TlsStreamImpl;
 pub use stream_box::TlsStreamBox;
