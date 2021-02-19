@@ -6,6 +6,7 @@ use crate::BoxFuture;
 use crate::Cert;
 use crate::Pkcs12AndPassword;
 use crate::PrivateKey;
+use crate::TlsAcceptorBox;
 use crate::TlsStream;
 use std::fmt;
 use std::marker;
@@ -60,6 +61,11 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// This function returns a connector type, which can be used to constructor connectors.
     const TYPE_DYN: &'static dyn TlsAcceptorType =
         &TlsAcceptorTypeImpl::<Self>(marker::PhantomData);
+
+    /// Dynamic (without type parameter) version of the connector.
+    fn into_dyn(self) -> TlsAcceptorBox {
+        TlsAcceptorBox::new(self)
+    }
 
     /// Unspecified version information about this implementation.
     fn version() -> &'static str;

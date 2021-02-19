@@ -94,12 +94,18 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
 // Builder
 
 trait TlsAcceptorBuilderDyn {
+    fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
+
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
 
     fn build(self: Box<Self>) -> crate::Result<TlsAcceptorBox>;
 }
 
 impl<A: TlsAcceptorBuilder> TlsAcceptorBuilderDyn for A {
+    fn type_dyn(&self) -> &'static dyn TlsAcceptorType {
+        <A::Acceptor as TlsAcceptor>::TYPE_DYN
+    }
+
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
         (*self).set_alpn_protocols(protocols)
     }
@@ -109,10 +115,17 @@ impl<A: TlsAcceptorBuilder> TlsAcceptorBuilderDyn for A {
     }
 }
 
-/// Dynamic version of [`TlsAcceptor`].
+/// Dynamic version of [`TlsAcceptorBuilder`].
 pub struct TlsAcceptorBuilderBox(Box<dyn TlsAcceptorBuilderDyn>);
 
 impl TlsAcceptorBuilderBox {
+    /// Dynamic (without type parameter) version of the acceptor.
+    ///
+    /// This function returns a connector type, which can be used to constructor connectors.
+    pub fn type_dyn(&self) -> &'static dyn TlsAcceptorType {
+        self.0.type_dyn()
+    }
+
     /// Specify ALPN protocols for negotiation.
     ///
     /// This operation returns an error if the implemenation does not support ALPN.
@@ -121,24 +134,50 @@ impl TlsAcceptorBuilderBox {
     pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
         self.0.set_alpn_protocols(protocols)
     }
+
+    /// Finish the acceptor construction.
+    pub fn build(self) -> crate::Result<TlsAcceptorBox> {
+        self.0.build()
+    }
 }
 
 // Acceptor
 
 trait TlsAcceptorDyn {
+    fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
+
     fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStreamBox>>;
 }
 
 impl<A: TlsAcceptor> TlsAcceptorDyn for A {
+    fn type_dyn(&self) -> &'static dyn TlsAcceptorType {
+        A::TYPE_DYN
+    }
+
     fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
         self.accept_dyn(socket)
     }
 }
 
 /// Dynamic version of [`TlsAcceptor`].
+///
+/// This can be constructed either with:
+/// * [`TlsAcceptor::into_dyn`]
+/// * [`TlsAcceptorBuilderBox::build`]
 pub struct TlsAcceptorBox(Box<dyn TlsAcceptorDyn>);
 
 impl TlsAcceptorBox {
+    pub(crate) fn new<A: TlsAcceptor>(acceptor: A) -> TlsAcceptorBox {
+        TlsAcceptorBox(Box::new(acceptor))
+    }
+
+    /// Dynamic (without type parameter) version of the acceptor.
+    ///
+    /// This function returns a connector type, which can be used to constructor connectors.
+    pub fn type_dyn(&self) -> &'static dyn TlsAcceptorType {
+        self.0.type_dyn()
+    }
+
     /// Accept a connection.
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
@@ -147,14 +186,6 @@ impl TlsAcceptorBox {
         &'a self,
         socket: S,
     ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
-        self.accept_dyn(AsyncSocketBox::new(socket))
-    }
-
-    /// More dynamic version of [`TlsAcceptorBox::accept`].
-    pub fn accept_dyn<'a>(
-        &'a self,
-        socket: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
-        self.0.accept(socket)
+        self.0.accept(AsyncSocketBox::new(socket))
     }
 }

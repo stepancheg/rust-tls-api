@@ -85,8 +85,9 @@ impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
     }
 }
 
-/// [`TlsConnector`] without type parameter: implementation
-/// can be switched without parameterizing every function.
+/// [`TlsConnector`] without type parameter.
+///
+/// Implementation can be switched without parameterizing every function.
 pub struct TlsConnectorBuilderBox(Box<dyn TlsConnectorBuilderDyn>);
 
 impl TlsConnectorBuilderBox {
@@ -142,6 +143,10 @@ impl<C: TlsConnector> TlsConnectorDyn for C {
 }
 
 /// Configured connector. This is a dynamic version of [`TlsConnector`].
+///
+/// This can be constructed either with:
+/// * [`TlsConnector::into_dyn`]
+/// * [`TlsConnectorBuilderBox::build`]
 pub struct TlsConnectorBox(Box<dyn TlsConnectorDyn>);
 
 impl TlsConnectorBox {

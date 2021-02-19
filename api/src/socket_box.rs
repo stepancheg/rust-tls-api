@@ -1,22 +1,40 @@
 use std::io;
 use std::io::IoSlice;
+use std::mem;
 use std::pin::Pin;
+use std::ptr;
 use std::task::Context;
 use std::task::Poll;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::AsyncSocket;
+use std::any::TypeId;
+use std::mem::MaybeUninit;
 
 /// Newtype for [`Box<dyn AsyncSocket>`](AsyncSocket).
 #[derive(Debug)]
 pub struct AsyncSocketBox(Box<dyn AsyncSocket>);
 
+fn transmute_or_map<A: 'static, B: 'static>(a: A, f: impl FnOnce(A) -> B) -> B {
+    if TypeId::of::<A>() == TypeId::of::<B>() {
+        assert_eq!(mem::size_of::<A>(), mem::size_of::<B>());
+        // Can be made safe with specialization.
+        unsafe {
+            let mut b = MaybeUninit::<B>::uninit();
+            ptr::copy(&a as *const A, b.as_mut_ptr() as *mut A, 1);
+            mem::forget(a);
+            b.assume_init()
+        }
+    } else {
+        f(a)
+    }
+}
+
 impl AsyncSocketBox {
     /// Construct.
     pub fn new<S: AsyncSocket>(socket: S) -> AsyncSocketBox {
-        // TODO: fix double wrapping
-        AsyncSocketBox(Box::new(socket))
+        transmute_or_map(socket, |socket| AsyncSocketBox(Box::new(socket)))
     }
 
     fn get_inner(self: Pin<&mut Self>) -> Pin<&mut dyn AsyncSocket> {
