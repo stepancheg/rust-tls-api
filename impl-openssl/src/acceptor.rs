@@ -30,8 +30,6 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    const SUPPORTS_ALPN: bool = HAS_ALPN;
-
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         let protocols = encode_alpn_protos(protocols)?;
@@ -55,9 +53,6 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     fn build(self) -> tls_api::Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0.build()))
     }
-
-    const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
-    const SUPPORTS_PKCS12_KEYS: bool = true;
 }
 
 impl TlsAcceptorBuilder {
@@ -68,6 +63,10 @@ impl TlsAcceptorBuilder {
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
+
+    const SUPPORTS_ALPN: bool = HAS_ALPN;
+    const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
+    const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
         let mut builder =

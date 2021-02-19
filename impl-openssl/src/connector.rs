@@ -26,8 +26,6 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    const SUPPORTS_ALPN: bool = HAS_ALPN;
-
     #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         self.builder
@@ -74,6 +72,8 @@ impl TlsConnectorBuilder {
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
+
+    const SUPPORTS_ALPN: bool = HAS_ALPN;
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         let builder = openssl::ssl::SslConnector::builder(openssl::ssl::SslMethod::tls())

@@ -20,8 +20,6 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         unimplemented!()
     }
 
-    const SUPPORTS_ALPN: bool = true;
-
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         let protocols: Vec<&str> = protocols
             .iter()
@@ -55,6 +53,8 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
+
+    const SUPPORTS_ALPN: bool = true;
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         Ok(TlsConnectorBuilder(ClientBuilder::new()))

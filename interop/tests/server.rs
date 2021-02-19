@@ -1,3 +1,5 @@
+//! Invoke `tls_api_test::server` with various implementations
+
 #[test]
 fn native_tls_openssl() {
     tls_api_test::server::<tls_api_native_tls::TlsConnector, tls_api_openssl::TlsAcceptor>()

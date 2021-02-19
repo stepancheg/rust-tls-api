@@ -113,9 +113,9 @@ where
 {
     let keys = &test_cert_gen::keys().server;
 
-    if A::Builder::SUPPORTS_PKCS12_KEYS {
+    if A::SUPPORTS_PKCS12_KEYS {
         t!(A::builder_from_pkcs12(&keys.server_cert_and_key_pkcs12))
-    } else if A::Builder::SUPPORTS_DER_KEYS {
+    } else if A::SUPPORTS_DER_KEYS {
         t!(A::builder_from_der_key(
             &keys.server_cert_and_key.cert,
             &keys.server_cert_and_key.key

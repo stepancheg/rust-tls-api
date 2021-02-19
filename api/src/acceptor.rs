@@ -15,11 +15,6 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
     // Type of underlying builder
     type Underlying;
 
-    const SUPPORTS_ALPN: bool;
-
-    const SUPPORTS_DER_KEYS: bool;
-    const SUPPORTS_PKCS12_KEYS: bool;
-
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
@@ -31,11 +26,13 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     type Builder: TlsAcceptorBuilder<Acceptor = Self>;
 
-    const SUPPORTS_ALPN: bool = <Self::Builder as TlsAcceptorBuilder>::SUPPORTS_ALPN;
+    const SUPPORTS_ALPN: bool;
+    const SUPPORTS_DER_KEYS: bool;
+    const SUPPORTS_PKCS12_KEYS: bool;
 
     fn builder_from_der_key(cert: &X509Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
-        assert!(!Self::Builder::SUPPORTS_DER_KEYS);
+        assert!(!Self::SUPPORTS_DER_KEYS);
         Err(crate::Error::new_other(
             "construction from DER key is not implemented",
         ))
@@ -43,7 +40,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> crate::Result<Self::Builder> {
         let _ = pkcs12;
-        assert!(!Self::Builder::SUPPORTS_PKCS12_KEYS);
+        assert!(!Self::SUPPORTS_PKCS12_KEYS);
         Err(crate::Error::new_other(
             "construction from PKCS12 is not implemented",
         ))

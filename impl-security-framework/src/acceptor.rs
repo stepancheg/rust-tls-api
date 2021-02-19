@@ -26,9 +26,6 @@ pub struct TlsAcceptorBuilder(SecureTransportTlsAcceptorBuilder);
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
     type Underlying = SecureTransportTlsAcceptorBuilder;
-    const SUPPORTS_ALPN: bool = false;
-    const SUPPORTS_DER_KEYS: bool = false;
-    const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
         // TODO
@@ -72,6 +69,10 @@ fn pkcs12_to_sf_objects(
 
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
+
+    const SUPPORTS_ALPN: bool = false;
+    const SUPPORTS_DER_KEYS: bool = false;
+    const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
         let (identity, certs) = pkcs12_to_sf_objects(pkcs12).map_err(tls_api::Error::new)?;

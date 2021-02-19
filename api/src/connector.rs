@@ -14,8 +14,6 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
-    const SUPPORTS_ALPN: bool;
-
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
 
     fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()>;
@@ -29,7 +27,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsConnector: Sized + Sync + Send + 'static {
     type Builder: TlsConnectorBuilder<Connector = Self>;
 
-    const SUPPORTS_ALPN: bool = <Self::Builder as TlsConnectorBuilder>::SUPPORTS_ALPN;
+    const SUPPORTS_ALPN: bool;
 
     fn builder() -> crate::Result<Self::Builder>;
 
