@@ -50,7 +50,7 @@ impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
 
 // Connector builder.
 
-trait TlsConnectorBuilderDynImpl {
+trait TlsConnectorBuilderDyn {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
@@ -62,9 +62,9 @@ trait TlsConnectorBuilderDynImpl {
     fn build(self: Box<Self>) -> crate::Result<TlsConnectorBox>;
 }
 
-impl<C: TlsConnectorBuilder> TlsConnectorBuilderDynImpl for C {
+impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType {
-        <C::Connector as TlsConnector>::type_dyn()
+        <C::Connector as TlsConnector>::TYPE_DYN
     }
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
@@ -87,7 +87,7 @@ impl<C: TlsConnectorBuilder> TlsConnectorBuilderDynImpl for C {
 
 /// [`TlsConnector`] without type parameter: implementation
 /// can be switched without parameterizing every function.
-pub struct TlsConnectorBuilderBox(Box<dyn TlsConnectorBuilderDynImpl>);
+pub struct TlsConnectorBuilderBox(Box<dyn TlsConnectorBuilderDyn>);
 
 impl TlsConnectorBuilderBox {
     /// Build a connector.
@@ -117,7 +117,7 @@ impl TlsConnectorBuilderBox {
 
 // Connector.
 
-trait TlsConnectorDynImpl {
+trait TlsConnectorDyn {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType;
 
     fn connect<'a>(
@@ -127,9 +127,9 @@ trait TlsConnectorDynImpl {
     ) -> BoxFuture<'a, crate::Result<TlsStreamBox>>;
 }
 
-impl<C: TlsConnector> TlsConnectorDynImpl for C {
+impl<C: TlsConnector> TlsConnectorDyn for C {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType {
-        C::type_dyn()
+        C::TYPE_DYN
     }
 
     fn connect<'a>(
@@ -142,7 +142,7 @@ impl<C: TlsConnector> TlsConnectorDynImpl for C {
 }
 
 /// Configured connector. This is a dynamic version of [`TlsConnector`].
-pub struct TlsConnectorBox(Box<dyn TlsConnectorDynImpl>);
+pub struct TlsConnectorBox(Box<dyn TlsConnectorDyn>);
 
 impl TlsConnectorBox {
     pub(crate) fn new<C: TlsConnector>(connector: C) -> TlsConnectorBox {

@@ -1,3 +1,5 @@
+use crate::acceptor_box::TlsAcceptorType;
+use crate::acceptor_box::TlsAcceptorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
@@ -6,6 +8,7 @@ use crate::Pkcs12AndPassword;
 use crate::PrivateKey;
 use crate::TlsStream;
 use std::fmt;
+use std::marker;
 
 /// A builder for `TlsAcceptor`s.
 pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
@@ -51,6 +54,12 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// Whether this implementation supports construction of acceptor using
     /// PKCS #12 file.
     const SUPPORTS_PKCS12_KEYS: bool;
+
+    /// Dynamic (without type parameter) version of the acceptor.
+    ///
+    /// This function returns a connector type, which can be used to constructor connectors.
+    const TYPE_DYN: &'static dyn TlsAcceptorType =
+        &TlsAcceptorTypeImpl::<Self>(marker::PhantomData);
 
     /// Unspecified version information about this implementation.
     fn version() -> &'static str;

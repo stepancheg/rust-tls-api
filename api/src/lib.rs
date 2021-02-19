@@ -40,6 +40,9 @@
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
+pub use acceptor_box::TlsAcceptorBox;
+pub use acceptor_box::TlsAcceptorBuilderBox;
+pub use acceptor_box::TlsAcceptorType;
 pub use cert::pem_to_cert_key_pair;
 pub use cert::Cert;
 pub use cert::Pkcs12;
@@ -62,6 +65,7 @@ pub mod runtime;
 pub mod spi;
 
 mod acceptor;
+mod acceptor_box;
 mod cert;
 mod connector;
 mod connector_box;

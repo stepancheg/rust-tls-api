@@ -63,9 +63,8 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Dynamic (without type parameter) version of the connector.
     ///
     /// This function returns a connector type, which can be used to constructor connectors.
-    fn type_dyn() -> &'static dyn TlsConnectorType {
-        &TlsConnectorTypeImpl::<Self>(marker::PhantomData)
-    }
+    const TYPE_DYN: &'static dyn TlsConnectorType =
+        &TlsConnectorTypeImpl::<Self>(marker::PhantomData);
 
     /// Dynamic (without type parameter) version of the connector.
     fn into_dyn(self) -> TlsConnectorBox {
