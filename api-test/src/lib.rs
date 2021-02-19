@@ -24,19 +24,19 @@ use std::net::ToSocketAddrs;
 use async_std::net::TcpListener;
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpStream;
-#[cfg(feature = "runtime-async-std")]
-pub use async_std::task::block_on;
-#[cfg(feature = "runtime-tokio")]
-use std::future::Future;
+
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpListener;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpStream;
 
+#[cfg(feature = "runtime-async-std")]
+pub use async_std::task::block_on;
+
 #[cfg(feature = "runtime-tokio")]
 pub fn block_on<F, T>(future: F) -> T
 where
-    F: Future<Output = T>,
+    F: std::future::Future<Output = T>,
 {
     t!(tokio::runtime::Runtime::new()).block_on(future)
 }
