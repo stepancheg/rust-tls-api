@@ -1,14 +1,11 @@
 #[cfg(any(target_os = "macos", target_os = "ios"))]
-use crate::handshake::ClientHandshakeFuture;
-
-#[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::certificate::SecCertificate;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::secure_transport::ClientBuilder;
 
 use std::fmt;
 use std::str;
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
+
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::BoxFuture;
@@ -17,8 +14,8 @@ use tls_api::X509Cert;
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 type ClientBuilder = ();
 
-pub struct TlsConnector(ClientBuilder);
-pub struct TlsConnectorBuilder(ClientBuilder);
+pub struct TlsConnector(pub ClientBuilder);
+pub struct TlsConnectorBuilder(pub ClientBuilder);
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     type Connector = TlsConnector;
@@ -100,10 +97,7 @@ impl tls_api::TlsConnector for TlsConnector {
     {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            BoxFuture::new(ClientHandshakeFuture::Initial(
-                move |stream| self.0.handshake(domain, stream),
-                AsyncIoAsSyncIo::new(stream),
-            ))
+            crate::handshake::new_slient_handshake(self, domain, stream)
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {

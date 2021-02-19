@@ -20,10 +20,24 @@ use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::BoxFuture;
 
-pub(crate) enum ClientHandshakeFuture<F, S: Unpin> {
+enum ClientHandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
     MidHandshake(MidHandshakeClientBuilder<AsyncIoAsSyncIo<S>>),
     Done,
+}
+
+pub(crate) fn new_slient_handshake<'a, S>(
+    connector: &'a crate::TlsConnector,
+    domain: &'a str,
+    stream: S,
+) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+where
+    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+{
+    BoxFuture::new(ClientHandshakeFuture::Initial(
+        move |stream| connector.0.handshake(domain, stream),
+        AsyncIoAsSyncIo::new(stream),
+    ))
 }
 
 impl<F, S> Future for ClientHandshakeFuture<F, S>
@@ -86,13 +100,13 @@ where
     }
 }
 
-pub(crate) enum ServerHandshakeFuture<F, S: Unpin> {
+enum ServerHandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
     MidHandshake(MidHandshakeSslStream<AsyncIoAsSyncIo<S>>),
     Done,
 }
 
-pub fn new_server_handshake<'a, S>(
+pub(crate) fn new_server_handshake<'a, S>(
     acceptor: &'a TlsAcceptor,
     stream: S,
 ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
