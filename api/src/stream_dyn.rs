@@ -6,11 +6,11 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-trait TlsStreamImplDyn: AsyncRead + AsyncWrite + Unpin + 'static {
+trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + Unpin + 'static {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 }
 
-impl<S> TlsStreamImplDyn for TlsStream<S> {
+impl<S> TlsStreamBoxDyn for TlsStream<S> {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.get_alpn_protocol()
     }
@@ -21,11 +21,11 @@ impl<S> TlsStreamImplDyn for TlsStream<S> {
 /// Make writing code slightly more concise at cost of some runtime overhead:
 /// * extra allocation per connection
 /// * extra indirect invocation per operation
-pub struct TlsStreamDyn(Box<dyn TlsStreamImplDyn>);
+pub struct TlsStreamBox(Box<dyn TlsStreamBoxDyn>);
 
-impl TlsStreamDyn {
-    pub fn new<S>(stream: TlsStream<S>) -> TlsStreamDyn {
-        TlsStreamDyn(Box::new(stream))
+impl TlsStreamBox {
+    pub fn new<S>(stream: TlsStream<S>) -> TlsStreamBox {
+        TlsStreamBox(Box::new(stream))
     }
 
     pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
@@ -33,7 +33,7 @@ impl TlsStreamDyn {
     }
 }
 
-impl AsyncRead for TlsStreamDyn {
+impl AsyncRead for TlsStreamBox {
     #[cfg(feature = "runtime-tokio")]
     fn poll_read(
         self: Pin<&mut Self>,
@@ -53,7 +53,7 @@ impl AsyncRead for TlsStreamDyn {
     }
 }
 
-impl AsyncWrite for TlsStreamDyn {
+impl AsyncWrite for TlsStreamBox {
     fn poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,

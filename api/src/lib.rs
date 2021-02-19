@@ -31,7 +31,7 @@ pub use error::Result;
 pub use future::BoxFuture;
 pub use stream::TlsStream;
 pub use stream::TlsStreamImpl;
-pub use stream_dyn::TlsStreamDyn;
+pub use stream_dyn::TlsStreamBox;
 
 fn _check_kinds() {
     use std::net::TcpStream;

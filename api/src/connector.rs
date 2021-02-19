@@ -1,6 +1,6 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
-use crate::stream_dyn::TlsStreamDyn;
+use crate::stream_dyn::TlsStreamBox;
 use crate::BoxFuture;
 use crate::TlsStream;
 use crate::X509Cert;
@@ -44,10 +44,10 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamDyn>>
+    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>>
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
-        BoxFuture::new(async move { self.connect(domain, stream).await.map(TlsStreamDyn::new) })
+        BoxFuture::new(async move { self.connect(domain, stream).await.map(TlsStreamBox::new) })
     }
 }
