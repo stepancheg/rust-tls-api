@@ -5,9 +5,9 @@ use openssl::pkcs12::ParsedPkcs12;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::Cert;
 use tls_api::Pkcs12AndPassword;
 use tls_api::PrivateKey;
-use tls_api::X509Cert;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 
@@ -73,10 +73,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         openssl::version::version()
     }
 
-    fn builder_from_der_key(
-        cert: &X509Cert,
-        key: &PrivateKey,
-    ) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_der_key(cert: &Cert, key: &PrivateKey) -> tls_api::Result<TlsAcceptorBuilder> {
         let cert = openssl::x509::X509::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
         let pkey = openssl::pkey::PKey::private_key_from_der(key.get_der())
             .map_err(tls_api::Error::new)?;

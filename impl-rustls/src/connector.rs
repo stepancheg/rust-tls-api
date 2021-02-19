@@ -63,7 +63,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &tls_api::X509Cert) -> tls_api::Result<()> {
+    fn add_root_certificate(&mut self, cert: &tls_api::Cert) -> tls_api::Result<()> {
         let cert = rustls::Certificate(cert.get_der().to_vec());
         self.config
             .root_store

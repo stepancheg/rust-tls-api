@@ -9,14 +9,14 @@ use std::process::Command;
 use std::process::Stdio;
 use std::ptr;
 use std::sync::Once;
+use tls_api::Cert;
 use tls_api::Pkcs12;
 use tls_api::Pkcs12AndPassword;
 use tls_api::PrivateKey;
-use tls_api::X509Cert;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CertAndKeyPem {
-    pub cert: X509Cert,
+    pub cert: Cert,
     pub key: PrivateKey,
 }
 
@@ -29,7 +29,7 @@ impl CertAndKeyPem {
 
 /// Client certificate
 pub struct ClientKeys {
-    pub ca_der: X509Cert,
+    pub ca_der: Cert,
 }
 
 /// Server keys
@@ -106,7 +106,7 @@ fn gen_root_ca() -> CertAndKeyPem {
     assert_eq!(1, pem::parse_many(key.as_bytes()).len());
 
     CertAndKeyPem {
-        cert: X509Cert::from_pem(&cert).unwrap(),
+        cert: Cert::from_pem(&cert).unwrap(),
         key: PrivateKey::from_pem(&key).unwrap(),
     }
 }
@@ -221,7 +221,7 @@ fn gen_cert_for_domain(domain: &str, ca: &CertAndKeyPem) -> CertAndKeyPem {
     assert_eq!(1, pem::parse_many(key.as_bytes()).len());
 
     CertAndKeyPem {
-        cert: X509Cert::from_pem(&cert).unwrap(),
+        cert: Cert::from_pem(&cert).unwrap(),
         key: PrivateKey::from_pem(&key).unwrap(),
     }
 }

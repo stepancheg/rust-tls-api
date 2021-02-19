@@ -1,10 +1,10 @@
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
+use crate::Cert;
 use crate::Pkcs12AndPassword;
 use crate::PrivateKey;
 use crate::TlsStream;
-use crate::X509Cert;
 use std::fmt;
 
 /// A builder for `TlsAcceptor`s.
@@ -58,7 +58,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_DER_KEYS`].
-    fn builder_from_der_key(cert: &X509Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
+    fn builder_from_der_key(cert: &Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
         Err(crate::Error::new_other(

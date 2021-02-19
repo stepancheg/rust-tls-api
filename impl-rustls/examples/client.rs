@@ -1,7 +1,7 @@
 use std::fs;
+use tls_api::Cert;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
-use tls_api::X509Cert;
 use tls_api_test::block_on;
 
 #[cfg(feature = "runtime-async-std")]
@@ -15,7 +15,7 @@ async fn run() {
 
     let mut builder = tls_api_rustls::TlsConnector::builder().unwrap();
     builder
-        .add_root_certificate(&X509Cert::from_der(fs::read("ca.der").unwrap()).unwrap())
+        .add_root_certificate(&Cert::from_der(fs::read("ca.der").unwrap()).unwrap())
         .unwrap();
     let connector = builder.build().unwrap();
     println!("connector ready");

@@ -7,8 +7,8 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::Cert;
 use tls_api::PrivateKey;
-use tls_api::X509Cert;
 
 use crate::handshake::HandshakeFuture;
 
@@ -47,10 +47,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::version()
     }
 
-    fn builder_from_der_key(
-        cert: &X509Cert,
-        key: &PrivateKey,
-    ) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_der_key(cert: &Cert, key: &PrivateKey) -> tls_api::Result<TlsAcceptorBuilder> {
         let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
         let cert = rustls::Certificate(cert.get_der().to_vec());
         config

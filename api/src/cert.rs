@@ -1,8 +1,8 @@
 /// DER-encoded X.509 certificate.
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct X509Cert(Vec<u8>);
+pub struct Cert(Vec<u8>);
 
-impl X509Cert {
+impl Cert {
     fn looks_like_der(bytes: &[u8]) -> bool {
         // Quick check for certificate validity:
         // https://tools.ietf.org/html/rfc2459#section-4.1
@@ -17,19 +17,19 @@ impl X509Cert {
     }
 
     /// Construct from DER-encoded.
-    pub fn from_der(cert_der: impl Into<Vec<u8>>) -> crate::Result<X509Cert> {
+    pub fn from_der(cert_der: impl Into<Vec<u8>>) -> crate::Result<Cert> {
         let cert_der = cert_der.into();
         if !Self::looks_like_der(&cert_der) {
             return Err(crate::Error::new_other("not a DER-encoded certificate"));
         }
-        Ok(X509Cert(cert_der))
+        Ok(Cert(cert_der))
     }
 
     /// Construct from PEM-DER-encoded.
-    pub fn from_pem(cert_der_pem: impl AsRef<[u8]>) -> crate::Result<X509Cert> {
+    pub fn from_pem(cert_der_pem: impl AsRef<[u8]>) -> crate::Result<Cert> {
         let pem = pem::parse_many(cert_der_pem.as_ref());
         let count = pem.len();
-        let mut certs: Vec<X509Cert> = pem
+        let mut certs: Vec<Cert> = pem
             .into_iter()
             .flat_map(|p| match p.tag == "CERTIFICATE" {
                 true => Some(Self::from_der(p.contents)),
@@ -134,7 +134,7 @@ impl PrivateKey {
 }
 
 /// Parse PEM file into a pair of certificate and private key.
-pub fn pem_to_cert_key_pair(pem: &[u8]) -> crate::Result<(X509Cert, PrivateKey)> {
+pub fn pem_to_cert_key_pair(pem: &[u8]) -> crate::Result<(Cert, PrivateKey)> {
     let entries = pem::parse_many(pem);
     if entries.len() != 2 {
         return Err(crate::Error::new_other(&format!(
@@ -142,7 +142,7 @@ pub fn pem_to_cert_key_pair(pem: &[u8]) -> crate::Result<(X509Cert, PrivateKey)>
             entries.len()
         )));
     }
-    let cert = X509Cert::from_pem(pem)?;
+    let cert = Cert::from_pem(pem)?;
     let key = PrivateKey::from_pem(pem)?;
     Ok((cert, key))
 }

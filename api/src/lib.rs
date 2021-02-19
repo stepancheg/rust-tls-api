@@ -41,10 +41,10 @@
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use cert::pem_to_cert_key_pair;
+pub use cert::Cert;
 pub use cert::Pkcs12;
 pub use cert::Pkcs12AndPassword;
 pub use cert::PrivateKey;
-pub use cert::X509Cert;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 pub use connector_box::TlsConnectorBox;

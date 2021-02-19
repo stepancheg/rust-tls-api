@@ -7,7 +7,7 @@ use std::str;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use tls_api::X509Cert;
+use tls_api::Cert;
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 type ClientBuilder = void::Void;
@@ -58,7 +58,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn add_root_certificate(&mut self, cert: &X509Cert) -> tls_api::Result<()> {
+    fn add_root_certificate(&mut self, cert: &Cert) -> tls_api::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             let cert = SecCertificate::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
