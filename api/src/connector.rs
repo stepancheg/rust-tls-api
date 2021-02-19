@@ -1,8 +1,11 @@
+use crate::connector_dyn::TlsConnectorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
+use crate::TlsConnectorTypeDyn;
 use crate::TlsStream;
 use crate::X509Cert;
+use std::marker;
 
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
@@ -55,6 +58,11 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
 
     /// New builder for the acceptor.
     fn builder() -> crate::Result<Self::Builder>;
+
+    /// Dynamic (without type parameter) version of the connector.
+    fn dynamic() -> &'static dyn TlsConnectorTypeDyn {
+        &TlsConnectorTypeImpl::<Self>(marker::PhantomData)
+    }
 
     /// Connect.
     ///

@@ -15,6 +15,7 @@ pub struct AsyncSocketBox(Box<dyn AsyncSocket>);
 impl AsyncSocketBox {
     /// Construct.
     pub fn new<S: AsyncSocket>(socket: S) -> AsyncSocketBox {
+        // TODO: fix double wrapping
         AsyncSocketBox(Box::new(socket))
     }
 
