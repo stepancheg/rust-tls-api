@@ -20,7 +20,7 @@ mod connector;
 mod error;
 mod future;
 mod stream;
-mod stream_dyn;
+mod stream_box;
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
@@ -31,7 +31,7 @@ pub use error::Result;
 pub use future::BoxFuture;
 pub use stream::TlsStream;
 pub use stream::TlsStreamImpl;
-pub use stream_dyn::TlsStreamBox;
+pub use stream_box::TlsStreamBox;
 
 fn _check_kinds() {
     use std::net::TcpStream;

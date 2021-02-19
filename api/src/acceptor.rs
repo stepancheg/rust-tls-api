@@ -1,6 +1,6 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
-use crate::stream_dyn::TlsStreamBox;
+use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
 use crate::Pkcs12AndPassword;
 use crate::PrivateKey;
