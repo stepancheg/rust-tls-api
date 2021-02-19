@@ -1,3 +1,4 @@
+#[deny(broken_intra_doc_links)]
 mod handshake;
 mod stream;
 

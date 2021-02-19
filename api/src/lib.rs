@@ -1,5 +1,6 @@
 //! Implementation neutral TLS API.
 
+#[deny(broken_intra_doc_links)]
 pub mod async_as_sync;
 pub mod runtime;
 

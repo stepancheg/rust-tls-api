@@ -10,6 +10,7 @@
 //! let no_connector: Option<TlsConnector> = None;
 //! ```
 
+#[deny(broken_intra_doc_links)]
 use std::error::Error as std_Error;
 use std::fmt;
 
