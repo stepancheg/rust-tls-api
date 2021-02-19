@@ -40,6 +40,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = protocols;
             crate::not_ios_or_macos()
         }
     }
@@ -52,6 +53,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = verify;
             crate::not_ios_or_macos()
         }
     }
@@ -66,6 +68,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = cert;
             crate::not_ios_or_macos()
         }
     }
@@ -106,6 +109,7 @@ impl tls_api::TlsConnector for TlsConnector {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = (domain, stream);
             BoxFuture::new(async { crate::not_ios_or_macos() })
         }
     }

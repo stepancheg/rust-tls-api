@@ -86,6 +86,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = pkcs12;
             crate::not_ios_or_macos()
         }
     }
@@ -100,6 +101,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
+            let _ = stream;
             BoxFuture::new(async { crate::not_ios_or_macos() })
         }
     }
