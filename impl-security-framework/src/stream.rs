@@ -1,3 +1,5 @@
+#![cfg(any(target_os = "macos", target_os = "ios"))]
+
 use security_framework::secure_transport::SslStream;
 use std::fmt;
 use std::io;

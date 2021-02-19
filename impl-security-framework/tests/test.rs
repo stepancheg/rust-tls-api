@@ -1,3 +1,5 @@
+#![cfg(any(target_os = "macos", target_os = "ios"))]
+
 #[test]
 fn test_google() {
     tls_api_test::test_google::<tls_api_security_framework::TlsConnector>()

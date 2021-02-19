@@ -1,3 +1,5 @@
+#![cfg(any(target_os = "macos", target_os = "ios"))]
+
 use security_framework::secure_transport::ClientHandshakeError;
 use security_framework::secure_transport::HandshakeError;
 use security_framework::secure_transport::MidHandshakeClientBuilder;

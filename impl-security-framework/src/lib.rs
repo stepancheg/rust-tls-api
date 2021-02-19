@@ -1,12 +1,22 @@
+//! Wrapper over `security-framework`.
+//!
+//! This crate is available on non-iOS or non-macOS, but most operations
+//! simply return error.
+
 mod stream;
 
 mod acceptor;
 mod connector;
 mod handshake;
 
+pub use acceptor::SecureTransportTlsAcceptorBuilder;
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
 pub(crate) use stream::TlsStream;
+
+pub(crate) fn not_is_or_macos<T>() -> tls_api::Result<T> {
+    Err(tls_api::Error::new_other("not iOS or macOS"))
+}
