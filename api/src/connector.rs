@@ -44,7 +44,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     ///
     /// At the moment of writing, there are two crates which return `false` here:
     /// * `tls-api-stub`, dummy implementation is not meant to be instantiated
-    /// * `tls-api-security-framework`, `true` only on macOS and iOS, false elsewhere
+    /// * `tls-api-security-framework`, `true` only on macOS and iOS, `false` elsewhere
     const IMPLEMENTED: bool;
 
     /// Whether this implementation supports ALPN negotiation.

@@ -20,6 +20,8 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
     fn get_ref(&self) -> &S;
 }
 
+/// TLS stream object returned by `connect` and `accept` operations.
+///
 /// Since Rust has no HKT, it is not possible to declare something like
 ///
 /// ```ignore
