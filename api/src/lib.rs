@@ -40,8 +40,10 @@ fn _check_kinds() {
     assert_sync::<Error>();
     assert_send::<Error>();
     // assert_sync::<TlsStream<TcpStream>>();
-    #[cfg(feature = "runtime-tokio")]
-    assert_send::<TlsStream<tokio::net::TcpStream>>();
+
+    fn assert_tls_stream_send<S: AsyncSocket>() {
+        assert_send::<TlsStream<S>>();
+    }
 
     fn connect_future_is_send<C, S>(c: &C, s: S)
     where
