@@ -6,6 +6,7 @@ extern crate log;
 #[macro_use]
 mod t;
 
+use std::any;
 use std::str;
 use std::thread;
 
@@ -43,6 +44,14 @@ where
 async fn test_google_impl<C: TlsConnector>() {
     drop(env_logger::try_init());
 
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "connector {} is not implemented; skipping",
+            any::type_name::<C>()
+        );
+        return;
+    }
+
     // First up, resolve google.com
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
 
@@ -72,6 +81,14 @@ pub fn test_google<C: TlsConnector>() {
 async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
     drop(env_logger::try_init());
 
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "connector {} is not implemented; skipping",
+            any::type_name::<C>()
+        );
+        return;
+    }
+
     // First up, resolve google.com
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
 
@@ -90,6 +107,14 @@ pub fn connect_bad_hostname<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_er
 
 async fn connect_bad_hostname_ignored_impl<C: TlsConnector>() {
     drop(env_logger::try_init());
+
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "connector {} is not implemented; skipping",
+            any::type_name::<C>()
+        );
+        return;
+    }
 
     // First up, resolve google.com
     let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
@@ -146,6 +171,22 @@ where
 {
     drop(env_logger::try_init());
 
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "connector {} is not implemented; skipping",
+            any::type_name::<C>()
+        );
+        return;
+    }
+
+    if !A::IMPLEMENTED {
+        eprintln!(
+            "acceptor {} is not implemented; skipping",
+            any::type_name::<A>()
+        );
+        return;
+    }
+
     let acceptor = new_acceptor::<A>();
 
     let acceptor: A = acceptor.build().expect("acceptor build");
@@ -200,13 +241,29 @@ where
 {
     drop(env_logger::try_init());
 
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "connector {} is not implemented; skipping",
+            any::type_name::<C>()
+        );
+        return;
+    }
+
+    if !A::IMPLEMENTED {
+        eprintln!(
+            "acceptor {} is not implemented; skipping",
+            any::type_name::<A>()
+        );
+        return;
+    }
+
     if !C::SUPPORTS_ALPN {
-        debug!("connector does not support ALPN");
+        debug!("connector {} does not support ALPN", any::type_name::<C>());
         return;
     }
 
     if !A::SUPPORTS_ALPN {
-        debug!("acceptor does not support ALPN");
+        debug!("acceptor {} does not support ALPN", any::type_name::<A>());
         return;
     }
 
