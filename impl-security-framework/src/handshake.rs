@@ -20,6 +20,7 @@ use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 
 use crate::TlsAcceptor;
+use tls_api::spi::save_context;
 
 enum ClientHandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
@@ -53,51 +54,40 @@ where
     type Output = tls_api::Result<tls_api::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let self_mut = self.get_mut();
-        unsafe {
+        save_context(cx, || {
+            let self_mut = self.get_mut();
             match mem::replace(self_mut, ClientHandshakeFuture::Done) {
-                ClientHandshakeFuture::Initial(f, mut stream) => {
-                    stream.set_context(cx);
-
-                    match f(stream) {
-                        Ok(mut stream) => {
-                            stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                crate::TlsStream::new(stream),
-                            )));
-                        }
-                        Err(ClientHandshakeError::Interrupted(mut mid)) => {
-                            mid.get_mut().unset_context();
-                            *self_mut = ClientHandshakeFuture::MidHandshake(mid);
-                            return Poll::Pending;
-                        }
-                        Err(ClientHandshakeError::Failure(e)) => {
-                            return Poll::Ready(Err(tls_api::Error::new(e)))
-                        }
+                ClientHandshakeFuture::Initial(f, stream) => match f(stream) {
+                    Ok(stream) => {
+                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
+                            stream,
+                        ))));
                     }
-                }
-                ClientHandshakeFuture::MidHandshake(mut stream) => {
-                    stream.get_mut().set_context(cx);
-                    match stream.handshake() {
-                        Ok(mut stream) => {
-                            stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                crate::TlsStream::new(stream),
-                            )));
-                        }
-                        Err(ClientHandshakeError::Interrupted(mut mid)) => {
-                            mid.get_mut().unset_context();
-                            *self_mut = ClientHandshakeFuture::MidHandshake(mid);
-                            return Poll::Pending;
-                        }
-                        Err(ClientHandshakeError::Failure(e)) => {
-                            return Poll::Ready(Err(tls_api::Error::new(e)))
-                        }
+                    Err(ClientHandshakeError::Interrupted(mid)) => {
+                        *self_mut = ClientHandshakeFuture::MidHandshake(mid);
+                        return Poll::Pending;
                     }
-                }
+                    Err(ClientHandshakeError::Failure(e)) => {
+                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                    }
+                },
+                ClientHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
+                    Ok(stream) => {
+                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
+                            stream,
+                        ))));
+                    }
+                    Err(ClientHandshakeError::Interrupted(mid)) => {
+                        *self_mut = ClientHandshakeFuture::MidHandshake(mid);
+                        return Poll::Pending;
+                    }
+                    Err(ClientHandshakeError::Failure(e)) => {
+                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                    }
+                },
                 ClientHandshakeFuture::Done => panic!("Future must not be polled after ready"),
             }
-        }
+        })
     }
 }
 
@@ -135,50 +125,39 @@ where
     type Output = tls_api::Result<tls_api::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let self_mut = self.get_mut();
-        unsafe {
+        save_context(cx, || {
+            let self_mut = self.get_mut();
             match mem::replace(self_mut, ServerHandshakeFuture::Done) {
-                ServerHandshakeFuture::Initial(f, mut stream) => {
-                    stream.set_context(cx);
-
-                    match f(stream) {
-                        Ok(mut stream) => {
-                            stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                crate::TlsStream::new(stream),
-                            )));
-                        }
-                        Err(HandshakeError::Interrupted(mut mid)) => {
-                            mid.get_mut().unset_context();
-                            *self_mut = ServerHandshakeFuture::MidHandshake(mid);
-                            return Poll::Pending;
-                        }
-                        Err(HandshakeError::Failure(e)) => {
-                            return Poll::Ready(Err(tls_api::Error::new(e)))
-                        }
+                ServerHandshakeFuture::Initial(f, stream) => match f(stream) {
+                    Ok(stream) => {
+                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
+                            stream,
+                        ))));
                     }
-                }
-                ServerHandshakeFuture::MidHandshake(mut stream) => {
-                    stream.get_mut().set_context(cx);
-                    match stream.handshake() {
-                        Ok(mut stream) => {
-                            stream.get_mut().unset_context();
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(
-                                crate::TlsStream::new(stream),
-                            )));
-                        }
-                        Err(HandshakeError::Interrupted(mut mid)) => {
-                            mid.get_mut().unset_context();
-                            *self_mut = ServerHandshakeFuture::MidHandshake(mid);
-                            return Poll::Pending;
-                        }
-                        Err(HandshakeError::Failure(e)) => {
-                            return Poll::Ready(Err(tls_api::Error::new(e)))
-                        }
+                    Err(HandshakeError::Interrupted(mid)) => {
+                        *self_mut = ServerHandshakeFuture::MidHandshake(mid);
+                        return Poll::Pending;
                     }
-                }
+                    Err(HandshakeError::Failure(e)) => {
+                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                    }
+                },
+                ServerHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
+                    Ok(stream) => {
+                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
+                            stream,
+                        ))));
+                    }
+                    Err(HandshakeError::Interrupted(mid)) => {
+                        *self_mut = ServerHandshakeFuture::MidHandshake(mid);
+                        return Poll::Pending;
+                    }
+                    Err(HandshakeError::Failure(e)) => {
+                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                    }
+                },
                 ServerHandshakeFuture::Done => panic!("Future must not be polled after ready"),
             }
-        }
+        })
     }
 }

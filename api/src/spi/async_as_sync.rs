@@ -7,15 +7,16 @@ use std::fmt;
 use std::io;
 use std::io::Read;
 use std::io::Write;
+use std::marker::PhantomData;
 use std::pin::Pin;
-use std::ptr;
 use std::task::Context;
 use std::task::Poll;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
+use crate::spi::thread_local_context::restore_context;
+use crate::spi::thread_local_context::save_context;
 use crate::spi::TlsStreamImpl;
-use std::marker::PhantomData;
 
 /// Async IO object as sync IO.
 ///
@@ -23,7 +24,6 @@ use std::marker::PhantomData;
 #[derive(Debug)]
 pub struct AsyncIoAsSyncIo<S: Unpin> {
     inner: S,
-    context: *mut (),
 }
 
 unsafe impl<S: Unpin + Send> Send for AsyncIoAsSyncIo<S> {}
@@ -41,61 +41,38 @@ impl<S: Unpin> AsyncIoAsSyncIo<S> {
 
     /// Wrap sync object in this wrapper.
     pub fn new(inner: S) -> AsyncIoAsSyncIo<S> {
-        AsyncIoAsSyncIo {
-            inner,
-            context: ptr::null_mut(),
-        }
+        AsyncIoAsSyncIo { inner }
     }
 
-    /// Store async context inside this object
-    pub unsafe fn set_context(&mut self, cx: &mut Context<'_>) {
-        assert!(self.context.is_null());
-        self.context = cx as *mut _ as *mut _;
-    }
-
-    /// Clear async context
-    pub unsafe fn unset_context(&mut self) {
-        assert!(!self.context.is_null());
-        self.context = ptr::null_mut();
-    }
-}
-
-impl<S: Unpin> AsyncIoAsSyncIo<S> {
-    fn with_context_inner<F, R>(&mut self, f: F) -> R
-    where
-        F: FnOnce(&mut Context<'_>, Pin<&mut S>) -> R,
-    {
-        unsafe {
-            assert!(!self.context.is_null());
-            let context = &mut *(self.context as *mut _);
-            f(context, Pin::new(&mut self.inner))
-        }
+    fn get_inner_pin(&mut self) -> Pin<&mut S> {
+        Pin::new(&mut self.inner)
     }
 }
 
 impl<S: AsyncRead + Unpin> Read for AsyncIoAsSyncIo<S> {
-    #[cfg(feature = "runtime-tokio")]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.with_context_inner(|cx, s| {
-            let mut read_buf = tokio::io::ReadBuf::new(buf);
-            let () = poll_to_result(s.poll_read(cx, &mut read_buf))?;
-            Ok(read_buf.filled().len())
+        restore_context_poll_to_result(|cx| {
+            #[cfg(feature = "runtime-tokio")]
+            {
+                let mut read_buf = tokio::io::ReadBuf::new(buf);
+                let p = self.get_inner_pin().poll_read(cx, &mut read_buf);
+                p.map_ok(|()| read_buf.filled().len())
+            }
+            #[cfg(feature = "runtime-async-std")]
+            {
+                self.get_inner_pin().poll_read(cx, buf)
+            }
         })
-    }
-
-    #[cfg(feature = "runtime-async-std")]
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.with_context_inner(|cx, s| poll_to_result(s.poll_read(cx, buf)))
     }
 }
 
 impl<S: AsyncWrite + Unpin> Write for AsyncIoAsSyncIo<S> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.with_context_inner(|cx, s| poll_to_result(s.poll_write(cx, buf)))
+        restore_context_poll_to_result(|cx| self.get_inner_pin().poll_write(cx, buf))
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        self.with_context_inner(|cx, s| poll_to_result(s.poll_flush(cx)))
+        restore_context_poll_to_result(|cx| self.get_inner_pin().poll_flush(cx))
     }
 }
 
@@ -120,7 +97,7 @@ impl fmt::Display for ShouldNotReturnWouldBlockFromAsync {
 }
 
 /// Convert nonblocking API to sync result
-pub fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
+fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
     match r {
         Poll::Ready(Ok(r)) => Ok(r),
         Poll::Ready(Err(e)) if e.kind() == io::ErrorKind::WouldBlock => Err(io::Error::new(
@@ -130,6 +107,12 @@ pub fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
         Poll::Ready(Err(e)) => Err(e),
         Poll::Pending => Err(io::Error::from(io::ErrorKind::WouldBlock)),
     }
+}
+
+fn restore_context_poll_to_result<R>(
+    f: impl FnOnce(&mut Context<'_>) -> Poll<io::Result<R>>,
+) -> io::Result<R> {
+    restore_context(|cx| poll_to_result(f(cx)))
 }
 
 /// Used by API implementors.
@@ -182,24 +165,6 @@ where
     }
 }
 
-struct Guard2<'a, A, O>(&'a mut TlsStreamOverSyncIo<A, O>)
-where
-    A: Unpin,
-    O: AsyncWrapperOps<A>;
-
-impl<'a, A, O> Drop for Guard2<'a, A, O>
-where
-    A: Unpin,
-    O: AsyncWrapperOps<A>,
-{
-    fn drop(&mut self) {
-        unsafe {
-            let s = O::get_mut(&mut self.0.stream);
-            s.unset_context();
-        }
-    }
-}
-
 impl<A, O> TlsStreamOverSyncIo<A, O>
 where
     A: Unpin,
@@ -213,18 +178,6 @@ where
         }
     }
 
-    fn with_context<F, R>(&mut self, cx: &mut Context<'_>, f: F) -> R
-    where
-        F: FnOnce(&mut Self) -> R,
-    {
-        unsafe {
-            let s = O::get_mut(&mut self.stream);
-            s.set_context(cx);
-            let g = Guard2(self);
-            f(g.0)
-        }
-    }
-
     fn with_context_sync_to_async<F, R>(
         &mut self,
         cx: &mut Context<'_>,
@@ -233,7 +186,7 @@ where
     where
         F: FnOnce(&mut Self) -> io::Result<R>,
     {
-        result_to_poll(Self::with_context(self, cx, f))
+        result_to_poll(save_context(cx, || f(self)))
     }
 
     #[cfg(feature = "runtime-tokio")]

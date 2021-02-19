@@ -9,6 +9,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
+use tls_api::spi::save_context;
 use tls_api::AsyncSocket;
 
 pub(crate) enum HandshakeFuture<A, T>
@@ -28,20 +29,17 @@ where
     type Output = tls_api::Result<tls_api::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        unsafe {
+        save_context(cx, || {
             let self_mut = self.get_mut();
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::MidHandshake(mut stream) => {
                     // sanity check
                     assert!(stream.stream.sess.is_handshaking());
-                    stream.stream.sock.set_context(cx);
                     match stream.stream.sess.complete_io(&mut stream.stream.sock) {
                         Ok(_) => {
-                            stream.stream.sock.unset_context();
                             return Poll::Ready(Ok(tls_api::TlsStream::new(stream)));
                         }
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                            stream.stream.sock.unset_context();
                             *self_mut = HandshakeFuture::MidHandshake(stream);
                             return Poll::Pending;
                         }
@@ -50,6 +48,6 @@ where
                 }
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),
             }
-        }
+        })
     }
 }
