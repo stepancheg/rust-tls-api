@@ -77,8 +77,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         cert: &X509Cert,
         key: &PrivateKey,
     ) -> tls_api::Result<TlsAcceptorBuilder> {
-        let cert = openssl::x509::X509::from_der(cert.as_bytes()).map_err(tls_api::Error::new)?;
-        let pkey = openssl::pkey::PKey::private_key_from_der(key.as_bytes())
+        let cert = openssl::x509::X509::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
+        let pkey = openssl::pkey::PKey::private_key_from_der(key.get_der())
             .map_err(tls_api::Error::new)?;
 
         let mut builder =

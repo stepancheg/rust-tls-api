@@ -1,6 +1,7 @@
 //! Implementation neutral TLS API.
 
 #![deny(broken_intra_doc_links)]
+#![deny(missing_docs)]
 
 pub mod async_as_sync;
 pub mod runtime;
@@ -31,8 +32,13 @@ pub use future::BoxFuture;
 pub use socket::AsyncSocket;
 pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
-pub use stream::TlsStreamImpl;
 pub use stream_box::TlsStreamBox;
+
+/// Interfaces needed by API implementor (like `tls-api-rustls`),
+/// and not needed by the users of API.
+pub mod spi {
+    pub use crate::stream::TlsStreamImpl;
+}
 
 fn _check_kinds() {
     fn assert_sync<T: Sync>() {}

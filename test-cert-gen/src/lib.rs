@@ -378,7 +378,7 @@ mod test {
         let client = temp_dir.path().join("client");
         let server = temp_dir.path().join("server.pem");
 
-        fs::write(&client, keys.client.ca_der.as_bytes()).unwrap();
+        fs::write(&client, keys.client.ca_der.get_der()).unwrap();
         fs::write(&server, keys.server.server_cert_and_key.to_pem_incorrect()).unwrap();
 
         let port = 1234;

@@ -9,29 +9,55 @@ use std::fmt;
 
 /// A builder for `TlsAcceptor`s.
 pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
+    /// Type of acceptor produced by this builder.
     type Acceptor: TlsAcceptor;
 
-    // Type of underlying builder
+    /// Type of the underlying builder.
+    ///
+    /// Underlying builder might be needed to perform custom setup
+    /// when it is not supported by common API.
     type Underlying;
 
+    /// Specify ALPN protocols for negotiation.
+    ///
+    /// This operation returns an error if the implemenation does not support ALPN.
+    ///
+    /// Whether ALPN is supported, can be queried using [`TlsAcceptor::SUPPORTS_ALPN`].
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
 
+    /// Get the underlying builder.
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
+    /// Finish the acceptor construction.
     fn build(self) -> crate::Result<Self::Acceptor>;
 }
 
 /// A builder for server-side TLS connections.
 pub trait TlsAcceptor: Sized + Sync + Send + 'static {
+    /// Type of the builder for this acceptor.
     type Builder: TlsAcceptorBuilder<Acceptor = Self>;
 
+    /// Whether this acceptor type is implemented.
+    ///
+    /// For example, `tls-api-security-framework` is available on Linux,
+    /// but all operations result in error, so `IMPLEMENTED = false`
+    /// for that implementation.
     const IMPLEMENTED: bool;
+    /// Whether this implementation supports ALPN negotiation.
     const SUPPORTS_ALPN: bool;
+    /// Whether this implementation supports construction of acceptor using
+    /// a pair of a DER certificate and file pair.
     const SUPPORTS_DER_KEYS: bool;
+    /// Whether this implementation supports construction of acceptor using
+    /// PKCS #12 file.
     const SUPPORTS_PKCS12_KEYS: bool;
 
+    /// Unspecified version information about this implementation.
     fn version() -> &'static str;
 
+    /// New builder from given server key.
+    ///
+    /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_DER_KEYS`].
     fn builder_from_der_key(cert: &X509Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
@@ -40,6 +66,9 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         ))
     }
 
+    /// New builder from given server key.
+    ///
+    /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_PKCS12_KEYS`].
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> crate::Result<Self::Builder> {
         let _ = pkcs12;
         assert!(!Self::SUPPORTS_PKCS12_KEYS);
@@ -48,10 +77,16 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         ))
     }
 
+    /// Accept a connection.
+    ///
+    /// This operation returns a future which is resolved when the negotiation is complete,
+    /// and the stream is ready to send and receive.
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
     where
         S: AsyncSocket + fmt::Debug + Unpin;
 
+    /// More dynamic version of [`TlsAcceptor::accept`]: returned stream object
+    /// does not have a type parameter.
     fn accept_dyn<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStreamBox>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,

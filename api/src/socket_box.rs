@@ -8,10 +8,12 @@ use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::AsyncSocket;
 
+/// Newtype for [`Box<dyn AsyncSocket>`](AsyncSocket).
 #[derive(Debug)]
 pub struct AsyncSocketBox(Box<dyn AsyncSocket>);
 
 impl AsyncSocketBox {
+    /// Construct.
     pub fn new<S: AsyncSocket>(socket: S) -> AsyncSocketBox {
         AsyncSocketBox(Box::new(socket))
     }

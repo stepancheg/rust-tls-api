@@ -1,5 +1,6 @@
 //! Utility used in different implementations of TLS API.
-//! Not needed for regular users of the library.
+//!
+//! Not to be used by regular users of the library.
 
 use std::error;
 use std::fmt;
@@ -13,7 +14,7 @@ use std::task::Poll;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
-use crate::TlsStreamImpl;
+use crate::spi::TlsStreamImpl;
 use std::marker::PhantomData;
 
 /// Async IO object as sync IO.
@@ -131,27 +132,40 @@ pub fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {
     }
 }
 
+/// Used by API implementors.
 pub trait AsyncWrapperOps<A>: fmt::Debug + Unpin + Send + 'static
 where
     A: Unpin,
 {
+    /// API-implementation of wrapper stream.
+    ///
+    /// Wrapped object is always [`AsyncIoAsSyncIo`].
     type SyncWrapper: Read + Write + Unpin + Send + 'static;
 
+    /// Cast the wrapper to [`fmt::Debug`] or provide substitute debug.
+    /// This is work around not all wrappers implementing [`fmt::Debug`].
+    // TODO: replace with fmt-like signature
     fn debug(w: &Self::SyncWrapper) -> &dyn fmt::Debug;
 
+    /// Unwrap the wrapper.
     fn get_mut(w: &mut Self::SyncWrapper) -> &mut AsyncIoAsSyncIo<A>;
+    /// Unwrap the wrapper.
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A>;
 
+    /// Loosely-defined shutdown operation.
     fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()>;
 
+    /// Get negotiated ALPN protocol.
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> crate::Result<Option<Vec<u8>>>;
 }
 
+/// Implementation of `TlsStreamImpl` for APIs using synchronous I/O.
 pub struct TlsStreamOverSyncIo<A, O>
 where
     A: Unpin,
     O: AsyncWrapperOps<A>,
 {
+    /// TLS-implementation.
     pub stream: O::SyncWrapper,
     _phantom: PhantomData<(A, O)>,
 }
@@ -191,6 +205,7 @@ where
     A: Unpin,
     O: AsyncWrapperOps<A>,
 {
+    /// Constructor.
     pub fn new(stream: O::SyncWrapper) -> TlsStreamOverSyncIo<A, O> {
         TlsStreamOverSyncIo {
             stream,

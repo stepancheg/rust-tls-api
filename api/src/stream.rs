@@ -13,8 +13,10 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
     /// Get negotiated ALPN protocol negotiated.
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 
+    /// Get the underlying socket.
     fn get_mut(&mut self) -> &mut S;
 
+    /// Get the underlying socket.
     fn get_ref(&self) -> &S;
 }
 
@@ -36,14 +38,19 @@ impl<S: AsyncSocket> fmt::Debug for TlsStream<S> {
 }
 
 impl<S: AsyncSocket> TlsStream<S> {
+    /// Construct a stream from a stream implementation.
+    ///
+    /// This function is intended to be used by API implementors, not by users.
     pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
     }
 
+    /// Get a reference the underlying TLS-wrapped socket.
     pub fn get_mut(&mut self) -> &mut S {
         self.0.get_mut()
     }
 
+    /// Get a reference the underlying TLS-wrapped socket.
     pub fn get_ref(&self) -> &S {
         self.0.get_ref()
     }

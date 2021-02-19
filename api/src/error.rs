@@ -5,18 +5,22 @@ use std::fmt;
 use std::io;
 use std::result;
 
+/// Error returned by virtually all operations of this crate.
 pub struct Error(Box<dyn error::Error + Send + Sync + 'static>);
 
 /// An error returned from the TLS implementation.
 impl Error {
+    /// Construct an error by wrapping another error.
     pub fn new<E: error::Error + 'static + Send + Sync>(e: E) -> Error {
         Error(Box::new(e))
     }
 
+    /// Construct an error from text message.
     pub fn new_other(message: &str) -> Error {
         Self::new(io::Error::new(io::ErrorKind::Other, message))
     }
 
+    /// Unwrap the error.
     pub fn into_inner(self) -> Box<dyn error::Error + Send + Sync> {
         self.0
     }

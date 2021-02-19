@@ -11,7 +11,7 @@ fn main() {
     .unwrap();
 
     println!("writing root ca to ca.der");
-    fs::write("ca.der", keys.client.ca_der.as_bytes()).unwrap();
+    fs::write("ca.der", keys.client.ca_der.get_der()).unwrap();
     println!("writing root ca to ca.pem");
     fs::write("ca.pem", keys.client.ca_der.to_pem()).unwrap();
 }

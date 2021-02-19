@@ -16,7 +16,7 @@ impl X509Cert {
         bytes.starts_with(b"\x30")
     }
 
-    // TODO: result
+    /// Construct from DER-encoded.
     pub fn from_der(cert_der: impl Into<Vec<u8>>) -> crate::Result<X509Cert> {
         let cert_der = cert_der.into();
         if !Self::looks_like_der(&cert_der) {
@@ -25,6 +25,7 @@ impl X509Cert {
         Ok(X509Cert(cert_der))
     }
 
+    /// Construct from PEM-DER-encoded.
     pub fn from_pem(cert_der_pem: impl AsRef<[u8]>) -> crate::Result<X509Cert> {
         let pem = pem::parse_many(cert_der_pem.as_ref());
         let count = pem.len();
@@ -52,10 +53,12 @@ impl X509Cert {
         }
     }
 
-    pub fn as_bytes(&self) -> &[u8] {
+    /// Get certificate as DER.
+    pub fn get_der(&self) -> &[u8] {
         &self.0
     }
 
+    /// Convert a certificate to PEM format.
     pub fn to_pem(&self) -> String {
         pem::encode(&pem::Pem {
             tag: "CERTIFICATE".to_owned(),
@@ -74,6 +77,7 @@ impl PrivateKey {
         bytes.starts_with(b"\x30")
     }
 
+    /// Construct a private key from DER binary file.
     pub fn from_der(key_der: impl Into<Vec<u8>>) -> crate::Result<PrivateKey> {
         let key_der = key_der.into();
         // TODO: better assertion
@@ -83,6 +87,9 @@ impl PrivateKey {
         Ok(PrivateKey(key_der))
     }
 
+    /// Construct a private key from PEM text file.
+    ///
+    /// This operation returns an error if PEM file contains zero or more than one certificate.
     pub fn from_pem(key_pem: impl AsRef<[u8]>) -> crate::Result<PrivateKey> {
         let pem = pem::parse_many(key_pem.as_ref());
         let count = pem.len();
@@ -110,11 +117,14 @@ impl PrivateKey {
         }
     }
 
-    pub fn as_bytes(&self) -> &[u8] {
+    /// Get DER.
+    pub fn get_der(&self) -> &[u8] {
         &self.0
     }
 
-    /// Incorrect because it assumes it should output `RSA PRIVATE KEY`
+    /// Incorrect because it assumes it outputs `RSA PRIVATE KEY`
+    /// without verifying that the private key is actually RSA.
+    #[doc(hidden)]
     pub fn to_pem_incorrect(&self) -> String {
         pem::encode(&pem::Pem {
             tag: "RSA PRIVATE KEY".to_owned(),
@@ -123,6 +133,7 @@ impl PrivateKey {
     }
 }
 
+/// Parse PEM file into a pair of certificate and private key.
 pub fn pem_to_cert_key_pair(pem: &[u8]) -> crate::Result<(X509Cert, PrivateKey)> {
     let entries = pem::parse_many(pem);
     if entries.len() != 2 {
@@ -141,6 +152,8 @@ pub struct Pkcs12(pub Vec<u8>);
 
 /// Pair of PKCS #12 and password.
 pub struct Pkcs12AndPassword {
+    /// PKCS #12 file, typically containing a certificate and private key.
     pub pkcs12: Pkcs12,
+    /// Password for the file.
     pub password: String,
 }

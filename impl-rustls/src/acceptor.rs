@@ -52,9 +52,9 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         key: &PrivateKey,
     ) -> tls_api::Result<TlsAcceptorBuilder> {
         let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
-        let cert = rustls::Certificate(cert.as_bytes().to_vec());
+        let cert = rustls::Certificate(cert.get_der().to_vec());
         config
-            .set_single_cert(vec![cert], rustls::PrivateKey(key.as_bytes().to_vec()))
+            .set_single_cert(vec![cert], rustls::PrivateKey(key.get_der().to_vec()))
             .map_err(tls_api::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }

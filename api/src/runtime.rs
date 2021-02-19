@@ -1,3 +1,5 @@
+//! Tokio or async-std type reexports.
+
 #[cfg(feature = "runtime-async-std")]
 pub use futures_util::io::AsyncRead;
 #[cfg(feature = "runtime-async-std")]

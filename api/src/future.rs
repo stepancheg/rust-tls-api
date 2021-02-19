@@ -7,6 +7,7 @@ use std::task::Poll;
 pub struct BoxFuture<'a, R>(Pin<Box<dyn Future<Output = R> + Send + 'a>>);
 
 impl<'a, R> BoxFuture<'a, R> {
+    /// Wrap a future.
     pub fn new(f: impl Future<Output = R> + Send + 'a) -> Self {
         BoxFuture(Box::pin(f))
     }

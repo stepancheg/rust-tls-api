@@ -27,10 +27,12 @@ impl<S: AsyncSocket> TlsStreamBoxDyn for TlsStream<S> {
 pub struct TlsStreamBox(Box<dyn TlsStreamBoxDyn>);
 
 impl TlsStreamBox {
+    /// Wrap.
     pub fn new<S: AsyncSocket>(stream: TlsStream<S>) -> TlsStreamBox {
         TlsStreamBox(Box::new(stream))
     }
 
+    /// Get ALPN protocol negotiated for this connection.
     pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
