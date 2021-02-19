@@ -106,7 +106,7 @@ impl tls_api::TlsConnector for TlsConnector {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            crate::not_ios_or_macos()
+            BoxFuture::new(async { crate::not_ios_or_macos() })
         }
     }
 }
