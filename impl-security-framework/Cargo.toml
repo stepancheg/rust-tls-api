@@ -12,13 +12,15 @@ edition = "2018"
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-security-framework = { version = "2.0.0", features = ["alpn"] }
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
 tokio = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
 # this is needed until package-features is stabelized (issue #5364)
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
+
+[target."cfg(any(target_os = \"macos\", target_os = \"ios\"))".dependencies]
+security-framework = { version = "2.0.0", features = ["alpn"] }
 
 [features]
 default = ["runtime-tokio"]
