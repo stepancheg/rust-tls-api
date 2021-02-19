@@ -15,6 +15,7 @@ pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 pub(crate) use stream::TlsStream;
 
 #[allow(dead_code)]

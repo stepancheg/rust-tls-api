@@ -1,22 +1,12 @@
 #[cfg(any(target_os = "macos", target_os = "ios"))]
-use crate::handshake::ServerHandshakeFuture;
-
-#[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::certificate::SecCertificate;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::identity::SecIdentity;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::import_export::Pkcs12ImportOptions;
-#[cfg(any(target_os = "macos", target_os = "ios"))]
-use security_framework::secure_transport::SslConnectionType;
-#[cfg(any(target_os = "macos", target_os = "ios"))]
-use security_framework::secure_transport::SslContext;
-#[cfg(any(target_os = "macos", target_os = "ios"))]
-use security_framework::secure_transport::SslProtocolSide;
 
 use std::fmt;
 
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::BoxFuture;
@@ -29,8 +19,8 @@ pub struct SecureTransportTlsAcceptorBuilder {
     pub certs: Vec<SecCertificate>,
 }
 
-pub struct TlsAcceptor(SecureTransportTlsAcceptorBuilder);
-pub struct TlsAcceptorBuilder(SecureTransportTlsAcceptorBuilder);
+pub struct TlsAcceptor(pub SecureTransportTlsAcceptorBuilder);
+pub struct TlsAcceptorBuilder(pub SecureTransportTlsAcceptorBuilder);
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
@@ -107,17 +97,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            BoxFuture::new(async move {
-                let mut ctx = SslContext::new(SslProtocolSide::SERVER, SslConnectionType::STREAM)
-                    .map_err(tls_api::Error::new)?;
-                ctx.set_certificate(&self.0.identity, &self.0.certs)
-                    .map_err(tls_api::Error::new)?;
-                ServerHandshakeFuture::Initial(
-                    move |s| ctx.handshake(s),
-                    AsyncIoAsSyncIo::new(stream),
-                )
-                .await
-            })
+            crate::handshake::new_server_handshake(self, stream)
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {

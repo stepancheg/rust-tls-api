@@ -1,9 +1,13 @@
 #![cfg(any(target_os = "macos", target_os = "ios"))]
 
+use crate::TlsAcceptor;
 use security_framework::secure_transport::ClientHandshakeError;
 use security_framework::secure_transport::HandshakeError;
 use security_framework::secure_transport::MidHandshakeClientBuilder;
 use security_framework::secure_transport::MidHandshakeSslStream;
+use security_framework::secure_transport::SslConnectionType;
+use security_framework::secure_transport::SslContext;
+use security_framework::secure_transport::SslProtocolSide;
 use security_framework::secure_transport::SslStream;
 use std::fmt;
 use std::future::Future;
@@ -14,6 +18,7 @@ use std::task::Poll;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::BoxFuture;
 
 pub(crate) enum ClientHandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
@@ -85,6 +90,23 @@ pub(crate) enum ServerHandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
     MidHandshake(MidHandshakeSslStream<AsyncIoAsSyncIo<S>>),
     Done,
+}
+
+pub fn new_server_handshake<'a, S>(
+    acceptor: &'a TlsAcceptor,
+    stream: S,
+) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+where
+    S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+{
+    BoxFuture::new(async move {
+        let mut ctx = SslContext::new(SslProtocolSide::SERVER, SslConnectionType::STREAM)
+            .map_err(tls_api::Error::new)?;
+        ctx.set_certificate(&acceptor.0.identity, &acceptor.0.certs)
+            .map_err(tls_api::Error::new)?;
+        ServerHandshakeFuture::Initial(move |s| ctx.handshake(s), AsyncIoAsSyncIo::new(stream))
+            .await
+    })
 }
 
 impl<F, S> Future for ServerHandshakeFuture<F, S>
