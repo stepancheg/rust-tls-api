@@ -75,6 +75,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
+    fn version() -> &'static str {
+        crate::version()
+    }
+
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {

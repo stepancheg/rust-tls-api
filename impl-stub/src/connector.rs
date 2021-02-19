@@ -40,6 +40,10 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = false;
     const SUPPORTS_ALPN: bool = false;
 
+    fn version() -> &'static str {
+        "stub"
+    }
+
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         Err(tls_api::Error::new(Error))
     }

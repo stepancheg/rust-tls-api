@@ -75,6 +75,10 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = HAS_ALPN;
 
+    fn version() -> &'static str {
+        openssl::version::version()
+    }
+
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         let builder = openssl::ssl::SslConnector::builder(openssl::ssl::SslMethod::tls())
             .map_err(tls_api::Error::new)?;

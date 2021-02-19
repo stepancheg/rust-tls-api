@@ -6,6 +6,8 @@ extern crate log;
 #[macro_use]
 mod t;
 
+mod version;
+
 use std::any;
 use std::str;
 use std::thread;
@@ -19,6 +21,8 @@ use tls_api::TlsConnectorBuilder;
 use tls_api::TlsStream;
 
 use std::net::ToSocketAddrs;
+
+pub use version::test_version;
 
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpListener;

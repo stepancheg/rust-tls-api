@@ -67,6 +67,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
+    fn version() -> &'static str {
+        openssl::version::version()
+    }
+
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())

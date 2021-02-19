@@ -43,6 +43,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = true;
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
+    fn version() -> &'static str {
+        crate::version()
+    }
+
     fn builder_from_der_key(
         cert: &X509Cert,
         key: &PrivateKey,

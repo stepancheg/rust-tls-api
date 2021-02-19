@@ -90,6 +90,10 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = true;
 
+    fn version() -> &'static str {
+        crate::version()
+    }
+
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         Ok(TlsConnectorBuilder {
             config: rustls::ClientConfig::new(),

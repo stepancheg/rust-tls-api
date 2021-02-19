@@ -84,6 +84,10 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = true;
 
+    fn version() -> &'static str {
+        crate::version()
+    }
+
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {

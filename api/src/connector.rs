@@ -28,6 +28,8 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     const IMPLEMENTED: bool;
     const SUPPORTS_ALPN: bool;
 
+    fn version() -> &'static str;
+
     fn builder() -> crate::Result<Self::Builder>;
 
     fn connect<'a, S>(

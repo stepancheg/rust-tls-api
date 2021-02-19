@@ -10,3 +10,7 @@ pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
 pub(crate) use stream::TlsStream;
+
+pub(crate) fn version() -> &'static str {
+    "unknown"
+}

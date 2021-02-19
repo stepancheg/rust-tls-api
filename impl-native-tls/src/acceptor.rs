@@ -47,6 +47,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
+    fn version() -> &'static str {
+        crate::version()
+    }
+
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<Self::Builder> {
         Ok(TlsAcceptorBuilder(native_tls::TlsAcceptor::builder(
             native_tls::Identity::from_pkcs12(&pkcs12.pkcs12.0, &pkcs12.password)

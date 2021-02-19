@@ -30,6 +30,8 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     const SUPPORTS_DER_KEYS: bool;
     const SUPPORTS_PKCS12_KEYS: bool;
 
+    fn version() -> &'static str;
+
     fn builder_from_der_key(cert: &X509Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
