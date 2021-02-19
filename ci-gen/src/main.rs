@@ -1,3 +1,4 @@
+use crate::actions::cargo_doc;
 use crate::actions::cargo_test;
 use crate::actions::checkout_sources;
 use crate::actions::checkout_sources_depth;
@@ -103,6 +104,21 @@ fn rustfmt_job() -> Job {
     }
 }
 
+fn cargo_doc_job() -> Job {
+    let os = LINUX;
+    let mut steps = Vec::new();
+    steps.push(checkout_sources());
+    steps.push(rust_install_toolchain(RustToolchain::Stable));
+    steps.push(cargo_doc("cargo doc", ""));
+    Job {
+        id: "cargo-doc".to_owned(),
+        name: "cargo doc".to_owned(),
+        runs_on: os.ghwf,
+        steps,
+        ..Default::default()
+    }
+}
+
 fn jobs() -> Yaml {
     let mut r = Vec::new();
     for rt in runtimes() {
@@ -126,6 +142,8 @@ fn jobs() -> Yaml {
             }
         }
     }
+
+    r.push(cargo_doc_job());
 
     r.push(rustfmt_job());
     r.push(super_linter_job());

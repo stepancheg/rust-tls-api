@@ -785,6 +785,22 @@ jobs:
                   command: test
                   args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+    cargo-doc:
+        name: cargo doc
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v2
+            - name: Install toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  profile: minimal
+                  toolchain: stable
+                  override: true
+            - name: cargo doc
+              uses: actions-rs/cargo@v1
+              with:
+                  command: doc
     rustfmt-check:
         name: rustfmt check
         runs-on: ubuntu-latest
