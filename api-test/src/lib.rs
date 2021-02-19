@@ -69,7 +69,7 @@ pub fn test_google<C: TlsConnector>() {
     block_on(test_google_impl::<C>())
 }
 
-async fn connect_bad_hostname_impl<C: TlsConnector>() -> tls_api::Error {
+async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
     drop(env_logger::try_init());
 
     // First up, resolve google.com
@@ -77,14 +77,15 @@ async fn connect_bad_hostname_impl<C: TlsConnector>() -> tls_api::Error {
 
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = t!(TcpStream::connect(addr).await);
-    connector
+    let error = connector
         .connect("goggle.com", tcp_stream)
         .await
-        .unwrap_err()
+        .unwrap_err();
+    check_error(error);
 }
 
-pub fn connect_bad_hostname<C: TlsConnector>() -> tls_api::Error {
-    block_on(connect_bad_hostname_impl::<C>())
+pub fn connect_bad_hostname<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
+    block_on(connect_bad_hostname_impl::<C, F>(check_error))
 }
 
 async fn connect_bad_hostname_ignored_impl<C: TlsConnector>() {

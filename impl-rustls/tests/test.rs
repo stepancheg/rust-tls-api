@@ -7,17 +7,18 @@ fn test_google() {
 
 #[test]
 fn connect_bad_hostname() {
-    let err = tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector>();
-    let err: Box<io::Error> = err.into_inner().downcast().expect("io::Error");
-    let err: &rustls::TLSError = err
-        .get_ref()
-        .expect("cause")
-        .downcast_ref()
-        .expect("rustls::TLSError");
-    match err {
-        rustls::TLSError::WebPKIError(webpki::Error::CertNotValidForName) => {}
-        err => panic!("wrong error: {:?}", err),
-    }
+    tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector, _>(|err| {
+        let err: Box<io::Error> = err.into_inner().downcast().expect("io::Error");
+        let err: &rustls::TLSError = err
+            .get_ref()
+            .expect("cause")
+            .downcast_ref()
+            .expect("rustls::TLSError");
+        match err {
+            rustls::TLSError::WebPKIError(webpki::Error::CertNotValidForName) => {}
+            err => panic!("wrong error: {:?}", err),
+        }
+    });
 }
 
 #[test]

@@ -5,7 +5,7 @@ fn test_google() {
 
 #[test]
 fn connect_bad_hostname() {
-    tls_api_test::connect_bad_hostname::<tls_api_native_tls::TlsConnector>();
+    tls_api_test::connect_bad_hostname::<tls_api_native_tls::TlsConnector, _>(drop);
 }
 
 #[test]
