@@ -86,6 +86,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
+    const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = true;
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

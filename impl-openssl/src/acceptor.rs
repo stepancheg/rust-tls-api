@@ -64,6 +64,7 @@ impl TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = HAS_ALPN;
     const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
     const SUPPORTS_PKCS12_KEYS: bool = true;

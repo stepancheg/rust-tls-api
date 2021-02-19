@@ -20,11 +20,13 @@ fn openssl_rustls() {
     tls_api_test::alpn::<tls_api_openssl::TlsConnector, tls_api_rustls::TlsAcceptor>()
 }
 
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 #[test]
 fn openssl_security_framework() {
     tls_api_test::alpn::<tls_api_openssl::TlsConnector, tls_api_security_framework::TlsAcceptor>()
 }
 
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 #[test]
 fn security_framework_rustls() {
     tls_api_test::alpn::<tls_api_security_framework::TlsConnector, tls_api_rustls::TlsAcceptor>()

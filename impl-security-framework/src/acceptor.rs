@@ -15,7 +15,6 @@ use security_framework::secure_transport::SslProtocolSide;
 
 use std::fmt;
 
-use crate::not_is_or_macos;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
@@ -81,6 +80,7 @@ fn pkcs12_to_sf_objects(
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = false;
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;
@@ -96,7 +96,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 
@@ -120,7 +120,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 }

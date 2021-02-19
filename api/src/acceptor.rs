@@ -26,6 +26,7 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     type Builder: TlsAcceptorBuilder<Acceptor = Self>;
 
+    const IMPLEMENTED: bool;
     const SUPPORTS_ALPN: bool;
     const SUPPORTS_DER_KEYS: bool;
     const SUPPORTS_PKCS12_KEYS: bool;

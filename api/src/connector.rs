@@ -27,6 +27,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsConnector: Sized + Sync + Send + 'static {
     type Builder: TlsConnectorBuilder<Connector = Self>;
 
+    const IMPLEMENTED: bool;
     const SUPPORTS_ALPN: bool;
 
     fn builder() -> crate::Result<Self::Builder>;

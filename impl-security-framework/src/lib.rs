@@ -17,6 +17,12 @@ pub use connector::TlsConnectorBuilder;
 
 pub(crate) use stream::TlsStream;
 
-pub(crate) fn not_is_or_macos<T>() -> tls_api::Result<T> {
+#[allow(dead_code)]
+pub(crate) fn not_ios_or_macos<T>() -> tls_api::Result<T> {
     Err(tls_api::Error::new_other("not iOS or macOS"))
 }
+
+#[cfg(any(target_os = "macos", target_os = "ios"))]
+pub(crate) const IMPLEMENTED: bool = true;
+#[cfg(not(any(target_os = "macos", target_os = "ios")))]
+pub(crate) const IMPLEMENTED: bool = false;

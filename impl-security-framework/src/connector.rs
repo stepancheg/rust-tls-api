@@ -5,7 +5,6 @@ use security_framework::certificate::SecCertificate;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::secure_transport::ClientBuilder;
 
-use crate::not_is_or_macos;
 use std::fmt;
 use std::str;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
@@ -45,7 +44,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 
@@ -57,7 +56,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 
@@ -71,7 +70,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 
@@ -83,6 +82,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
+    const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = true;
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
@@ -106,7 +106,7 @@ impl tls_api::TlsConnector for TlsConnector {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            not_is_or_macos()
+            crate::not_ios_or_macos()
         }
     }
 }

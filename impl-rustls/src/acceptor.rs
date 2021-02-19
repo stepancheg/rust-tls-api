@@ -36,6 +36,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    const IMPLEMENTED: bool = true;
     // TODO: https://github.com/sfackler/rust-openssl/pull/646
     const SUPPORTS_ALPN: bool = true;
     const SUPPORTS_DER_KEYS: bool = true;
