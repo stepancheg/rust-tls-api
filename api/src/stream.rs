@@ -1,5 +1,6 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
+use crate::socket::AsyncSocket;
 use std::fmt;
 use std::io;
 use std::pin::Pin;
@@ -26,15 +27,15 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
 /// ```
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
-pub struct TlsStream<S: 'static>(Box<dyn TlsStreamImpl<S>>);
+pub struct TlsStream<S: AsyncSocket>(Box<dyn TlsStreamImpl<S>>);
 
-impl<S: 'static> fmt::Debug for TlsStream<S> {
+impl<S: AsyncSocket> fmt::Debug for TlsStream<S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("TlsStream").field(&self.0).finish()
     }
 }
 
-impl<S: 'static> TlsStream<S> {
+impl<S: AsyncSocket> TlsStream<S> {
     pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
     }
@@ -57,7 +58,7 @@ impl<S: 'static> TlsStream<S> {
     }
 }
 
-impl<S> AsyncRead for TlsStream<S> {
+impl<S: AsyncSocket> AsyncRead for TlsStream<S> {
     #[cfg(feature = "runtime-tokio")]
     fn poll_read(
         mut self: Pin<&mut Self>,
@@ -77,7 +78,7 @@ impl<S> AsyncRead for TlsStream<S> {
     }
 }
 
-impl<S> AsyncWrite for TlsStream<S> {
+impl<S: AsyncSocket> AsyncWrite for TlsStream<S> {
     fn poll_write(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,

@@ -1,15 +1,14 @@
 //! Handshake future
 
-use std::fmt;
 use std::future::Future;
 use std::mem;
 use std::pin::Pin;
 use std::result;
 use std::task::Context;
 use std::task::Poll;
+
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 
 pub(crate) enum HandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
@@ -19,7 +18,7 @@ pub(crate) enum HandshakeFuture<F, S: Unpin> {
 
 impl<F, A> Future for HandshakeFuture<F, A>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
     F: FnOnce(
         AsyncIoAsSyncIo<A>,
     ) -> result::Result<

@@ -1,8 +1,7 @@
 use crate::handshake::HandshakeFuture;
-use std::fmt;
+
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::Pkcs12AndPassword;
 
@@ -57,7 +56,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+        S: AsyncSocket,
     {
         BoxFuture::new(HandshakeFuture::Initial(
             move |s| self.0.accept(s),

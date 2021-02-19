@@ -4,8 +4,7 @@ use std::marker::PhantomData;
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::AsyncWrapperOps;
 use tls_api::async_as_sync::TlsStreamOverSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 
 pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;
 
@@ -13,12 +12,12 @@ pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncI
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)
 where
     S: fmt::Debug + Unpin + Send + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static;
+    A: AsyncSocket;
 
 impl<S, A> AsyncWrapperOps<A> for AsyncWrapperOpsImpl<S, A>
 where
     S: fmt::Debug + Unpin + Send + 'static,
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
 {
     type SyncWrapper = native_tls::TlsStream<AsyncIoAsSyncIo<A>>;
 

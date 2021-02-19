@@ -3,11 +3,9 @@ use security_framework::certificate::SecCertificate;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::secure_transport::ClientBuilder;
 
-use std::fmt;
 use std::str;
 
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::X509Cert;
 
@@ -93,7 +91,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+        S: AsyncSocket,
     {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {

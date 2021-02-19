@@ -8,12 +8,12 @@ use std::mem;
 use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+
+use tls_api::AsyncSocket;
 
 pub(crate) enum HandshakeFuture<A, T>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
     T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
     MidHandshake(TlsStream<A, T>),
@@ -22,7 +22,7 @@ where
 
 impl<A, T> Future for HandshakeFuture<A, T>
 where
-    A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
     T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
     type Output = tls_api::Result<tls_api::TlsStream<A>>;

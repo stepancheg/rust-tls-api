@@ -1,5 +1,6 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
+use crate::socket::AsyncSocket;
 use crate::TlsStream;
 use std::fmt;
 use std::io;
@@ -11,7 +12,7 @@ trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + 'static {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 }
 
-impl<S> TlsStreamBoxDyn for TlsStream<S> {
+impl<S: AsyncSocket> TlsStreamBoxDyn for TlsStream<S> {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.get_alpn_protocol()
     }
@@ -26,7 +27,7 @@ impl<S> TlsStreamBoxDyn for TlsStream<S> {
 pub struct TlsStreamBox(Box<dyn TlsStreamBoxDyn>);
 
 impl TlsStreamBox {
-    pub fn new<S>(stream: TlsStream<S>) -> TlsStreamBox {
+    pub fn new<S: AsyncSocket>(stream: TlsStream<S>) -> TlsStreamBox {
         TlsStreamBox(Box::new(stream))
     }
 

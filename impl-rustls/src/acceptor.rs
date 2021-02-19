@@ -1,15 +1,16 @@
-use crate::handshake::HandshakeFuture;
+use std::sync::Arc;
+
 use rustls::NoClientAuth;
 use rustls::StreamOwned;
-use std::fmt;
-use std::sync::Arc;
+
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::TlsStreamOverSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::PrivateKey;
 use tls_api::X509Cert;
+
+use crate::handshake::HandshakeFuture;
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
@@ -56,7 +57,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+        S: AsyncSocket,
     {
         let tls_stream: crate::TlsStream<S, _> = TlsStreamOverSyncIo::new(StreamOwned {
             sock: AsyncIoAsSyncIo::new(stream),

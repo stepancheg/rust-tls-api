@@ -1,13 +1,14 @@
-use crate::handshake::HandshakeFuture;
-use rustls::StreamOwned;
-use std::fmt;
 use std::sync::Arc;
+
+use rustls::StreamOwned;
+use webpki::DNSNameRef;
+
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::async_as_sync::TlsStreamOverSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
+use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use webpki::DNSNameRef;
+
+use crate::handshake::HandshakeFuture;
 
 pub struct TlsConnectorBuilder {
     pub config: rustls::ClientConfig,
@@ -102,7 +103,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+        S: AsyncSocket,
     {
         let dns_name =
             match DNSNameRef::try_from_ascii_str(domain).map_err(|e| tls_api::Error::new(e)) {

@@ -1,11 +1,10 @@
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::AsyncSocket;
+use tls_api::BoxFuture;
+
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
 use crate::HAS_ALPN;
-use std::fmt;
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::runtime::AsyncRead;
-use tls_api::runtime::AsyncWrite;
-use tls_api::BoxFuture;
 
 pub struct TlsConnectorBuilder {
     pub builder: openssl::ssl::SslConnectorBuilder,
@@ -91,7 +90,7 @@ impl tls_api::TlsConnector for TlsConnector {
         stream: S,
     ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
     where
-        S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
+        S: AsyncSocket,
     {
         let client_configuration = match self.connector.configure() {
             Ok(client_configuration) => client_configuration,
