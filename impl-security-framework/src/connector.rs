@@ -1,4 +1,4 @@
-use crate::handshake::HandshakeFuture;
+use crate::handshake::ClientHandshakeFuture;
 use security_framework::certificate::SecCertificate;
 use security_framework::secure_transport::ClientBuilder;
 use std::fmt;
@@ -68,7 +68,7 @@ impl tls_api::TlsConnector for TlsConnector {
     where
         S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static,
     {
-        BoxFuture::new(HandshakeFuture::Initial(
+        BoxFuture::new(ClientHandshakeFuture::Initial(
             move |stream| self.0.handshake(domain, stream),
             AsyncIoAsSyncIo::new(stream),
         ))

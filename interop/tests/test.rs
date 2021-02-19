@@ -17,3 +17,13 @@ fn rustls_openssl() {
 fn openssl_rustls() {
     tls_api_test::server::<tls_api_openssl::TlsConnector, tls_api_rustls::TlsAcceptor>()
 }
+
+#[test]
+fn openssl_security_framework() {
+    tls_api_test::server::<tls_api_openssl::TlsConnector, tls_api_security_framework::TlsAcceptor>()
+}
+
+#[test]
+fn security_framework_rustls() {
+    tls_api_test::server::<tls_api_security_framework::TlsConnector, tls_api_rustls::TlsAcceptor>()
+}
