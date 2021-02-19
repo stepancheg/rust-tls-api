@@ -1,12 +1,13 @@
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::TlsStream;
+use std::fmt;
 use std::io;
 use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + Unpin + 'static {
+trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + 'static {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 }
 
@@ -21,6 +22,7 @@ impl<S> TlsStreamBoxDyn for TlsStream<S> {
 /// Make writing code slightly more concise at cost of some runtime overhead:
 /// * extra allocation per connection
 /// * extra indirect invocation per operation
+#[derive(Debug)]
 pub struct TlsStreamBox(Box<dyn TlsStreamBoxDyn>);
 
 impl TlsStreamBox {

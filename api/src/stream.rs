@@ -26,8 +26,13 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
 /// ```
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
-#[derive(Debug)]
 pub struct TlsStream<S: 'static>(Box<dyn TlsStreamImpl<S>>);
+
+impl<S: 'static> fmt::Debug for TlsStream<S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TlsStream").field(&self.0).finish()
+    }
+}
 
 impl<S: 'static> TlsStream<S> {
     pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStream<S> {
