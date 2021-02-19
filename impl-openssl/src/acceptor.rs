@@ -83,8 +83,6 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
                     .add_extra_chain_cert(x509)
                     .map_err(tls_api::Error::new)?;
             }
-        } else {
-            // panic!("no chain");
         }
 
         builder

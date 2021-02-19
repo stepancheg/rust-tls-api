@@ -151,7 +151,10 @@ where
             &keys.server_cert_and_key.key
         ))
     } else {
-        panic!("no keys supported for builder")
+        panic!(
+            "no constructor supported for acceptor {}",
+            any::type_name::<A>()
+        );
     }
 }
 
