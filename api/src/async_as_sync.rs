@@ -99,7 +99,7 @@ impl<S: AsyncWrite + Unpin> Write for AsyncIoAsSyncIo<S> {
 }
 
 /// Convert blocking API result to async result
-pub fn result_to_poll<T>(r: io::Result<T>) -> Poll<io::Result<T>> {
+fn result_to_poll<T>(r: io::Result<T>) -> Poll<io::Result<T>> {
     match r {
         Ok(v) => Poll::Ready(Ok(v)),
         Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Poll::Pending,
