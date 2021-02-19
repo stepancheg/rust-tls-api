@@ -1,8 +1,9 @@
-use crate::connector_dyn::TlsConnectorTypeImpl;
+use crate::connector_box::TlsConnectorBox;
+use crate::connector_box::TlsConnectorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
-use crate::TlsConnectorTypeDyn;
+use crate::TlsConnectorType;
 use crate::TlsStream;
 use crate::X509Cert;
 use std::marker;
@@ -32,7 +33,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     /// Add trusted root certificate. By default connector supports only
     /// global trusted root.
-    fn add_root_certificate(&mut self, cert: &X509Cert) -> crate::Result<&mut Self>;
+    fn add_root_certificate(&mut self, cert: &X509Cert) -> crate::Result<()>;
 
     /// Finish the acceptor constructon.
     fn build(self) -> crate::Result<Self::Connector>;
@@ -60,8 +61,15 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     fn builder() -> crate::Result<Self::Builder>;
 
     /// Dynamic (without type parameter) version of the connector.
-    fn dynamic() -> &'static dyn TlsConnectorTypeDyn {
+    ///
+    /// This function returns a connector type, which can be used to constructor connectors.
+    fn type_dyn() -> &'static dyn TlsConnectorType {
         &TlsConnectorTypeImpl::<Self>(marker::PhantomData)
+    }
+
+    /// Dynamic (without type parameter) version of the connector.
+    fn into_dyn(self) -> TlsConnectorBox {
+        TlsConnectorBox::new(self)
     }
 
     /// Connect.

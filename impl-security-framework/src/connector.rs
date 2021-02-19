@@ -58,13 +58,13 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn add_root_certificate(&mut self, cert: &X509Cert) -> tls_api::Result<&mut Self> {
+    fn add_root_certificate(&mut self, cert: &X509Cert) -> tls_api::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             let cert = SecCertificate::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
             // TODO: overrides, not adds: https://github.com/kornelski/rust-security-framework/pull/116
             self.0.anchor_certificates(&[cert]);
-            Ok(self)
+            Ok(())
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {

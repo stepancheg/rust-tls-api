@@ -35,13 +35,13 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &tls_api::X509Cert) -> tls_api::Result<&mut Self> {
+    fn add_root_certificate(&mut self, cert: &tls_api::X509Cert) -> tls_api::Result<()> {
         let cert =
             native_tls::Certificate::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
 
         self.builder.add_root_certificate(cert);
 
-        Ok(self)
+        Ok(())
     }
 
     fn build(self) -> tls_api::Result<TlsConnector> {
