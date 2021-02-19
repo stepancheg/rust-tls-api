@@ -3,8 +3,8 @@ use std::sync::Arc;
 use rustls::StreamOwned;
 use webpki::DNSNameRef;
 
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::async_as_sync::TlsStreamOverSyncIo;
+use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 

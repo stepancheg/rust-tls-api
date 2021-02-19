@@ -7,9 +7,9 @@ use std::marker::PhantomData;
 
 use security_framework::secure_transport::SslStream;
 
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::async_as_sync::AsyncWrapperOps;
-use tls_api::async_as_sync::TlsStreamOverSyncIo;
+use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi::async_as_sync::AsyncWrapperOps;
+use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 
 pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;

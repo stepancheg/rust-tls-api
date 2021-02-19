@@ -38,27 +38,13 @@
 #![deny(broken_intra_doc_links)]
 #![deny(missing_docs)]
 
-pub mod async_as_sync;
-pub mod runtime;
-
-mod cert;
+pub use acceptor::TlsAcceptor;
+pub use acceptor::TlsAcceptorBuilder;
 pub use cert::pem_to_cert_key_pair;
 pub use cert::Pkcs12;
 pub use cert::Pkcs12AndPassword;
 pub use cert::PrivateKey;
 pub use cert::X509Cert;
-
-mod acceptor;
-mod connector;
-mod error;
-mod future;
-mod socket;
-mod socket_box;
-mod stream;
-mod stream_box;
-
-pub use acceptor::TlsAcceptor;
-pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 pub use error::Error;
@@ -69,11 +55,18 @@ pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
 pub use stream_box::TlsStreamBox;
 
-/// Interfaces needed by API implementor (like `tls-api-rustls`),
-/// and not needed by the users of API.
-pub mod spi {
-    pub use crate::stream::TlsStreamImpl;
-}
+pub mod runtime;
+pub mod spi;
+
+mod acceptor;
+mod cert;
+mod connector;
+mod error;
+mod future;
+mod socket;
+mod socket_box;
+mod stream;
+mod stream_box;
 
 fn _check_kinds() {
     fn assert_sync<T: Sync>() {}

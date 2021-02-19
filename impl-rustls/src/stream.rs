@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 use rustls::Session;
 use rustls::StreamOwned;
 
-use tls_api::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::async_as_sync::AsyncWrapperOps;
-use tls_api::async_as_sync::TlsStreamOverSyncIo;
+use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi::async_as_sync::AsyncWrapperOps;
+use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 
 pub(crate) type TlsStream<A, T> =
