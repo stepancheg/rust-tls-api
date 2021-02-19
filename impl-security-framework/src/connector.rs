@@ -10,7 +10,7 @@ use tls_api::BoxFuture;
 use tls_api::X509Cert;
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-type ClientBuilder = ();
+type ClientBuilder = void::Void;
 
 pub struct TlsConnector(pub ClientBuilder);
 pub struct TlsConnectorBuilder(pub ClientBuilder);
@@ -82,7 +82,14 @@ impl tls_api::TlsConnector for TlsConnector {
     const SUPPORTS_ALPN: bool = true;
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {
-        Ok(TlsConnectorBuilder(ClientBuilder::new()))
+        #[cfg(any(target_os = "macos", target_os = "ios"))]
+        {
+            Ok(TlsConnectorBuilder(ClientBuilder::new()))
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+        {
+            crate::not_ios_or_macos()
+        }
     }
 
     fn connect<'a, S>(

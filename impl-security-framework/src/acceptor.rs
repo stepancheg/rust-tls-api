@@ -9,12 +9,14 @@ use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::Pkcs12AndPassword;
 
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 pub struct SecureTransportTlsAcceptorBuilder {
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
     pub identity: SecIdentity,
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
     pub certs: Vec<SecCertificate>,
 }
+
+#[cfg(not(any(target_os = "macos", target_os = "ios")))]
+pub type SecureTransportTlsAcceptorBuilder = void::Void;
 
 pub struct TlsAcceptor(pub SecureTransportTlsAcceptorBuilder);
 pub struct TlsAcceptorBuilder(pub SecureTransportTlsAcceptorBuilder);
