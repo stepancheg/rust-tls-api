@@ -137,24 +137,49 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
     block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
-fn new_acceptor<A>() -> A::Builder
+fn new_acceptor_from_pkcs12_keys<A>() -> A::Builder
 where
     A: TlsAcceptor,
 {
-    let keys = &test_cert_gen::keys().server;
+    assert!(A::SUPPORTS_PKCS12_KEYS);
+    t!(A::builder_from_pkcs12(
+        &test_cert_gen::keys().server.server_cert_and_key_pkcs12
+    ))
+}
 
-    if A::SUPPORTS_PKCS12_KEYS {
-        t!(A::builder_from_pkcs12(&keys.server_cert_and_key_pkcs12))
-    } else if A::SUPPORTS_DER_KEYS {
-        t!(A::builder_from_der_key(
-            &keys.server_cert_and_key.cert,
-            &keys.server_cert_and_key.key
-        ))
-    } else {
-        panic!(
-            "no constructor supported for acceptor {}",
-            any::type_name::<A>()
-        );
+fn new_acceptor_from_der_keys<A>() -> A::Builder
+where
+    A: TlsAcceptor,
+{
+    assert!(A::SUPPORTS_DER_KEYS);
+    let keys = &test_cert_gen::keys().server.server_cert_and_key;
+    t!(A::builder_from_der_key(&keys.cert, &keys.key))
+}
+
+pub enum AcceptorKeyKind {
+    Pkcs12,
+    Der,
+}
+
+fn new_acceptor<A>(key: Option<AcceptorKeyKind>) -> A::Builder
+where
+    A: TlsAcceptor,
+{
+    match key {
+        Some(AcceptorKeyKind::Der) => new_acceptor_from_der_keys::<A>(),
+        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_from_pkcs12_keys::<A>(),
+        None => {
+            if A::SUPPORTS_PKCS12_KEYS {
+                new_acceptor_from_pkcs12_keys::<A>()
+            } else if A::SUPPORTS_DER_KEYS {
+                new_acceptor_from_der_keys::<A>()
+            } else {
+                panic!(
+                    "no constructor supported for acceptor {}",
+                    any::type_name::<A>()
+                );
+            }
+        }
     }
 }
 
@@ -171,7 +196,7 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
 // https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
 const BIND_HOST: &str = "127.0.0.1";
 
-async fn server_impl<C, A>()
+async fn client_server_impl<C, A>(key: Option<AcceptorKeyKind>)
 where
     C: TlsConnector,
     A: TlsAcceptor,
@@ -194,7 +219,7 @@ where
         return;
     }
 
-    let acceptor = new_acceptor::<A>();
+    let acceptor = new_acceptor::<A>(key);
 
     let acceptor: A = acceptor.build().expect("acceptor build");
     #[allow(unused_mut)]
@@ -233,12 +258,20 @@ where
     j.join().expect("thread join");
 }
 
-pub fn server<C, A>()
+pub fn client_server<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
 {
-    block_on(server_impl::<C, A>())
+    block_on(client_server_impl::<C, A>(None))
+}
+
+pub fn client_server_force_keys<C, A>(keys: AcceptorKeyKind)
+where
+    C: TlsConnector,
+    A: TlsAcceptor,
+{
+    block_on(client_server_impl::<C, A>(Some(keys)))
 }
 
 async fn alpn_impl<C, A>()
@@ -274,7 +307,7 @@ where
         return;
     }
 
-    let mut acceptor: A::Builder = new_acceptor::<A>();
+    let mut acceptor: A::Builder = new_acceptor::<A>(None);
 
     acceptor
         .set_alpn_protocols(&[b"abc", b"de", b"f"])

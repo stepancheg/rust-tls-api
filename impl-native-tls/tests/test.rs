@@ -14,8 +14,9 @@ fn connect_bad_hostname_ignored() {
 }
 
 #[test]
-fn server() {
-    tls_api_test::server::<tls_api_native_tls::TlsConnector, tls_api_native_tls::TlsAcceptor>()
+fn client_server() {
+    tls_api_test::client_server::<tls_api_native_tls::TlsConnector, tls_api_native_tls::TlsAcceptor>(
+    )
 }
 
 #[test]

@@ -6,6 +6,8 @@ use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::Pkcs12AndPassword;
+use tls_api::PrivateKey;
+use tls_api::X509Cert;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 
@@ -64,11 +66,33 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
 
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = HAS_ALPN;
-    const SUPPORTS_DER_KEYS: bool = false; // TODO: actually supports
+    const SUPPORTS_DER_KEYS: bool = true;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
     fn version() -> &'static str {
         openssl::version::version()
+    }
+
+    fn builder_from_der_key(
+        cert: &X509Cert,
+        key: &PrivateKey,
+    ) -> tls_api::Result<TlsAcceptorBuilder> {
+        let cert = openssl::x509::X509::from_der(cert.as_bytes()).map_err(tls_api::Error::new)?;
+        let pkey = openssl::pkey::PKey::private_key_from_der(key.as_bytes())
+            .map_err(tls_api::Error::new)?;
+
+        let mut builder =
+            openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
+                .map_err(tls_api::Error::new)?;
+
+        builder
+            .set_certificate(cert.as_ref())
+            .map_err(tls_api::Error::new)?;
+        builder
+            .set_private_key(pkey.as_ref())
+            .map_err(tls_api::Error::new)?;
+
+        Ok(TlsAcceptorBuilder(builder))
     }
 
     fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
