@@ -61,7 +61,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(config))
     }
 
-    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+    fn accept_with_socket<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket,
     {

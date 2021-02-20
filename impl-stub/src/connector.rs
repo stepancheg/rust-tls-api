@@ -57,11 +57,11 @@ impl tls_api::TlsConnector for TlsConnector {
         Err(tls_api::Error::new(Error))
     }
 
-    fn connect<'a, S>(
+    fn connect_with_socket<'a, S>(
         &'a self,
         _domain: &'a str,
         _stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket,
     {

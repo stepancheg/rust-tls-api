@@ -26,7 +26,7 @@ where
     A: AsyncSocket,
     T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
-    type Output = tls_api::Result<tls_api::TlsStream<A>>;
+    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -37,7 +37,7 @@ where
                     assert!(stream.stream.sess.is_handshaking());
                     match stream.stream.sess.complete_io(&mut stream.stream.sock) {
                         Ok(_) => {
-                            return Poll::Ready(Ok(tls_api::TlsStream::new(stream)));
+                            return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(stream)));
                         }
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                             *self_mut = HandshakeFuture::MidHandshake(stream);

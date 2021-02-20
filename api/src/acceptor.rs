@@ -3,11 +3,11 @@ use crate::acceptor_box::TlsAcceptorTypeImpl;
 use crate::openssl::der_to_pkcs12;
 use crate::openssl::pkcs12_to_der;
 use crate::socket::AsyncSocket;
-use crate::stream_box::TlsStreamBox;
+use crate::stream::TlsStream;
 use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsAcceptorBox;
-use crate::TlsStream;
+use crate::TlsStreamWithSocket;
 use std::fmt;
 use std::marker;
 
@@ -122,16 +122,23 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
     /// and the stream is ready to send and receive.
-    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
+    ///
+    /// This version of `accept` returns a stream parameterized by the underlying socket type.
+    fn accept_with_socket<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket + fmt::Debug + Unpin;
 
-    /// More dynamic version of [`TlsAcceptor::accept`]: returned stream object
-    /// does not have a type parameter.
-    fn accept_dyn<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStreamBox>>
+    /// Accept a connection.
+    ///
+    /// This operation returns a future which is resolved when the negotiation is complete,
+    /// and the stream is ready to send and receive.
+    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,
     {
-        BoxFuture::new(async move { self.accept(stream).await.map(TlsStreamBox::new) })
+        BoxFuture::new(async move { self.accept_with_socket(stream).await.map(TlsStream::new) })
     }
 }

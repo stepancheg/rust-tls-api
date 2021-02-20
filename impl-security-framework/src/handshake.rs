@@ -32,7 +32,7 @@ pub(crate) fn new_slient_handshake<'a, S>(
     connector: &'a crate::TlsConnector,
     domain: &'a str,
     stream: S,
-) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
 where
     S: AsyncSocket,
 {
@@ -51,7 +51,7 @@ where
         -> Result<SslStream<AsyncIoAsSyncIo<S>>, ClientHandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStream<S>>;
+    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -59,9 +59,9 @@ where
             match mem::replace(self_mut, ClientHandshakeFuture::Done) {
                 ClientHandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
-                            stream,
-                        ))));
+                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
+                            crate::TlsStream::new(stream),
+                        )));
                     }
                     Err(ClientHandshakeError::Interrupted(mid)) => {
                         *self_mut = ClientHandshakeFuture::MidHandshake(mid);
@@ -73,9 +73,9 @@ where
                 },
                 ClientHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
-                            stream,
-                        ))));
+                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
+                            crate::TlsStream::new(stream),
+                        )));
                     }
                     Err(ClientHandshakeError::Interrupted(mid)) => {
                         *self_mut = ClientHandshakeFuture::MidHandshake(mid);
@@ -100,7 +100,7 @@ enum ServerHandshakeFuture<F, S: Unpin> {
 pub(crate) fn new_server_handshake<'a, S>(
     acceptor: &'a TlsAcceptor,
     stream: S,
-) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
 where
     S: AsyncSocket,
 {
@@ -122,7 +122,7 @@ where
     ) -> Result<SslStream<AsyncIoAsSyncIo<S>>, HandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStream<S>>;
+    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -130,9 +130,9 @@ where
             match mem::replace(self_mut, ServerHandshakeFuture::Done) {
                 ServerHandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
-                            stream,
-                        ))));
+                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
+                            crate::TlsStream::new(stream),
+                        )));
                     }
                     Err(HandshakeError::Interrupted(mid)) => {
                         *self_mut = ServerHandshakeFuture::MidHandshake(mid);
@@ -144,9 +144,9 @@ where
                 },
                 ServerHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStream::new(crate::TlsStream::new(
-                            stream,
-                        ))));
+                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
+                            crate::TlsStream::new(stream),
+                        )));
                     }
                     Err(HandshakeError::Interrupted(mid)) => {
                         *self_mut = ServerHandshakeFuture::MidHandshake(mid);

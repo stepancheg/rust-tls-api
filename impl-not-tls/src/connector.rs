@@ -1,7 +1,7 @@
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::ImplInfo;
-use tls_api::TlsStream;
+use tls_api::TlsStreamWithSocket;
 
 pub struct TlsConnectorBuilder(pub ());
 
@@ -55,15 +55,19 @@ impl tls_api::TlsConnector for TlsConnector {
         Ok(TlsConnectorBuilder(()))
     }
 
-    fn connect<'a, S>(
+    fn connect_with_socket<'a, S>(
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<TlsStream<S>>>
+    ) -> BoxFuture<'a, tls_api::Result<TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket,
     {
         let _ = domain;
-        BoxFuture::new(async { Ok(tls_api::TlsStream::new(crate::stream::TlsStream(stream))) })
+        BoxFuture::new(async {
+            Ok(tls_api::TlsStreamWithSocket::new(crate::stream::TlsStream(
+                stream,
+            )))
+        })
     }
 }

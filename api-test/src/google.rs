@@ -5,7 +5,6 @@ use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
-use tls_api::TlsStream;
 
 use crate::block_on;
 use crate::TcpStream;
@@ -26,7 +25,7 @@ async fn test_google_impl<C: TlsConnector>() {
 
     let connector: C = C::builder().expect("builder").build().expect("build");
     let tcp_stream = t!(TcpStream::connect(addr).await);
-    let mut tls_stream: TlsStream<_> = t!(connector.connect("google.com", tcp_stream).await);
+    let mut tls_stream = t!(connector.connect("google.com", tcp_stream).await);
 
     info!("handshake complete");
 

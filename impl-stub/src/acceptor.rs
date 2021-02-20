@@ -47,7 +47,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    fn accept<'a, S>(&'a self, _stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>
+    fn accept_with_socket<'a, S>(
+        &'a self,
+        _stream: S,
+    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket,
     {

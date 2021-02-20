@@ -82,7 +82,7 @@ pub use info::ImplInfo;
 pub use socket::AsyncSocket;
 pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
-pub use stream_box::TlsStreamBox;
+pub use stream_with_socket::TlsStreamWithSocket;
 
 pub(crate) use crate::assert_kinds::assert_send;
 pub(crate) use crate::assert_kinds::assert_send_value;
@@ -103,8 +103,8 @@ mod openssl;
 mod socket;
 mod socket_box;
 mod stream;
-mod stream_box;
 mod stream_dyn;
+mod stream_with_socket;
 
 fn _assert_kinds() {
     fn connect_future_is_send<C, S>(c: &C, s: S)
@@ -112,7 +112,7 @@ fn _assert_kinds() {
         C: TlsConnector,
         S: AsyncSocket,
     {
-        let f = c.connect("dom", s);
+        let f = c.connect_with_socket("dom", s);
         assert_send_value(f);
     }
 
@@ -121,7 +121,7 @@ fn _assert_kinds() {
         A: TlsAcceptor,
         S: AsyncSocket,
     {
-        let f = a.accept(s);
+        let f = a.accept_with_socket(s);
         assert_send_value(f);
     }
 }

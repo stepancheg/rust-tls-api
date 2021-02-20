@@ -3,11 +3,11 @@ use std::marker;
 use crate::connector_box::TlsConnectorBox;
 use crate::connector_box::TlsConnectorTypeImpl;
 use crate::socket::AsyncSocket;
-use crate::stream_box::TlsStreamBox;
+use crate::stream::TlsStream;
 use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsConnectorType;
-use crate::TlsStream;
+use crate::TlsStreamWithSocket;
 
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
@@ -87,24 +87,30 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     ///
     /// Returned future is resolved when the TLS-negotiation completes,
     /// and the stream is ready to send and receive.
+    fn connect_with_socket<'a, S>(
+        &'a self,
+        domain: &'a str,
+        stream: S,
+    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
+    where
+        S: AsyncSocket;
+
+    /// Connect.
+    ///
+    /// Returned future is resolved when the TLS-negotiation completes,
+    /// and the stream is ready to send and receive.
     fn connect<'a, S>(
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStream<S>>>
-    where
-        S: AsyncSocket;
-
-    /// More dynamic version of [`TlsConnector::connect`]: returned type
-    /// does not have a type parameter.
-    fn connect_dyn<'a, S>(
-        &'a self,
-        domain: &'a str,
-        stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>>
+    ) -> BoxFuture<'a, crate::Result<TlsStream>>
     where
         S: AsyncSocket,
     {
-        BoxFuture::new(async move { self.connect(domain, stream).await.map(TlsStreamBox::new) })
+        BoxFuture::new(async move {
+            self.connect_with_socket(domain, stream)
+                .await
+                .map(TlsStream::new)
+        })
     }
 }

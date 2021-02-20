@@ -63,7 +63,7 @@ where
     let j = thread::spawn(move || {
         let f = async {
             let socket = t!(listener.accept().await).0;
-            let mut socket = t!(acceptor.accept_dyn(socket).await);
+            let mut socket = t!(acceptor.accept(socket).await);
 
             assert_eq!(b"de", &socket.get_alpn_protocol().unwrap().unwrap()[..]);
 

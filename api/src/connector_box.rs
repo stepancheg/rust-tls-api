@@ -9,7 +9,7 @@ use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsConnector;
 use crate::TlsConnectorBuilder;
-use crate::TlsStreamBox;
+use crate::TlsStream;
 
 // Connector type.
 
@@ -145,7 +145,7 @@ trait TlsConnectorDyn: Send + Sync + 'static {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>>;
+    ) -> BoxFuture<'a, crate::Result<TlsStream>>;
 }
 
 impl<C: TlsConnector> TlsConnectorDyn for C {
@@ -157,8 +157,8 @@ impl<C: TlsConnector> TlsConnectorDyn for C {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
-        self.connect_dyn(domain, stream)
+    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
+        self.connect(domain, stream)
     }
 }
 
@@ -181,7 +181,7 @@ impl TlsConnectorBox {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
+    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
         self.0.connect(domain, stream)
     }
 
@@ -190,7 +190,7 @@ impl TlsConnectorBox {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
+    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
         self.connect_dyn(domain, AsyncSocketBox::new(stream))
     }
 }

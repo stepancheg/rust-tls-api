@@ -9,7 +9,7 @@ use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsAcceptor;
 use crate::TlsAcceptorBuilder;
-use crate::TlsStreamBox;
+use crate::TlsStream;
 
 // Type
 
@@ -159,7 +159,7 @@ impl TlsAcceptorBuilderBox {
 trait TlsAcceptorDyn: Send + Sync + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStreamBox>>;
+    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStream>>;
 }
 
 impl<A: TlsAcceptor> TlsAcceptorDyn for A {
@@ -167,8 +167,8 @@ impl<A: TlsAcceptor> TlsAcceptorDyn for A {
         A::TYPE_DYN
     }
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
-        self.accept_dyn(socket)
+    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStream>> {
+        self.accept(socket)
     }
 }
 
@@ -198,7 +198,7 @@ impl TlsAcceptorBox {
     pub fn accept<'a, S: AsyncSocket>(
         &'a self,
         socket: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
+    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
         self.0.accept(AsyncSocketBox::new(socket))
     }
 }
