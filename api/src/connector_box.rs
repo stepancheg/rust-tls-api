@@ -1,6 +1,8 @@
 use std::fmt;
 use std::marker;
 
+use crate::assert_send;
+use crate::assert_sync;
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
@@ -64,7 +66,7 @@ impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
 
 // Connector builder.
 
-trait TlsConnectorBuilderDyn {
+trait TlsConnectorBuilderDyn: Send + 'static {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
@@ -187,4 +189,10 @@ impl TlsConnectorBox {
     ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
         self.connect_dyn(domain, AsyncSocketBox::new(stream))
     }
+}
+
+fn _assert_kinds() {
+    assert_send::<TlsConnectorBuilderBox>();
+    assert_send::<TlsConnectorBox>();
+    assert_sync::<TlsConnectorBox>();
 }

@@ -1,3 +1,4 @@
+use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
@@ -8,7 +9,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + 'static {
+trait TlsStreamBoxDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static {
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 }
 
@@ -25,6 +26,10 @@ impl<S: AsyncSocket> TlsStreamBoxDyn for TlsStream<S> {
 /// * extra indirect invocation per operation
 #[derive(Debug)]
 pub struct TlsStreamBox(Box<dyn TlsStreamBoxDyn>);
+
+fn _assert_kinds() {
+    assert_send::<TlsStreamBox>();
+}
 
 impl TlsStreamBox {
     /// Wrap.

@@ -1,6 +1,8 @@
 use std::fmt;
 use std::marker;
 
+use crate::assert_send;
+use crate::assert_sync;
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
@@ -104,7 +106,7 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
 
 // Builder
 
-trait TlsAcceptorBuilderDyn {
+trait TlsAcceptorBuilderDyn: Send + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
@@ -199,4 +201,10 @@ impl TlsAcceptorBox {
     ) -> BoxFuture<'a, crate::Result<TlsStreamBox>> {
         self.0.accept(AsyncSocketBox::new(socket))
     }
+}
+
+fn _assert_kinds() {
+    assert_send::<TlsAcceptorBuilderBox>();
+    assert_send::<TlsAcceptorBox>();
+    assert_sync::<TlsAcceptorBox>();
 }

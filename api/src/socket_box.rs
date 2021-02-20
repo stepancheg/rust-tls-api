@@ -6,6 +6,7 @@ use std::ptr;
 use std::task::Context;
 use std::task::Poll;
 
+use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::AsyncSocket;
@@ -15,6 +16,10 @@ use std::mem::MaybeUninit;
 /// Newtype for [`Box<dyn AsyncSocket>`](AsyncSocket).
 #[derive(Debug)]
 pub struct AsyncSocketBox(Box<dyn AsyncSocket>);
+
+fn _assert_kinds() {
+    assert_send::<AsyncSocketBox>();
+}
 
 fn transmute_or_map<A: 'static, B: 'static>(a: A, f: impl FnOnce(A) -> B) -> B {
     if TypeId::of::<A>() == TypeId::of::<B>() {

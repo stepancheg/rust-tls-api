@@ -1,5 +1,7 @@
 // Error
 
+use crate::assert_send;
+use crate::assert_sync;
 use crate::TlsAcceptorType;
 use std::error;
 use std::fmt;
@@ -36,6 +38,11 @@ impl error::Error for CommonError {}
 
 /// Error returned by virtually all operations of this crate.
 pub struct Error(Box<dyn error::Error + Send + Sync + 'static>);
+
+fn _assert_kinds() {
+    assert_sync::<Error>();
+    assert_send::<Error>();
+}
 
 /// An error returned from the TLS implementation.
 impl Error {

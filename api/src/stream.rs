@@ -4,6 +4,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
+use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
@@ -33,6 +34,12 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
 pub struct TlsStream<S: AsyncSocket>(Box<dyn TlsStreamImpl<S>>);
+
+fn _assert_kinds() {
+    fn assert_tls_stream_send<S: AsyncSocket>() {
+        assert_send::<TlsStream<S>>();
+    }
+}
 
 impl<S: AsyncSocket> fmt::Debug for TlsStream<S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

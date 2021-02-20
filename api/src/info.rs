@@ -1,3 +1,5 @@
+use crate::assert_send;
+use crate::assert_sync;
 use std::fmt;
 
 /// Basic info about the implementation.
@@ -7,6 +9,11 @@ pub struct ImplInfo {
     pub name: &'static str,
     /// Some unspecified version number (e. g. openssl library version for openssl implementation).
     pub version: &'static str,
+}
+
+fn _assert_kinds() {
+    assert_send::<ImplInfo>();
+    assert_sync::<ImplInfo>();
 }
 
 impl fmt::Display for ImplInfo {

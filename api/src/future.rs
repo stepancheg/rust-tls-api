@@ -3,7 +3,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-/// Simple alias alias `Pin<Box<Future>>` for easier typechecker.
+/// Newtype for `Pin<Box<Future>>` for simpler function signatures.
 pub struct BoxFuture<'a, R>(Pin<Box<dyn Future<Output = R> + Send + 'a>>);
 
 impl<'a, R> BoxFuture<'a, R> {

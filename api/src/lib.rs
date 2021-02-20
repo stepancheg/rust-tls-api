@@ -83,11 +83,16 @@ pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
 pub use stream_box::TlsStreamBox;
 
+pub(crate) use crate::assert_kinds::assert_send;
+pub(crate) use crate::assert_kinds::assert_send_value;
+pub(crate) use crate::assert_kinds::assert_sync;
+
 pub mod runtime;
 pub mod spi;
 
 mod acceptor;
 mod acceptor_box;
+mod assert_kinds;
 mod connector;
 mod connector_box;
 mod error;
@@ -99,21 +104,7 @@ mod socket_box;
 mod stream;
 mod stream_box;
 
-fn _check_kinds() {
-    fn assert_sync<T: Sync>() {}
-    fn assert_send<T: Send>() {}
-    fn assert_send_value<T: Send>(t: T) -> T {
-        t
-    }
-
-    assert_sync::<Error>();
-    assert_send::<Error>();
-    // assert_sync::<TlsStream<TcpStream>>();
-
-    fn assert_tls_stream_send<S: AsyncSocket>() {
-        assert_send::<TlsStream<S>>();
-    }
-
+fn _assert_kinds() {
     fn connect_future_is_send<C, S>(c: &C, s: S)
     where
         C: TlsConnector,
