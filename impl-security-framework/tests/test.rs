@@ -31,7 +31,7 @@ fn client_server_pkcs12() {
 
 #[test]
 fn alpn() {
-    tls_api_test::alpn::<
+    tls_api_test::test_alpn::<
         tls_api_security_framework::TlsConnector,
         tls_api_security_framework::TlsAcceptor,
     >()

@@ -30,5 +30,5 @@ fn client_server_der() {
 
 #[test]
 fn alpn() {
-    tls_api_test::alpn::<tls_api_openssl::TlsConnector, tls_api_openssl::TlsAcceptor>();
+    tls_api_test::test_alpn::<tls_api_openssl::TlsConnector, tls_api_openssl::TlsAcceptor>();
 }

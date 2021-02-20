@@ -6,6 +6,8 @@ extern crate log;
 #[macro_use]
 mod t;
 
+mod alpn;
+mod google;
 mod version;
 
 use std::any;
@@ -18,21 +20,22 @@ use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
-use tls_api::TlsStream;
 
 use std::net::ToSocketAddrs;
 
+pub use alpn::test_alpn;
+pub use google::test_google;
 pub use version::test_version;
 
 #[cfg(feature = "runtime-async-std")]
-use async_std::net::TcpListener;
+pub use async_std::net::TcpListener;
 #[cfg(feature = "runtime-async-std")]
-use async_std::net::TcpStream;
+pub use async_std::net::TcpStream;
 
 #[cfg(feature = "runtime-tokio")]
-use tokio::net::TcpListener;
+pub use tokio::net::TcpListener;
 #[cfg(feature = "runtime-tokio")]
-use tokio::net::TcpStream;
+pub use tokio::net::TcpStream;
 
 #[cfg(feature = "runtime-async-std")]
 pub use async_std::task::block_on;
@@ -43,43 +46,6 @@ where
     F: std::future::Future<Output = T>,
 {
     t!(tokio::runtime::Runtime::new()).block_on(future)
-}
-
-async fn test_google_impl<C: TlsConnector>() {
-    drop(env_logger::try_init());
-
-    if !C::IMPLEMENTED {
-        eprintln!(
-            "connector {} is not implemented; skipping",
-            any::type_name::<C>()
-        );
-        return;
-    }
-
-    // First up, resolve google.com
-    let addr = t!("google.com:443".to_socket_addrs()).next().unwrap();
-
-    let connector: C = C::builder().expect("builder").build().expect("build");
-    let tcp_stream = t!(TcpStream::connect(addr).await);
-    let mut tls_stream: TlsStream<_> = t!(connector.connect("google.com", tcp_stream).await);
-
-    info!("handshake complete");
-
-    t!(tls_stream.write_all(b"GET / HTTP/1.0\r\n\r\n").await);
-    let mut result = vec![];
-    t!(tls_stream.read_to_end(&mut result).await);
-
-    println!("{}", String::from_utf8_lossy(&result));
-    assert!(
-        result.starts_with(b"HTTP/1.0"),
-        "wrong result: {:?}",
-        result
-    );
-    assert!(result.ends_with(b"</HTML>\r\n") || result.ends_with(b"</html>"));
-}
-
-pub fn test_google<C: TlsConnector>() {
-    block_on(test_google_impl::<C>())
 }
 
 async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
@@ -196,7 +162,7 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
 
 // `::1` is broken on travis-ci
 // https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
-const BIND_HOST: &str = "127.0.0.1";
+pub const BIND_HOST: &str = "127.0.0.1";
 
 async fn client_server_impl<C, A>(key: AcceptorKeyKind)
 where
@@ -274,94 +240,4 @@ where
     A: TlsAcceptor,
 {
     block_on(client_server_impl::<C, A>(AcceptorKeyKind::Pkcs12))
-}
-
-async fn alpn_impl<C, A>()
-where
-    C: TlsConnector,
-    A: TlsAcceptor,
-{
-    drop(env_logger::try_init());
-
-    if !C::IMPLEMENTED {
-        eprintln!(
-            "connector {} is not implemented; skipping",
-            any::type_name::<C>()
-        );
-        return;
-    }
-
-    if !A::IMPLEMENTED {
-        eprintln!(
-            "acceptor {} is not implemented; skipping",
-            any::type_name::<A>()
-        );
-        return;
-    }
-
-    if !C::SUPPORTS_ALPN {
-        eprintln!("connector {} does not support ALPN", any::type_name::<C>());
-        return;
-    }
-
-    if !A::SUPPORTS_ALPN {
-        eprintln!("acceptor {} does not support ALPN", any::type_name::<A>());
-        return;
-    }
-
-    let mut acceptor: A::Builder = new_acceptor::<A>(None);
-
-    acceptor
-        .set_alpn_protocols(&[b"abc", b"de", b"f"])
-        .expect("set_alpn_protocols");
-
-    let acceptor: A = t!(acceptor.build());
-
-    #[allow(unused_mut)]
-    let mut listener = t!(TcpListener::bind((BIND_HOST, 0)).await);
-    let port = listener.local_addr().expect("local_addr").port();
-
-    let j = thread::spawn(move || {
-        let f = async {
-            let socket = t!(listener.accept().await).0;
-            let mut socket = t!(acceptor.accept_dyn(socket).await);
-
-            assert_eq!(b"de", &socket.get_alpn_protocol().unwrap().unwrap()[..]);
-
-            let mut buf = [0; 5];
-            t!(socket.read_exact(&mut buf).await);
-            assert_eq!(&buf, b"hello");
-
-            t!(socket.write_all(b"world").await);
-        };
-        block_on(f);
-    });
-
-    let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
-
-    let mut connector: C::Builder = new_connector_with_root_ca::<C>();
-
-    connector
-        .set_alpn_protocols(&[b"xyz", b"de", b"u"])
-        .expect("set_alpn_protocols");
-
-    let connector: C = connector.build().expect("acceptor build");
-    let mut socket = t!(connector.connect("localhost", socket).await);
-
-    assert_eq!(b"de", &socket.get_alpn_protocol().unwrap().unwrap()[..]);
-
-    t!(socket.write_all(b"hello").await);
-    let mut buf = vec![];
-    t!(socket.read_to_end(&mut buf).await);
-    assert_eq!(buf, b"world");
-
-    j.join().expect("thread join");
-}
-
-pub fn alpn<C, A>()
-where
-    C: TlsConnector,
-    A: TlsAcceptor,
-{
-    block_on(alpn_impl::<C, A>())
 }

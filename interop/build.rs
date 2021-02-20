@@ -29,7 +29,7 @@ fn main() {
             writeln!(alpn, "fn {}_{}() {{", client, server).unwrap();
             writeln!(
                 alpn,
-                "  tls_api_test::alpn::<tls_api_{}::TlsConnector, tls_api_{}::TlsAcceptor>();",
+                "  tls_api_test::test_alpn::<tls_api_{}::TlsConnector, tls_api_{}::TlsAcceptor>();",
                 client, server
             )
             .unwrap();
