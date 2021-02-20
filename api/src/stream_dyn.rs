@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
+use crate::AsyncSocket;
 use crate::ImplInfo;
 
 /// Trait to be used by API implementors (like openssl),
@@ -12,6 +13,12 @@ pub trait TlsStreamDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'st
 
     /// Implementation info for this stream (e. g. which crate provides it).
     fn impl_info(&self) -> ImplInfo;
+
+    /// Get the underlying socket.
+    fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket;
+
+    /// Get the underlying socket.
+    fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket;
 }
 
 /// Trait to be used by API implementors (like openssl),

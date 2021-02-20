@@ -33,6 +33,16 @@ impl TlsStream {
     pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
+
+    /// Get a reference the underlying TLS-wrapped socket.
+    pub fn get_socket_mut(&mut self) -> &mut dyn AsyncSocket {
+        self.0.get_socket_dyn_mut()
+    }
+
+    /// Get a reference the underlying TLS-wrapped socket.
+    pub fn get_socket_ref(&self) -> &dyn AsyncSocket {
+        self.0.get_socket_dyn_ref()
+    }
 }
 
 impl AsyncRead for TlsStream {

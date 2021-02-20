@@ -18,6 +18,7 @@ use crate::spi::thread_local_context::restore_context;
 use crate::spi::thread_local_context::save_context;
 use crate::spi::TlsStreamDyn;
 use crate::spi::TlsStreamImpl;
+use crate::AsyncSocket;
 use crate::ImplInfo;
 
 /// Async IO object as sync IO.
@@ -288,7 +289,7 @@ where
 
 impl<A, O> TlsStreamDyn for TlsStreamOverSyncIo<A, O>
 where
-    A: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
     O: AsyncWrapperOps<A>,
 {
     fn impl_info(&self) -> ImplInfo {
@@ -298,11 +299,19 @@ where
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         O::get_alpn_protocol(&self.stream)
     }
+
+    fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket {
+        O::get_mut(&mut self.stream).get_inner_mut()
+    }
+
+    fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket {
+        O::get_ref(&self.stream).get_inner_ref()
+    }
 }
 
 impl<A, O> TlsStreamImpl<A> for TlsStreamOverSyncIo<A, O>
 where
-    A: fmt::Debug + Unpin + Send + 'static,
+    A: AsyncSocket,
     O: AsyncWrapperOps<A>,
 {
     fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {

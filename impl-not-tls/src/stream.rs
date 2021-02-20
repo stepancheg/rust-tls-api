@@ -28,6 +28,14 @@ impl<A: AsyncSocket> TlsStreamDyn for TlsStream<A> {
     fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
         Err(crate::Error::Alpn.into())
     }
+
+    fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket {
+        &mut self.0
+    }
+
+    fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket {
+        &self.0
+    }
 }
 
 impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
