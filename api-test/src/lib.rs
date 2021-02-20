@@ -17,6 +17,9 @@ pub use client_server::test_client_server_pkcs12;
 pub use google::test_google;
 pub use version::test_version;
 
+mod gen;
+pub use gen::gen_tests;
+
 use std::any;
 use std::str;
 

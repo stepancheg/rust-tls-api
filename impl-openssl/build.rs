@@ -24,4 +24,6 @@ fn main() {
         }
         (Err(_), Err(_)) => panic!("tls-api-openssl: Unable to detect OpenSSL version"),
     }
+
+    tls_api_test::gen_tests();
 }

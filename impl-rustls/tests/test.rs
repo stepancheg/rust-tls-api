@@ -1,11 +1,6 @@
 use std::io;
 
 #[test]
-fn test_google() {
-    tls_api_test::test_google::<tls_api_rustls::TlsConnector>()
-}
-
-#[test]
 fn connect_bad_hostname() {
     tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector, _>(|err| {
         let err: Box<io::Error> = err.into_inner().downcast().expect("io::Error");
