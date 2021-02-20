@@ -29,12 +29,10 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             let protocols: Vec<&str> = protocols
                 .iter()
                 .map(|p| {
-                    str::from_utf8(p).map_err(|e| {
-                        // TODO: better error
-                        tls_api::Error::new(e)
-                    })
+                    str::from_utf8(p)
+                        .map_err(|e| crate::Error::ReturnedAlpnProtocolIsNotUtf8(e).into())
                 })
-                .collect::<Result<_, _>>()?;
+                .collect::<tls_api::Result<_>>()?;
             self.0.alpn_protocols(&protocols);
             Ok(())
         }

@@ -1,5 +1,6 @@
 use std::error;
 use std::fmt;
+use std::str::Utf8Error;
 
 #[derive(Debug)]
 pub(crate) enum Error {
@@ -8,6 +9,7 @@ pub(crate) enum Error {
     MoreThanOneIdentityInPkcs12(u32),
     NotIosOrMacos,
     TooManyAlpnProtocols(Vec<String>),
+    ReturnedAlpnProtocolIsNotUtf8(Utf8Error),
 }
 
 impl fmt::Display for Error {
@@ -30,6 +32,9 @@ impl fmt::Display for Error {
                 "security-framework returned more than one negotiated ALPN protocols: {:?}",
                 protocols
             ),
+            Error::ReturnedAlpnProtocolIsNotUtf8(error) => {
+                write!(f, "returned ALPN protocol is not UTF-8: {}", error)
+            }
         }
     }
 }
