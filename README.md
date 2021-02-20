@@ -49,12 +49,9 @@ Library users simply call that library with different implementations of connect
 
 ## Example
 
-[api-test](https://github.com/stepancheg/rust-tls-api/blob/master/api-test/src/lib.rs)
-contains tests implementation independent of any library. And identical tests which
-use:
-* [native-tls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-native-tls/tests/test.rs)
-* [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/impl-openssl/tests/test.rs)
-* [rustls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-rustls/tests/test.rs)
+[download-rust-lang-org.rs](https://github.com/stepancheg/rust-tls-api/blob/master/examples/examples/download-rust-lang-org.rs#L66)
+contains the implementation of simple TLS client downloading rust-lang.org,
+which is invoked with four backends.
 
 ## Implementations comparison
 
