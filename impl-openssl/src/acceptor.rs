@@ -1,24 +1,20 @@
-use crate::encode_alpn_protos;
-use crate::handshake::HandshakeFuture;
-use crate::HAS_ALPN;
 use openssl::pkcs12::ParsedPkcs12;
+
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use tls_api::Cert;
-use tls_api::Pkcs12AndPassword;
-use tls_api::PrivateKey;
+
+use crate::encode_alpn_protos;
+use crate::handshake::HandshakeFuture;
+use crate::HAS_ALPN;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 
 pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
-fn to_openssl_pkcs12(pkcs12_and_password: &Pkcs12AndPassword) -> tls_api::Result<ParsedPkcs12> {
-    let pkcs12 = openssl::pkcs12::Pkcs12::from_der(&pkcs12_and_password.pkcs12.0)
-        .map_err(tls_api::Error::new)?;
-    pkcs12
-        .parse(&pkcs12_and_password.password)
-        .map_err(tls_api::Error::new)
+fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<ParsedPkcs12> {
+    let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(tls_api::Error::new)?;
+    pkcs12.parse(passphrase).map_err(tls_api::Error::new)
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
@@ -73,10 +69,9 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         openssl::version::version()
     }
 
-    fn builder_from_der_key(cert: &Cert, key: &PrivateKey) -> tls_api::Result<TlsAcceptorBuilder> {
-        let cert = openssl::x509::X509::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
-        let pkey = openssl::pkey::PKey::private_key_from_der(key.get_der())
-            .map_err(tls_api::Error::new)?;
+    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> tls_api::Result<TlsAcceptorBuilder> {
+        let cert = openssl::x509::X509::from_der(cert).map_err(tls_api::Error::new)?;
+        let pkey = openssl::pkey::PKey::private_key_from_der(key).map_err(tls_api::Error::new)?;
 
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
@@ -92,12 +87,12 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(builder))
     }
 
-    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<TlsAcceptorBuilder> {
         let mut builder =
             openssl::ssl::SslAcceptor::mozilla_intermediate(openssl::ssl::SslMethod::tls())
                 .map_err(tls_api::Error::new)?;
 
-        let pkcs12 = to_openssl_pkcs12(pkcs12)?;
+        let pkcs12 = to_openssl_pkcs12(pkcs12, passphrase)?;
         if let Some(chain) = pkcs12.chain {
             for x509 in chain {
                 builder

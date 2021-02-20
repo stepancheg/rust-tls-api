@@ -1,13 +1,11 @@
+use std::marker;
+
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
-use crate::Cert;
-use crate::Pkcs12AndPassword;
-use crate::PrivateKey;
 use crate::TlsAcceptor;
 use crate::TlsAcceptorBuilder;
 use crate::TlsStreamBox;
-use std::marker;
 
 // Type
 
@@ -35,18 +33,16 @@ pub trait TlsAcceptorType {
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptorType::supports_der_keys`].
-    fn builder_from_der_key(
-        &self,
-        cert: &Cert,
-        key: &PrivateKey,
-    ) -> crate::Result<TlsAcceptorBuilderBox>;
+    fn builder_from_der_key(&self, cert: &[u8], key: &[u8])
+        -> crate::Result<TlsAcceptorBuilderBox>;
 
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptorType::supports_pkcs12_keys`].
     fn builder_from_pkcs12(
         &self,
-        pkcs12: &Pkcs12AndPassword,
+        pkcs12: &[u8],
+        passphrase: &str,
     ) -> crate::Result<TlsAcceptorBuilderBox>;
 }
 
@@ -75,8 +71,8 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
 
     fn builder_from_der_key(
         &self,
-        cert: &Cert,
-        key: &PrivateKey,
+        cert: &[u8],
+        key: &[u8],
     ) -> crate::Result<TlsAcceptorBuilderBox> {
         let builder = A::builder_from_der_key(cert, key)?;
         Ok(TlsAcceptorBuilderBox(Box::new(builder)))
@@ -84,9 +80,10 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
 
     fn builder_from_pkcs12(
         &self,
-        pkcs12: &Pkcs12AndPassword,
+        pkcs12: &[u8],
+        passphrase: &str,
     ) -> crate::Result<TlsAcceptorBuilderBox> {
-        let builder = A::builder_from_pkcs12(pkcs12)?;
+        let builder = A::builder_from_pkcs12(pkcs12, passphrase)?;
         Ok(TlsAcceptorBuilderBox(Box::new(builder)))
     }
 }

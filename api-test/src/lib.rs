@@ -143,7 +143,15 @@ where
 {
     assert!(A::SUPPORTS_PKCS12_KEYS);
     t!(A::builder_from_pkcs12(
-        &test_cert_gen::keys().server.server_cert_and_key_pkcs12
+        &test_cert_gen::keys()
+            .server
+            .server_cert_and_key_pkcs12
+            .pkcs12
+            .0,
+        &test_cert_gen::keys()
+            .server
+            .server_cert_and_key_pkcs12
+            .password,
     ))
 }
 
@@ -153,7 +161,10 @@ where
 {
     assert!(A::SUPPORTS_DER_KEYS);
     let keys = &test_cert_gen::keys().server.server_cert_and_key;
-    t!(A::builder_from_der_key(&keys.cert, &keys.key))
+    t!(A::builder_from_der_key(
+        keys.cert.get_der(),
+        keys.key.get_der()
+    ))
 }
 
 pub enum AcceptorKeyKind {

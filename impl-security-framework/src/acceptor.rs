@@ -7,7 +7,6 @@ use security_framework::import_export::Pkcs12ImportOptions;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use tls_api::Pkcs12AndPassword;
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub struct SecureTransportTlsAcceptorBuilder {
@@ -42,11 +41,12 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn pkcs12_to_sf_objects(
-    pkcs12: &Pkcs12AndPassword,
+    pkcs12: &[u8],
+    passphrase: &str,
 ) -> tls_api::Result<(SecIdentity, Vec<SecCertificate>)> {
     let imported_identities = Pkcs12ImportOptions::new()
-        .passphrase(&pkcs12.password)
-        .import(&pkcs12.pkcs12.0)
+        .passphrase(passphrase)
+        .import(pkcs12)
         .map_err(tls_api::Error::new)?;
     let mut identities: Vec<(SecIdentity, Vec<SecCertificate>)> = imported_identities
         .into_iter()
@@ -79,10 +79,11 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::version()
     }
 
-    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<TlsAcceptorBuilder> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            let (identity, certs) = pkcs12_to_sf_objects(pkcs12).map_err(tls_api::Error::new)?;
+            let (identity, certs) =
+                pkcs12_to_sf_objects(pkcs12, passphrase).map_err(tls_api::Error::new)?;
             Ok(TlsAcceptorBuilder(SecureTransportTlsAcceptorBuilder {
                 identity,
                 certs,
@@ -90,7 +91,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
         #[cfg(not(any(target_os = "macos", target_os = "ios")))]
         {
-            let _ = pkcs12;
+            let _ = (pkcs12, passphrase);
             crate::not_ios_or_macos()
         }
     }

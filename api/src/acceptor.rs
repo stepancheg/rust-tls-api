@@ -3,9 +3,6 @@ use crate::acceptor_box::TlsAcceptorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
-use crate::Cert;
-use crate::Pkcs12AndPassword;
-use crate::PrivateKey;
 use crate::TlsAcceptorBox;
 use crate::TlsStream;
 use std::fmt;
@@ -73,7 +70,9 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_DER_KEYS`].
-    fn builder_from_der_key(cert: &Cert, key: &PrivateKey) -> crate::Result<Self::Builder> {
+    ///
+    /// Parameters are DER-encoded (binary) X509 cert and corresponding private key.
+    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
         Err(crate::Error::new_other(
@@ -84,8 +83,8 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_PKCS12_KEYS`].
-    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> crate::Result<Self::Builder> {
-        let _ = pkcs12;
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> crate::Result<Self::Builder> {
+        let _ = (pkcs12, passphrase);
         assert!(!Self::SUPPORTS_PKCS12_KEYS);
         Err(crate::Error::new_other(
             "construction from PKCS12 is not implemented",

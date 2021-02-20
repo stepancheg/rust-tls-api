@@ -51,10 +51,9 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::version()
     }
 
-    fn builder_from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<Self::Builder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<Self::Builder> {
         Ok(TlsAcceptorBuilder(native_tls::TlsAcceptor::builder(
-            native_tls::Identity::from_pkcs12(&pkcs12.pkcs12.0, &pkcs12.password)
-                .map_err(tls_api::Error::new)?,
+            native_tls::Identity::from_pkcs12(pkcs12, passphrase).map_err(tls_api::Error::new)?,
         )))
     }
 
