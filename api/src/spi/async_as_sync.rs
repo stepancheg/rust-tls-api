@@ -220,7 +220,17 @@ where
         buf: &mut tokio::io::ReadBuf,
     ) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async_tokio(cx, buf, |s, buf| s.stream.read(buf))
+            .with_context_sync_to_async_tokio(cx, buf, |s, buf| {
+                let result = s.stream.read(buf);
+                match result {
+                    Ok(r) => Ok(r),
+                    Err(e) if e.kind() == io::ErrorKind::ConnectionAborted => {
+                        // rustls returns `ConnectionAborted` on EOF
+                        Ok(0)
+                    }
+                    Err(e) => Err(e),
+                }
+            })
     }
 
     #[cfg(feature = "runtime-async-std")]
@@ -229,8 +239,17 @@ where
         cx: &mut Context<'_>,
         buf: &mut [u8],
     ) -> Poll<io::Result<usize>> {
-        self.get_mut()
-            .with_context_sync_to_async(cx, |s| s.stream.read(buf))
+        self.get_mut().with_context_sync_to_async(cx, |s| {
+            let result = s.stream.read(buf);
+            match result {
+                Ok(r) => Ok(r),
+                Err(e) if e.kind() == io::ErrorKind::ConnectionAborted => {
+                    // rustls returns `ConnectionAborted` on EOF
+                    Ok(0)
+                }
+                Err(e) => Err(e),
+            }
+        })
     }
 }
 
