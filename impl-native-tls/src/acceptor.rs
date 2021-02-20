@@ -38,6 +38,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     const IMPLEMENTED: bool = true;
+    /// Server side of `native-tls` does not support ALPN,
+    /// because `security-framework` does not support it.
     const SUPPORTS_ALPN: bool = false;
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;

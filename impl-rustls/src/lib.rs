@@ -1,3 +1,5 @@
+//! [`tls_api`] implementation for [`rustls`].
+
 #![deny(broken_intra_doc_links)]
 
 mod acceptor;

@@ -1,4 +1,8 @@
-//! Common implementation of tests for all TLS API implementations
+//! Common implementation of tests for all TLS API implementations.
+//!
+//! Common tests are written here and executed in impl-crates.
+//!
+//! Probably you don't need this crate outside of `rust-tls-api` repository.
 
 #[macro_use]
 extern crate log;

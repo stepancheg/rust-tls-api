@@ -23,6 +23,10 @@ pub trait TlsConnectorType: fmt::Display + fmt::Debug + 'static {
     /// It this connector implemented?
     ///
     /// When not implemented, all operations return error.
+    ///
+    /// For example, `tls-api-security-framework` is available on Linux,
+    /// but all operations result in error, so `implemented()` returns `false`
+    /// for that implementation.
     fn implemented(&self) -> bool;
 
     /// Is this implementation ALPN negotation?

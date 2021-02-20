@@ -1,3 +1,5 @@
+//! [`tls_api`] implementation for [`native_tls`].
+
 #![deny(broken_intra_doc_links)]
 
 mod acceptor;

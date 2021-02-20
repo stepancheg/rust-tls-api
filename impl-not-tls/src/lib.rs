@@ -1,5 +1,7 @@
 //! Fake implementation of TLS API: returned streams are not TLS streams,
-//! but fake socket streams.
+//! but wrapped plain socket streams.
+//!
+//! Can be useful for tests or to measure the overhead of TLS.
 //!
 //! Use at your own risk.
 

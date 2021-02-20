@@ -1,6 +1,7 @@
 //! Implementation neutral TLS API.
 //!
-//! The idea is that code can be written in generic fashion like:
+//! The idea is that code can be written without the knowledge of the TLS implementation used,
+//! like this:
 //!
 //! ```
 //! # { #![cfg(feature = "runtime-tokio")]
@@ -40,20 +41,20 @@
 //! # }
 //! ```
 //!
-//! (Full working example is
-//! [on GitHub](https://github.com/stepancheg/rust-tls-api/blob/master/examples/examples/download-rust-lang.rs).)
-//!
 //! And then this function can be executed with any API implementations. The implementations are:
 //! * `tls-api-openssl`, wraps `openssl` crate
 //! * `tls-api-rustls`, wraps `rustls` crate
 //! * `tls-api-native-tls`, wraps `native-tls` crate
 //! * `tls-api-security-framework`, wraps `security-framework` crate
 //!
+//! Have a look at working example invoking all implementation
+//! [on GitHub](https://github.com/stepancheg/rust-tls-api/blob/master/examples/examples/download-rust-lang-org.rs#L66).
+//!
 //! There are also two fake implementations:
 //! * `tls-api-stub` crate which returns an error on any operations, useful to check code compiles
 //! * `tls-api-no-tls` fake implementation which returns plain sockets without TLS
 //!
-//! he API is provided to be compatible with both tokio and async-std.
+//! The API is provided to be compatible with both tokio and async-std.
 //! Crate features:
 //! * `runtime-tokio` enables the implementation over tokio
 //! * `runtime-async-std` enables the implementation over async-std

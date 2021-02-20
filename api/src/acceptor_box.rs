@@ -20,7 +20,7 @@ pub trait TlsAcceptorType: fmt::Debug + fmt::Display + Sync + 'static {
     /// Whether this acceptor type is implemented.
     ///
     /// For example, `tls-api-security-framework` is available on Linux,
-    /// but all operations result in error, so `IMPLEMENTED = false`
+    /// but all operations result in error, so `implemented()` returns `false`
     /// for that implementation.
     fn implemented(&self) -> bool;
     /// Whether this implementation supports ALPN negotiation.
@@ -134,7 +134,7 @@ pub struct TlsAcceptorBuilderBox(Box<dyn TlsAcceptorBuilderDyn>);
 impl TlsAcceptorBuilderBox {
     /// Dynamic (without type parameter) version of the acceptor.
     ///
-    /// This function returns a connector type, which can be used to constructor connectors.
+    /// This function returns an acceptor type, which can be used to constructor acceptors.
     pub fn type_dyn(&self) -> &'static dyn TlsAcceptorType {
         self.0.type_dyn()
     }

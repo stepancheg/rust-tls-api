@@ -70,7 +70,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 
     /// Dynamic (without type parameter) version of the acceptor.
     ///
-    /// This function returns a connector type, which can be used to constructor connectors.
+    /// This function returns an acceptor type, which can be used to constructor acceptors.
     const TYPE_DYN: &'static dyn TlsAcceptorType =
         &TlsAcceptorTypeImpl::<Self>(marker::PhantomData);
 
