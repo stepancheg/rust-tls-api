@@ -275,11 +275,11 @@ where
         O::get_alpn_protocol(&self.stream)
     }
 
-    fn get_mut(&mut self) -> &mut A {
+    fn get_socket_mut(&mut self) -> &mut A {
         O::get_mut(&mut self.stream).get_inner_mut()
     }
 
-    fn get_ref(&self) -> &A {
+    fn get_socket_ref(&self) -> &A {
         O::get_ref(&self.stream).get_inner_ref()
     }
 }

@@ -1,11 +1,12 @@
-use crate::runtime::AsyncRead;
-use crate::runtime::AsyncWrite;
-use crate::socket::AsyncSocket;
 use std::fmt;
 use std::io;
 use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
+
+use crate::runtime::AsyncRead;
+use crate::runtime::AsyncWrite;
+use crate::socket::AsyncSocket;
 
 /// Trait to be used by API implementors (like openssl),
 /// not meant to be used directly.
@@ -14,10 +15,10 @@ pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send +
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 
     /// Get the underlying socket.
-    fn get_mut(&mut self) -> &mut S;
+    fn get_socket_mut(&mut self) -> &mut S;
 
     /// Get the underlying socket.
-    fn get_ref(&self) -> &S;
+    fn get_socket_ref(&self) -> &S;
 }
 
 /// TLS stream object returned by `connect` and `accept` operations.
@@ -48,13 +49,13 @@ impl<S: AsyncSocket> TlsStream<S> {
     }
 
     /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_mut(&mut self) -> &mut S {
-        self.0.get_mut()
+    pub fn get_socket_mut(&mut self) -> &mut S {
+        self.0.get_socket_mut()
     }
 
     /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_ref(&self) -> &S {
-        self.0.get_ref()
+    pub fn get_socket_ref(&self) -> &S {
+        self.0.get_socket_ref()
     }
 
     /// Get negotiated ALPN protocol.
