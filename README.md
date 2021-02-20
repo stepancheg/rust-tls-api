@@ -13,10 +13,10 @@ Several crates:
   [openssl](https://github.com/sfackler/rust-openssl) crate
 * tls-api-rustls — implementation of TLS API over
   [rustls](https://github.com/ctz/rustls) crate
+* tls-api-security-framework — implementation of TLS API over
+  [security framework](https://github.com/sfackler/rust-security-framework) crate
 * tls-api-schannel — _missing_ implementation of TLS API over
   [schannel](https://github.com/steffengy/schannel-rs) crate
-* tls-api-security-framework — _missing_ implementation of TLS API over
-  [security framework](https://github.com/sfackler/rust-security-framework) crate
 * tls-api-stub — stub API implementation which returns an error on any operation
 
 ## The problem
