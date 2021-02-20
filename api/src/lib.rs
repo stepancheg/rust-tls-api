@@ -2,15 +2,35 @@
 //!
 //! The idea is that code can be written in generic fashion like:
 //!
-//! ```ignore
+//! ```
+//! #![cfg(feature = "runtime-tokio")]
 //! use tls_api::{TlsConnector, TlsConnectorBuilder};
 //! use tokio::net::TcpStream;
-//! use tokio::io::{AsyncWriteExt, AsyncReadExt};
-//! // or use async-std instead of tokio
+//! # use tls_api::runtime::AsyncWriteExt;
+//! # use tls_api::runtime::AsyncReadExt;
 //!
 //! async fn download_rust_lang_org<C: TlsConnector>() -> tls_api::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
 //!     let mut  stream = C::builder()?.build()?.connect("rust-lang.org", stream).await?;
+//!     stream.write_all(b"GET / HTTP/1.1\r\nHost: rust-lang.org\r\n\r\n").await?;
+//!     let mut buf = Vec::new();
+//!     stream.read_to_end(&mut buf).await?;
+//!     Ok(buf)
+//! }
+//! ```
+//!
+//! or the same code with dynamic connector:
+//!
+//! ```
+//! #![cfg(feature = "runtime-tokio")]
+//! use tls_api::TlsConnectorType;
+//! use tokio::net::TcpStream;
+//! # use tls_api::runtime::AsyncWriteExt;
+//! # use tls_api::runtime::AsyncReadExt;
+//!
+//! async fn download_rust_lang_org(connector: &dyn TlsConnectorType) -> tls_api::Result<Vec<u8>> {
+//!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
+//!     let mut  stream = connector.builder()?.build()?.connect("rust-lang.org", stream).await?;
 //!     stream.write_all(b"GET / HTTP/1.1\r\nHost: rust-lang.org\r\n\r\n").await?;
 //!     let mut buf = Vec::new();
 //!     stream.read_to_end(&mut buf).await?;
@@ -26,13 +46,16 @@
 //! * `tls-api-rustls`, wraps `rustls` crate
 //! * `tls-api-native-tls`, wraps `native-tls` crate
 //! * `tls-api-security-framework`, wraps `security-framework` crate
-//! * (there's also `tls-api-stub` crate which returns an error on any operations,
-//!   it is useful sometimes to check code compiles).
 //!
-//! Additionally, the API is provided to be compatible with both tokio and async-std.
-//! Runtime features:
+//! There are also two fake implementations:
+//! * `tls-api-stub` crate which returns an error on any operations, useful to check code compiles
+//! * `tls-api-no-tls` fake implementation which returns plain sockets without TLS
+//!
+//! he API is provided to be compatible with both tokio and async-std.
+//! Crate features:
 //! * `runtime-tokio` enables the implementation over tokio
 //! * `runtime-async-std` enables the implementation over async-std
+//!
 //! Currently the features are mutually exclusive.
 
 #![deny(broken_intra_doc_links)]

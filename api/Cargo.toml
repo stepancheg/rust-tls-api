@@ -20,7 +20,7 @@ webpki     = "0.21.4"
 # Note technically there's no dependency on async-std
 futures-util = { version = "0.3.1", features = ["io"], optional = true }
 
-tokio = { version = "1.2.0", features = ["io-util"], optional = true }
+tokio = { version = "1.2.0", features = ["io-util", "net"], optional = true }
 
 
 [features]
