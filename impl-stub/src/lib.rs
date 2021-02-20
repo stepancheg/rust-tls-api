@@ -12,7 +12,7 @@
 
 #![deny(broken_intra_doc_links)]
 
-use std::error::Error as std_Error;
+use std::error;
 use std::fmt;
 
 mod stream;
@@ -28,7 +28,7 @@ pub use connector::TlsConnectorBuilder;
 #[derive(Debug)]
 struct Error;
 
-impl std_Error for Error {
+impl error::Error for Error {
     fn description(&self) -> &str {
         "stub implementation"
     }

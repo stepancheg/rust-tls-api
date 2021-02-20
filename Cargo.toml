@@ -3,6 +3,7 @@ members = [
     "api",
     "api-test",
     "impl-native-tls",
+    "impl-not-tls",
     "impl-openssl",
     "impl-rustls",
     "impl-security-framework",
