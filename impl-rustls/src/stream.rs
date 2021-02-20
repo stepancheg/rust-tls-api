@@ -33,7 +33,7 @@ where
     type SyncWrapper = StreamOwned<T, AsyncIoAsSyncIo<A>>;
 
     fn debug(_w: &Self::SyncWrapper) -> &dyn Debug {
-        // TODO: implement Debug
+        // TODO: remove on next release https://github.com/ctz/rustls/pull/524
         &StreamOwnedDebug
     }
 

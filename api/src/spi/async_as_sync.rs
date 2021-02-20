@@ -127,7 +127,6 @@ where
 
     /// Cast the wrapper to [`fmt::Debug`] or provide substitute debug.
     /// This is work around not all wrappers implementing [`fmt::Debug`].
-    // TODO: replace with fmt-like signature
     fn debug(w: &Self::SyncWrapper) -> &dyn fmt::Debug;
 
     /// Unwrap the wrapper.
