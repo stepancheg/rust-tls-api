@@ -6,6 +6,7 @@ use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
 use tls_api::spi::TlsStreamImpl;
 use tls_api::AsyncSocket;
+use tls_api::ImplInfo;
 
 #[derive(Debug)]
 pub(crate) struct TlsStream<A>(pub A)
@@ -19,6 +20,10 @@ impl<A: AsyncSocket> TlsStream<A> {
 }
 
 impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
+    fn impl_info(&self) -> ImplInfo {
+        crate::info()
+    }
+
     fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
         Err(crate::Error::Alpn.into())
     }

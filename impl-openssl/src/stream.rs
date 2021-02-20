@@ -5,6 +5,7 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
+use tls_api::ImplInfo;
 
 pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;
 
@@ -41,5 +42,9 @@ where
     #[cfg(not(has_alpn))]
     fn get_alpn_protocols(_w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
         Ok(None)
+    }
+
+    fn impl_info() -> ImplInfo {
+        crate::into()
     }
 }

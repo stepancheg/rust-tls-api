@@ -4,6 +4,7 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
+use tls_api::ImplInfo;
 
 pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;
 
@@ -19,6 +20,10 @@ where
     A: AsyncSocket,
 {
     type SyncWrapper = native_tls::TlsStream<AsyncIoAsSyncIo<A>>;
+
+    fn impl_info() -> ImplInfo {
+        crate::info()
+    }
 
     fn debug(w: &Self::SyncWrapper) -> &dyn fmt::Debug {
         w

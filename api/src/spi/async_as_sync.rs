@@ -17,6 +17,7 @@ use crate::runtime::AsyncWrite;
 use crate::spi::thread_local_context::restore_context;
 use crate::spi::thread_local_context::save_context;
 use crate::spi::TlsStreamImpl;
+use crate::ImplInfo;
 
 /// Async IO object as sync IO.
 ///
@@ -124,6 +125,9 @@ where
     ///
     /// Wrapped object is always [`AsyncIoAsSyncIo`].
     type SyncWrapper: Read + Write + Unpin + Send + 'static;
+
+    /// Which crates imlpements this?
+    fn impl_info() -> ImplInfo;
 
     /// Cast the wrapper to [`fmt::Debug`] or provide substitute debug.
     /// This is work around not all wrappers implementing [`fmt::Debug`].
@@ -267,6 +271,10 @@ where
     A: fmt::Debug + Unpin + Send + 'static,
     O: AsyncWrapperOps<A>,
 {
+    fn impl_info(&self) -> ImplInfo {
+        O::impl_info()
+    }
+
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         O::get_alpn_protocol(&self.stream)
     }

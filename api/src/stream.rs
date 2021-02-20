@@ -8,10 +8,14 @@ use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
+use crate::ImplInfo;
 
 /// Trait to be used by API implementors (like openssl),
-/// not meant to be used directly.
+/// not meant to be used of implemented directly.
 pub trait TlsStreamImpl<S>: AsyncRead + AsyncWrite + Unpin + fmt::Debug + Send + 'static {
+    /// Implementation info for this stream (e. g. which crate provides it).
+    fn impl_info(&self) -> ImplInfo;
+
     /// Get negotiated ALPN protocol negotiated.
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 
@@ -53,6 +57,11 @@ impl<S: AsyncSocket> TlsStream<S> {
     /// This function is intended to be used by API implementors, not by users.
     pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStream<S> {
         TlsStream(Box::new(imp))
+    }
+
+    /// Implementation info for this stream (e. g. which crate provides it).
+    pub fn impl_info(&self) -> ImplInfo {
+        self.0.impl_info()
     }
 
     /// Get a reference the underlying TLS-wrapped socket.

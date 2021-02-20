@@ -9,6 +9,7 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
+use tls_api::ImplInfo;
 
 pub(crate) type TlsStream<A, T> =
     TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<T, AsyncIoAsSyncIo<A>, A>>;
@@ -30,6 +31,10 @@ where
     T: Session + Sized + fmt::Debug + Unpin + 'static,
 {
     type SyncWrapper = StreamOwned<T, AsyncIoAsSyncIo<A>>;
+
+    fn impl_info() -> ImplInfo {
+        crate::info()
+    }
 
     fn debug(_w: &Self::SyncWrapper) -> &dyn Debug {
         // TODO: remove on next release https://github.com/ctz/rustls/pull/524
