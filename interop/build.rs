@@ -13,11 +13,19 @@ fn main() {
         for server in impls {
             writeln!(client_server, "#[test]").unwrap();
             writeln!(client_server, "fn {}_{}_der() {{", client, server).unwrap();
-            writeln!(client_server, "  tls_api_test::client_server_der::<tls_api_{}::TlsConnector, tls_api_{}::TlsAcceptor>();", client, server).unwrap();
+            writeln!(client_server, "    tls_api_test::test_client_server_der::<").unwrap();
+            writeln!(client_server, "        tls_api_{}::TlsConnector,", client).unwrap();
+            writeln!(client_server, "        tls_api_{}::TlsAcceptor>();", server).unwrap();
             writeln!(client_server, "}}").unwrap();
             writeln!(client_server, "#[test]").unwrap();
             writeln!(client_server, "fn {}_{}_pkcs12() {{", client, server).unwrap();
-            writeln!(client_server, "  tls_api_test::client_server_pkcs12::<tls_api_{}::TlsConnector, tls_api_{}::TlsAcceptor>();", client, server).unwrap();
+            writeln!(
+                client_server,
+                "    tls_api_test::test_client_server_pkcs12::<"
+            )
+            .unwrap();
+            writeln!(client_server, "        tls_api_{}::TlsConnector,", client).unwrap();
+            writeln!(client_server, "        tls_api_{}::TlsAcceptor>();", server).unwrap();
             writeln!(client_server, "}}").unwrap();
         }
     }

@@ -15,7 +15,7 @@ fn connect_bad_hostname_ignored() {
 
 #[test]
 fn client_server_der() {
-    tls_api_test::client_server_der::<
+    tls_api_test::test_client_server_der::<
         tls_api_security_framework::TlsConnector,
         tls_api_security_framework::TlsAcceptor,
     >()
@@ -23,7 +23,7 @@ fn client_server_der() {
 
 #[test]
 fn client_server_pkcs12() {
-    tls_api_test::client_server_pkcs12::<
+    tls_api_test::test_client_server_pkcs12::<
         tls_api_security_framework::TlsConnector,
         tls_api_security_framework::TlsAcceptor,
     >()
