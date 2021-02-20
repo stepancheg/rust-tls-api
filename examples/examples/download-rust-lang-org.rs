@@ -55,11 +55,11 @@ async fn download_impl<C: tls_api::TlsConnector>() {
 
 /// Try it:
 /// ```
-/// $ cargo run -p tls-api-examples --example download-rust-lang
+/// $ cargo run -p tls-api-examples --example download-rust-lang-org
 /// ```
 /// or
 /// ```
-/// $ cargo run -p tls-api-examples --example download-rust-lang \
+/// $ cargo run -p tls-api-examples --example download-rust-lang-org \
 ///      --no-default-features --features=runtime-async-std
 /// ```
 #[crate::main]
