@@ -300,12 +300,12 @@ where
     }
 
     if !C::SUPPORTS_ALPN {
-        debug!("connector {} does not support ALPN", any::type_name::<C>());
+        eprintln!("connector {} does not support ALPN", any::type_name::<C>());
         return;
     }
 
     if !A::SUPPORTS_ALPN {
-        debug!("acceptor {} does not support ALPN", any::type_name::<A>());
+        eprintln!("acceptor {} does not support ALPN", any::type_name::<A>());
         return;
     }
 
