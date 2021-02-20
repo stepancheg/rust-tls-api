@@ -26,26 +26,13 @@ Supports:
 * tls-api-stub — stub API implementation which returns an error on any operation
 * test-cert-gen — utility to generate certificate for unit tests
 
-## The problem
+## Why one might want to use TLS API instead of concrete implementation
 
-If you develop a library, you do not know which TLS library your user would like to use,
-and if they need any TLS library at all.
-
-Because of that some libraries simply depend on specific TLS implementations, while others
-provide "features" to turn on specific dependencies.
-
-It makes development for both library authors and library users inconvenient.
-Both authors and users need to configure "features" in `Cargo.toml` and `#[cfg]` in code.
-For example, your library need to support three options: use openssl, use native-tls, and
-no TLS at all. So you need to compile your library three times to check it can be compiled
-properly with all three options.
-
-## The solution
-
-Library authors simply write the code with tls-api library. Since `tls-api` is
-lightweight, library authors can simply write code using it, and have no configuration options.
-
-Library users simply call that library with different implementations of connectors and acceptors.
+* it is not decided yet which TLS implementation is better, start prototyping with one, and then switch to another
+* something doesn't work, no idea why, maybe try another implementation which would provide better diagnostics
+* provide a library over TLS (like database client) and allow user do specify preferred TLS implementation
+* do a performace comparison of TLS implementations on the same code base
+* if one implementation is buggy, it's easy to switch to another without heavy rewrite
 
 ## Example
 
