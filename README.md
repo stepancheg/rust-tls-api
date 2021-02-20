@@ -4,7 +4,13 @@
 
 # Rust TLS API and implementations
 
-Several crates:
+One TLS API to rule them all.
+
+Supports:
+* tokio and async-std
+* rustls, native-tls, openssl, security-framework
+
+## Crates in this repository
 
 * tls-api — TLS API without any implementation and without dependencies
 * tls-api-native-tls — implementation of TLS API over
