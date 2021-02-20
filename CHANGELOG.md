@@ -1,4 +1,11 @@
+# Changelog
+
 ## [Unreleased]
+
+- `async-std` support added
+- `security-framework` is implemented natively
+- update all dependencies to the latest versions
+- more tests, more features, more everything
 
 ## [0.4.0] - 2020-05-17
 
