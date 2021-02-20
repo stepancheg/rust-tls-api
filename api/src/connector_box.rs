@@ -1,11 +1,11 @@
+use std::marker;
+
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
-use crate::Cert;
 use crate::TlsConnector;
 use crate::TlsConnectorBuilder;
 use crate::TlsStreamBox;
-use std::marker;
 
 // Connector type.
 
@@ -57,7 +57,7 @@ trait TlsConnectorBuilderDyn {
 
     fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()>;
 
-    fn add_root_certificate(&mut self, cert: &Cert) -> crate::Result<()>;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()>;
 
     fn build(self: Box<Self>) -> crate::Result<TlsConnectorBox>;
 }
@@ -75,7 +75,7 @@ impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
         self.set_verify_hostname(verify)
     }
 
-    fn add_root_certificate(&mut self, cert: &Cert) -> crate::Result<()> {
+    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()> {
         self.add_root_certificate(cert)
     }
 
@@ -111,7 +111,7 @@ impl TlsConnectorBuilderBox {
 
     /// Should hostname verification be performed?
     /// Use carefully, it opens the door to MITM attacks.
-    pub fn add_root_certificate(&mut self, cert: &Cert) -> crate::Result<()> {
+    pub fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()> {
         self.0.add_root_certificate(cert)
     }
 }

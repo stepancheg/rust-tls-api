@@ -199,7 +199,7 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let root_ca = &keys.client.ca_der;
 
     let mut connector = C::builder().expect("connector builder");
-    t!(connector.add_root_certificate(root_ca));
+    t!(connector.add_root_certificate(root_ca.get_der()));
     connector
 }
 

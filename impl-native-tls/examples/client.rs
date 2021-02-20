@@ -14,7 +14,11 @@ async fn run() {
 
     let mut builder = tls_api_native_tls::TlsConnector::builder().unwrap();
     builder
-        .add_root_certificate(&Cert::from_der(fs::read("ca.der").unwrap()).unwrap())
+        .add_root_certificate(
+            &Cert::from_der(fs::read("ca.der").unwrap())
+                .unwrap()
+                .get_der(),
+        )
         .unwrap();
     // builder.add_root_certificate(Cert::Der(X509Cert::new(fs::read("/Users/nga/devel/left/rust-security-framework/security-framework/test/server.der").unwrap()))).unwrap();
     // builder.builder.danger_accept_invalid_certs(true);

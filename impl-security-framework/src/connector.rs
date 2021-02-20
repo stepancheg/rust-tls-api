@@ -7,7 +7,6 @@ use std::str;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use tls_api::Cert;
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 type ClientBuilder = void::Void;
@@ -58,10 +57,10 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn add_root_certificate(&mut self, cert: &Cert) -> tls_api::Result<()> {
+    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            let cert = SecCertificate::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
+            let cert = SecCertificate::from_der(cert).map_err(tls_api::Error::new)?;
             // TODO: overrides, not adds: https://github.com/kornelski/rust-security-framework/pull/116
             self.0.anchor_certificates(&[cert]);
             Ok(())

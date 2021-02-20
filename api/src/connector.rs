@@ -1,12 +1,12 @@
+use std::marker;
+
 use crate::connector_box::TlsConnectorBox;
 use crate::connector_box::TlsConnectorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
-use crate::Cert;
 use crate::TlsConnectorType;
 use crate::TlsStream;
-use std::marker;
 
 /// A builder for `TlsConnector`s.
 pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
@@ -33,7 +33,9 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     /// Add trusted root certificate. By default connector supports only
     /// global trusted root.
-    fn add_root_certificate(&mut self, cert: &Cert) -> crate::Result<()>;
+    ///
+    /// Param is DER-encoded X.509 certificate.
+    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()>;
 
     /// Finish the acceptor constructon.
     fn build(self) -> crate::Result<Self::Connector>;

@@ -44,8 +44,8 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &tls_api::Cert) -> tls_api::Result<()> {
-        let cert = openssl::x509::X509::from_der(cert.get_der()).map_err(tls_api::Error::new)?;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
+        let cert = openssl::x509::X509::from_der(cert).map_err(tls_api::Error::new)?;
 
         self.builder
             .cert_store_mut()
