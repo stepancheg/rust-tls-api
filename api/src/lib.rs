@@ -104,6 +104,7 @@ mod socket;
 mod socket_box;
 mod stream;
 mod stream_box;
+mod stream_dyn;
 
 fn _assert_kinds() {
     fn connect_future_is_send<C, S>(c: &C, s: S)
