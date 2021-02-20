@@ -1,3 +1,4 @@
+use std::fmt;
 use std::marker;
 
 use crate::AsyncSocket;
@@ -13,7 +14,7 @@ use crate::TlsStreamBox;
 /// Similar to [`TlsConnector`], but it is dynamic, does not require type parameter.
 ///
 /// Also it works slower.
-pub trait TlsConnectorType {
+pub trait TlsConnectorType: fmt::Display + fmt::Debug + 'static {
     /// Constructor a builder dynamically.
     fn builder(&self) -> crate::Result<TlsConnectorBuilderBox>;
 
@@ -30,6 +31,18 @@ pub trait TlsConnectorType {
 }
 
 pub(crate) struct TlsConnectorTypeImpl<C: TlsConnector>(pub marker::PhantomData<C>);
+
+impl<A: TlsConnector> fmt::Debug for TlsConnectorTypeImpl<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&A::info(), f)
+    }
+}
+
+impl<A: TlsConnector> fmt::Display for TlsConnectorTypeImpl<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&A::info(), f)
+    }
+}
 
 impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
     fn builder(&self) -> crate::Result<TlsConnectorBuilderBox> {
@@ -119,7 +132,7 @@ impl TlsConnectorBuilderBox {
 
 // Connector.
 
-trait TlsConnectorDyn {
+trait TlsConnectorDyn: Send + Sync + 'static {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType;
 
     fn connect<'a>(

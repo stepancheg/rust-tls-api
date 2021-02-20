@@ -8,12 +8,15 @@ mod t;
 
 mod alpn;
 mod client_server;
+mod client_server_dyn;
 mod google;
 mod version;
 
 pub use alpn::test_alpn;
 pub use client_server::test_client_server_der;
 pub use client_server::test_client_server_pkcs12;
+pub use client_server_dyn::test_client_server_dyn_der;
+pub use client_server_dyn::test_client_server_dyn_pkcs12;
 pub use google::test_google;
 pub use version::test_version;
 
@@ -24,8 +27,12 @@ use std::any;
 use std::str;
 
 use tls_api::TlsAcceptor;
+use tls_api::TlsAcceptorBuilderBox;
+use tls_api::TlsAcceptorType;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
+use tls_api::TlsConnectorBuilderBox;
+use tls_api::TlsConnectorType;
 
 use std::net::ToSocketAddrs;
 
@@ -126,6 +133,18 @@ where
     ))
 }
 
+fn new_acceptor_dyn_from_pkcs12_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
+    t!(acceptor.builder_from_pkcs12(
+        &test_cert_gen::keys().server.cert_and_key_pkcs12.pkcs12.0,
+        &test_cert_gen::keys().server.cert_and_key_pkcs12.password,
+    ))
+}
+
+fn new_acceptor_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
+    let keys = &test_cert_gen::keys().server.cert_and_key;
+    t!(acceptor.builder_from_der_key(keys.cert.get_der(), keys.key.get_der()))
+}
+
 pub enum AcceptorKeyKind {
     Pkcs12,
     Der,
@@ -153,11 +172,39 @@ where
     }
 }
 
+fn new_acceptor_dyn(
+    acceptor: &dyn TlsAcceptorType,
+    key: Option<AcceptorKeyKind>,
+) -> TlsAcceptorBuilderBox {
+    match key {
+        Some(AcceptorKeyKind::Der) => new_acceptor_dyn_from_der_keys(acceptor),
+        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_dyn_from_pkcs12_keys(acceptor),
+        None => {
+            if acceptor.supports_pkcs12_keys() {
+                new_acceptor_dyn_from_pkcs12_keys(acceptor)
+            } else if acceptor.supports_der_keys() {
+                new_acceptor_dyn_from_der_keys(acceptor)
+            } else {
+                panic!("no constructor supported for acceptor {}", acceptor);
+            }
+        }
+    }
+}
+
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
     let root_ca = &keys.client.ca;
 
     let mut connector = C::builder().expect("connector builder");
+    t!(connector.add_root_certificate(root_ca.get_der()));
+    connector
+}
+
+fn new_connector_dyn_with_root_ca(connector: &dyn TlsConnectorType) -> TlsConnectorBuilderBox {
+    let keys = test_cert_gen::keys();
+    let root_ca = &keys.client.ca;
+
+    let mut connector = connector.builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca.get_der()));
     connector
 }

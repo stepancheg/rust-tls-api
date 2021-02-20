@@ -2,6 +2,9 @@ use std::env;
 use std::fs;
 
 const TEMPLATE: &str = "\
+use tls_api::TlsAcceptor;
+use tls_api::TlsConnector;
+
 #[test]
 fn version() {
     tls_api_test::test_version::<CRATE::TlsConnector, CRATE::TlsAcceptor>();
@@ -28,6 +31,14 @@ fn client_server_der() {
         CRATE::TlsConnector,
         CRATE::TlsAcceptor,
     >();
+}
+
+#[test]
+fn client_server_dyn_der() {
+    tls_api_test::test_client_server_dyn_der(
+        CRATE::TlsConnector::TYPE_DYN,
+        CRATE::TlsAcceptor::TYPE_DYN,
+    );
 }
 
 #[test]

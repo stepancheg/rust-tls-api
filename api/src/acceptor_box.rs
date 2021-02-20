@@ -154,7 +154,7 @@ impl TlsAcceptorBuilderBox {
 
 // Acceptor
 
-trait TlsAcceptorDyn {
+trait TlsAcceptorDyn: Send + Sync + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
     fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStreamBox>>;
