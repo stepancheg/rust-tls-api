@@ -1,6 +1,6 @@
 //! Utilities to generate keys for tests.
 //!
-//! This is copy-paste from tokio-tls.
+//! Uses OpenSSL command line utility to generate the certificates.
 
 use std::fs;
 use std::io::Read;
