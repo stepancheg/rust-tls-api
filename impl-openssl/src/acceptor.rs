@@ -59,6 +59,12 @@ impl TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    type Underlying = openssl::ssl::SslAcceptor;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = HAS_ALPN;
     const SUPPORTS_DER_KEYS: bool = true;

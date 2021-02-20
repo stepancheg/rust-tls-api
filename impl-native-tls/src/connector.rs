@@ -61,6 +61,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
+    type Underlying = native_tls::TlsConnector;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.connector
+    }
+
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = true;
 

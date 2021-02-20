@@ -6,7 +6,9 @@ use void::Void;
 
 use crate::Error;
 
+/// Non-instantiatable.
 pub struct TlsConnectorBuilder(Void);
+/// Non-instantiatable.
 pub struct TlsConnector(Void);
 
 impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
@@ -40,6 +42,12 @@ impl tls_api::TlsConnector for TlsConnector {
 
     const IMPLEMENTED: bool = false;
     const SUPPORTS_ALPN: bool = false;
+
+    type Underlying = Void;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
 
     fn info() -> ImplInfo {
         crate::info()

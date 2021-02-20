@@ -33,6 +33,12 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
+    type Underlying = ();
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     fn info() -> ImplInfo {
         crate::info()
     }

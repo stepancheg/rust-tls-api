@@ -86,6 +86,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
+    type Underlying = Arc<rustls::ClientConfig>;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.config
+    }
+
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = true;
 

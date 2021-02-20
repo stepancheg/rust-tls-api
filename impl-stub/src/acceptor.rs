@@ -6,7 +6,9 @@ use tls_api::ImplInfo;
 
 use crate::Error;
 
+/// Non-instantiatable.
 pub struct TlsAcceptorBuilder(Void);
+/// Non-instantiatable.
 pub struct TlsAcceptor(Void);
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
@@ -34,6 +36,12 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_ALPN: bool = false;
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = false;
+
+    type Underlying = Void;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
 
     fn info() -> ImplInfo {
         crate::info()

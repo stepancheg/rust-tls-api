@@ -30,6 +30,9 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
 
     /// Get the underlying builder.
+    ///
+    /// API intentionally exposes the underlying acceptor builder to allow fine tuning
+    /// not possible in common API.
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     /// Finish the acceptor construction.
@@ -40,6 +43,15 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// Type of the builder for this acceptor.
     type Builder: TlsAcceptorBuilder<Acceptor = Self>;
+
+    /// Type of the underlying acceptor.
+    type Underlying;
+
+    /// Get the underlying acceptor.
+    ///
+    /// API intentionally exposes the underlying acceptor builder to allow fine acceptor
+    /// not possible in common API.
+    fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     /// Whether this acceptor type is implemented.
     ///

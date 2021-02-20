@@ -41,6 +41,12 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = false;
     const SUPPORTS_ALPN: bool = false;
 
+    type Underlying = ();
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     fn info() -> ImplInfo {
         crate::info()
     }

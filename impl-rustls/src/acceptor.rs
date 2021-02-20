@@ -36,6 +36,12 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    type Underlying = Arc<rustls::ServerConfig>;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     const IMPLEMENTED: bool = true;
     // TODO: https://github.com/sfackler/rust-openssl/pull/646
     const SUPPORTS_ALPN: bool = true;

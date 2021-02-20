@@ -66,6 +66,12 @@ fn pkcs12_to_sf_objects(
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
+    type Underlying = SecureTransportTlsAcceptorBuilder;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = false;
     const SUPPORTS_DER_KEYS: bool = false;

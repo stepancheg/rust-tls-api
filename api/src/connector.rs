@@ -19,8 +19,8 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 
     /// Get the underlying builder.
     ///
-    /// Can be used to fine-tuning the setup not supported by API
-    /// common to all implementations.
+    /// API intentionally exposes the underlying acceptor builder to allow fine tuning
+    /// not possible in common API.
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     /// Set ALPN-protocols to negotiate.
@@ -46,6 +46,15 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
 pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Type of the builder for this connector.
     type Builder: TlsConnectorBuilder<Connector = Self>;
+
+    /// Type of the underlying connector.
+    type Underlying;
+
+    /// Get the underlying builder.
+    ///
+    /// API intentionally exposes the underlying acceptor builder to allow fine tuning
+    /// not possible in common API.
+    fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     /// Is it implemented? When `false` all operations return an error.
     ///

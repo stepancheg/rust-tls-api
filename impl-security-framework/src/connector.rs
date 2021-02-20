@@ -79,6 +79,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
+    type Underlying = ClientBuilder;
+
+    fn underlying_mut(&mut self) -> &mut Self::Underlying {
+        &mut self.0
+    }
+
     const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = true;
 
