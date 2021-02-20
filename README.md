@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/crates/l/tls-api.svg)](https://github.com/stepancheg/rust-tls-api/blob/master/LICENSE)
 [![crates.io](https://img.shields.io/crates/v/tls-api.svg)](https://crates.io/crates/tls-api) 
 
-# One TLS API to rule them all.
+# One TLS API to rule them all
 
 Supports:
 * **tokio** and **async-std**
