@@ -1,7 +1,7 @@
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpStream;
 use std::fs;
-use tls_api::Cert;
+use test_cert_gen::Cert;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tls_api_test::block_on;
@@ -13,11 +13,7 @@ async fn run() {
 
     let mut builder = tls_api_openssl::TlsConnector::builder().unwrap();
     builder
-        .add_root_certificate(
-            &Cert::from_der(fs::read("ca.der").unwrap())
-                .unwrap()
-                .get_der(),
-        )
+        .add_root_certificate(&Cert::from_der(fs::read("ca.der").unwrap()).get_der())
         .unwrap();
     let connector = builder.build().unwrap();
     connector.connect("localhost", socket).await.unwrap();

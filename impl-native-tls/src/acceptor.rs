@@ -3,21 +3,11 @@ use crate::handshake::HandshakeFuture;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
-use tls_api::Pkcs12AndPassword;
 
 pub struct TlsAcceptorBuilder(pub native_tls::TlsAcceptorBuilder);
 pub struct TlsAcceptor(pub native_tls::TlsAcceptor);
 
 // TlsAcceptor and TlsAcceptorBuilder
-
-impl TlsAcceptorBuilder {
-    pub fn from_pkcs12(pkcs12: &Pkcs12AndPassword) -> tls_api::Result<TlsAcceptorBuilder> {
-        let pkcs12 = native_tls::Identity::from_pkcs12(&pkcs12.pkcs12.0, &pkcs12.password)
-            .map_err(tls_api::Error::new)?;
-
-        Ok(native_tls::TlsAcceptor::builder(pkcs12)).map(TlsAcceptorBuilder)
-    }
-}
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;

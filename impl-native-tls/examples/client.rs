@@ -1,12 +1,15 @@
+use std::fs;
+
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpStream;
-use std::fs;
-use tls_api::Cert;
+
+#[cfg(feature = "runtime-tokio")]
+use tokio::net::TcpStream;
+
+use test_cert_gen::Cert;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
 use tls_api_test::block_on;
-#[cfg(feature = "runtime-tokio")]
-use tokio::net::TcpStream;
 
 async fn run() {
     let socket = TcpStream::connect(("127.0.0.1", 4433)).await.unwrap();
@@ -14,11 +17,7 @@ async fn run() {
 
     let mut builder = tls_api_native_tls::TlsConnector::builder().unwrap();
     builder
-        .add_root_certificate(
-            &Cert::from_der(fs::read("ca.der").unwrap())
-                .unwrap()
-                .get_der(),
-        )
+        .add_root_certificate(&Cert::from_der(fs::read("ca.der").unwrap()).get_der())
         .unwrap();
     // builder.add_root_certificate(Cert::Der(X509Cert::new(fs::read("/Users/nga/devel/left/rust-security-framework/security-framework/test/server.der").unwrap()))).unwrap();
     // builder.builder.danger_accept_invalid_certs(true);
