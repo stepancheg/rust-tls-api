@@ -28,9 +28,9 @@
 //! # use tls_api::runtime::AsyncWriteExt;
 //! # use tls_api::runtime::AsyncReadExt;
 //!
-//! async fn download_rust_lang_org(connector: &dyn TlsConnectorType) -> tls_api::Result<Vec<u8>> {
+//! async fn download_rust_lang_org(connector_type: &dyn TlsConnectorType) -> tls_api::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
-//!     let mut  stream = connector.builder()?.build()?.connect("rust-lang.org", stream).await?;
+//!     let mut  stream = connector_type.builder()?.build()?.connect("rust-lang.org", stream).await?;
 //!     stream.write_all(b"GET / HTTP/1.1\r\nHost: rust-lang.org\r\n\r\n").await?;
 //!     let mut buf = Vec::new();
 //!     stream.read_to_end(&mut buf).await?;
