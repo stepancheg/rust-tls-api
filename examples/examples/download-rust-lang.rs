@@ -2,20 +2,30 @@ use std::net::ToSocketAddrs;
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 
-use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
+
+// Users are not supposed to use tokio and async-std side by side.
+// Use both just as an example.
 
 #[cfg(feature = "runtime-async-std")]
 use async_std::main;
 #[cfg(feature = "runtime-async-std")]
 use async_std::net::TcpStream;
+
 #[cfg(feature = "runtime-tokio")]
 use tokio::main;
 #[cfg(feature = "runtime-tokio")]
 use tokio::net::TcpStream;
 
-#[crate::main]
-async fn main() {
+async fn download_impl<C: tls_api::TlsConnector>() {
+    if !C::IMPLEMENTED {
+        eprintln!(
+            "skipping {}, it is not available on this platform",
+            C::info().name
+        );
+        return;
+    }
+
     let addr = "www.rust-lang.org:443"
         .to_socket_addrs()
         .unwrap()
@@ -23,10 +33,7 @@ async fn main() {
         .unwrap();
 
     let socket = TcpStream::connect(&addr).await.unwrap();
-    let cx = tls_api_native_tls::TlsConnector::builder()
-        .unwrap()
-        .build()
-        .unwrap();
+    let cx = C::builder().unwrap().build().unwrap();
 
     let mut stream = cx.connect("www.rust-lang.org", socket).await.unwrap();
     stream
@@ -43,5 +50,22 @@ async fn main() {
     let mut data = Vec::new();
     stream.read_to_end(&mut data).await.unwrap();
 
-    println!("{}", String::from_utf8_lossy(&data));
+    println!("downloaded {} bytes using {}", data.len(), C::info().name);
+}
+
+/// Try it:
+/// ```
+/// $ cargo run -p tls-api-examples --example download-rust-lang
+/// ```
+/// or
+/// ```
+/// $ cargo run -p tls-api-examples --example download-rust-lang \
+///      --no-default-features --features=runtime-async-std
+/// ```
+#[crate::main]
+async fn main() {
+    download_impl::<tls_api_native_tls::TlsConnector>().await;
+    download_impl::<tls_api_openssl::TlsConnector>().await;
+    download_impl::<tls_api_security_framework::TlsConnector>().await;
+    download_impl::<tls_api_rustls::TlsConnector>().await;
 }
