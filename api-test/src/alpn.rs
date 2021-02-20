@@ -7,6 +7,7 @@ use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
 use tls_api::TlsConnectorBuilder;
+use tls_api::TlsStreamDyn;
 
 use crate::block_on;
 use crate::new_acceptor;

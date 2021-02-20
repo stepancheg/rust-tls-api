@@ -16,10 +16,11 @@ use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::spi::thread_local_context::restore_context;
 use crate::spi::thread_local_context::save_context;
-use crate::spi::TlsStreamDyn;
-use crate::spi::TlsStreamImpl;
+use crate::spi::TlsStreamWithUpcastDyn;
 use crate::AsyncSocket;
 use crate::ImplInfo;
+use crate::TlsStreamDyn;
+use crate::TlsStreamWithSocketDyn;
 
 /// Async IO object as sync IO.
 ///
@@ -309,20 +310,26 @@ where
     }
 }
 
-impl<A, O> TlsStreamImpl<A> for TlsStreamOverSyncIo<A, O>
+impl<A, O> TlsStreamWithSocketDyn<A> for TlsStreamOverSyncIo<A, O>
 where
     A: AsyncSocket,
     O: AsyncWrapperOps<A>,
 {
-    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {
-        self
-    }
-
     fn get_socket_mut(&mut self) -> &mut A {
         O::get_mut(&mut self.stream).get_inner_mut()
     }
 
     fn get_socket_ref(&self) -> &A {
         O::get_ref(&self.stream).get_inner_ref()
+    }
+}
+
+impl<A, O> TlsStreamWithUpcastDyn<A> for TlsStreamOverSyncIo<A, O>
+where
+    A: AsyncSocket,
+    O: AsyncWrapperOps<A>,
+{
+    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {
+        self
     }
 }

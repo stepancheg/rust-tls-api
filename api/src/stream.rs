@@ -2,8 +2,8 @@ use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
-use crate::spi::TlsStreamDyn;
 use crate::ImplInfo;
+use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
 use std::io;
 use std::pin::Pin;
@@ -23,24 +23,22 @@ impl TlsStream {
     pub fn new<S: AsyncSocket>(stream: TlsStreamWithSocket<S>) -> TlsStream {
         TlsStream(stream.0.upcast_box())
     }
+}
 
-    /// Info about crate implementing this stream.
-    pub fn impl_info(&self) -> ImplInfo {
-        self.0.impl_info()
-    }
-
-    /// Get ALPN protocol negotiated for this connection.
-    pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+impl TlsStreamDyn for TlsStream {
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
 
-    /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_socket_mut(&mut self) -> &mut dyn AsyncSocket {
+    fn impl_info(&self) -> ImplInfo {
+        self.0.impl_info()
+    }
+
+    fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket {
         self.0.get_socket_dyn_mut()
     }
 
-    /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_socket_ref(&self) -> &dyn AsyncSocket {
+    fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket {
         self.0.get_socket_dyn_ref()
     }
 }

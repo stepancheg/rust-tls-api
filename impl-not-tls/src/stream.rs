@@ -4,10 +4,11 @@ use std::task::Context;
 use std::task::Poll;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
-use tls_api::spi::TlsStreamDyn;
-use tls_api::spi::TlsStreamImpl;
+use tls_api::spi::TlsStreamWithUpcastDyn;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
+use tls_api::TlsStreamDyn;
+use tls_api::TlsStreamWithSocketDyn;
 
 #[derive(Debug)]
 pub(crate) struct TlsStream<A>(pub A)
@@ -38,17 +39,19 @@ impl<A: AsyncSocket> TlsStreamDyn for TlsStream<A> {
     }
 }
 
-impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
-    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {
-        self
-    }
-
+impl<A: AsyncSocket> TlsStreamWithSocketDyn<A> for TlsStream<A> {
     fn get_socket_mut(&mut self) -> &mut A {
         &mut self.0
     }
 
     fn get_socket_ref(&self) -> &A {
         &self.0
+    }
+}
+
+impl<A: AsyncSocket> TlsStreamWithUpcastDyn<A> for TlsStream<A> {
+    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {
+        self
     }
 }
 

@@ -82,6 +82,8 @@ pub use info::ImplInfo;
 pub use socket::AsyncSocket;
 pub use socket_box::AsyncSocketBox;
 pub use stream::TlsStream;
+pub use stream_dyn::TlsStreamDyn;
+pub use stream_dyn::TlsStreamWithSocketDyn;
 pub use stream_with_socket::TlsStreamWithSocket;
 
 pub(crate) use crate::assert_kinds::assert_send;

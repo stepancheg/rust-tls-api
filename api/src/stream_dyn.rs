@@ -21,15 +21,17 @@ pub trait TlsStreamDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'st
     fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket;
 }
 
-/// Trait to be used by API implementors (like openssl),
-/// not meant to be used of implemented directly.
-pub trait TlsStreamImpl<S>: TlsStreamDyn {
-    /// Upcast.
-    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn>;
-
+/// Get the underlying socket.
+pub trait TlsStreamWithSocketDyn<S>: TlsStreamDyn {
     /// Get the underlying socket.
     fn get_socket_mut(&mut self) -> &mut S;
 
     /// Get the underlying socket.
     fn get_socket_ref(&self) -> &S;
+}
+
+/// Interface upcast. This is an interface for API implementors.
+pub trait TlsStreamWithUpcastDyn<S>: TlsStreamWithSocketDyn<S> {
+    /// Upcast.
+    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn>;
 }

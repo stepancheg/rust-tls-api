@@ -1,8 +1,7 @@
 //! Interfaces needed by API implementor (like `tls-api-rustls`),
 //! and not needed by the users of API.
 
-pub use crate::stream_dyn::TlsStreamDyn;
-pub use crate::stream_dyn::TlsStreamImpl;
+pub use crate::stream_dyn::TlsStreamWithUpcastDyn;
 
 pub mod async_as_sync;
 

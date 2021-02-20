@@ -8,9 +8,11 @@ use crate::assert_send;
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
-use crate::spi::TlsStreamImpl;
+use crate::spi::TlsStreamWithUpcastDyn;
 use crate::ImplInfo;
 use crate::TlsStream;
+use crate::TlsStreamDyn;
+use crate::TlsStreamWithSocketDyn;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
@@ -28,7 +30,7 @@ use std::ops::DerefMut;
 /// So each operation perform a virtual call (which is not a big deal for sockets).
 ///
 /// This type is parameterized by socket type, [`TlsStream`] is simpler version of this stream.
-pub struct TlsStreamWithSocket<S: AsyncSocket>(pub(crate) Box<dyn TlsStreamImpl<S>>);
+pub struct TlsStreamWithSocket<S: AsyncSocket>(pub(crate) Box<dyn TlsStreamWithUpcastDyn<S>>);
 
 fn _assert_kinds() {
     fn assert_tls_stream_send<S: AsyncSocket>() {
@@ -42,11 +44,41 @@ impl<S: AsyncSocket> fmt::Debug for TlsStreamWithSocket<S> {
     }
 }
 
+impl<S: AsyncSocket> TlsStreamDyn for TlsStreamWithSocket<S> {
+    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+        self.0.get_alpn_protocol()
+    }
+
+    fn impl_info(&self) -> ImplInfo {
+        self.0.impl_info()
+    }
+
+    fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket {
+        self.0.get_socket_dyn_mut()
+    }
+
+    fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket {
+        self.0.get_socket_dyn_ref()
+    }
+}
+
+impl<S: AsyncSocket> TlsStreamWithSocketDyn<S> for TlsStreamWithSocket<S> {
+    /// Get a reference the underlying TLS-wrapped socket.
+    fn get_socket_mut(&mut self) -> &mut S {
+        self.0.get_socket_mut()
+    }
+
+    /// Get a reference the underlying TLS-wrapped socket.
+    fn get_socket_ref(&self) -> &S {
+        self.0.get_socket_ref()
+    }
+}
+
 impl<S: AsyncSocket> TlsStreamWithSocket<S> {
     /// Construct a stream from a stream implementation.
     ///
     /// This function is intended to be used by API implementors, not by users.
-    pub fn new<I: TlsStreamImpl<S>>(imp: I) -> TlsStreamWithSocket<S> {
+    pub fn new<I: TlsStreamWithUpcastDyn<S>>(imp: I) -> TlsStreamWithSocket<S> {
         TlsStreamWithSocket(Box::new(imp))
     }
 
@@ -55,34 +87,10 @@ impl<S: AsyncSocket> TlsStreamWithSocket<S> {
     pub fn without_type_parameter(self) -> TlsStream {
         TlsStream::new(self)
     }
-
-    /// Implementation info for this stream (e. g. which crate provides it).
-    pub fn impl_info(&self) -> ImplInfo {
-        self.0.impl_info()
-    }
-
-    /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_socket_mut(&mut self) -> &mut S {
-        self.0.get_socket_mut()
-    }
-
-    /// Get a reference the underlying TLS-wrapped socket.
-    pub fn get_socket_ref(&self) -> &S {
-        self.0.get_socket_ref()
-    }
-
-    /// Get negotiated ALPN protocol.
-    ///
-    /// Return `Ok(None)` is there was no protocol negotiated.
-    /// In particular, `Ok(None)` is returned when the implementation
-    /// does not support ALPN.
-    pub fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
-        self.0.get_alpn_protocol()
-    }
 }
 
 impl<S: AsyncSocket> Deref for TlsStreamWithSocket<S> {
-    type Target = dyn TlsStreamImpl<S>;
+    type Target = dyn TlsStreamWithUpcastDyn<S>;
 
     fn deref(&self) -> &Self::Target {
         &*self.0
