@@ -45,6 +45,7 @@ pub trait TlsStreamImpl<S>: TlsStreamDyn {
 /// ```
 ///
 /// So `TlsStream` is actually a box to concrete TLS implementation.
+/// So each operation perform a virtual call (which is not a big deal for sockets).
 pub struct TlsStream<S: AsyncSocket>(pub(crate) Box<dyn TlsStreamImpl<S>>);
 
 fn _assert_kinds() {
