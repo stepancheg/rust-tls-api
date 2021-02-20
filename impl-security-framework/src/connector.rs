@@ -7,6 +7,7 @@ use std::str;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 type ClientBuilder = void::Void;
@@ -83,8 +84,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = crate::IMPLEMENTED;
     const SUPPORTS_ALPN: bool = true;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

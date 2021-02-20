@@ -3,6 +3,7 @@ use openssl::pkcs12::ParsedPkcs12;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
@@ -41,9 +42,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     #[cfg(not(has_alpn))]
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new_other(
-            "openssl is compiled without alpn",
-        ))
+        Err(tls_api::Error::new(crate::Error::CompiledWithoutAlpn))
     }
 
     fn build(self) -> tls_api::Result<TlsAcceptor> {
@@ -65,8 +64,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = true;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
-    fn version() -> &'static str {
-        openssl::version::version()
+    fn info() -> ImplInfo {
+        crate::into()
     }
 
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> tls_api::Result<TlsAcceptorBuilder> {

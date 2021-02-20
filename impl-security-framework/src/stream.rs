@@ -49,10 +49,7 @@ where
         if protocols.len() <= 1 {
             Ok(protocols.pop().map(String::into_bytes))
         } else {
-            Err(tls_api::Error::new_other(&format!(
-                "too many ALPN protocols returned: {:?}",
-                protocols
-            )))
+            Err(crate::Error::TooManyAlpnProtocols(protocols).into())
         }
     }
 }

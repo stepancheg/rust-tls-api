@@ -7,6 +7,7 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
 
@@ -41,8 +42,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = true;
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> tls_api::Result<TlsAcceptorBuilder> {

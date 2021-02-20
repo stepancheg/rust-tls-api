@@ -20,9 +20,7 @@ impl<A: AsyncSocket> TlsStream<A> {
 
 impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
     fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
-        Err(tls_api::Error::new_other(
-            "ALPN is not supported for plain socket TLS streams",
-        ))
+        Err(crate::Error::Alpn.into())
     }
 
     fn get_socket_mut(&mut self) -> &mut A {

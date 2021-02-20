@@ -5,6 +5,7 @@ use crate::openssl::pkcs12_to_der;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
+use crate::ImplInfo;
 use crate::TlsAcceptorBox;
 use crate::TlsStream;
 use std::fmt;
@@ -66,8 +67,8 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         TlsAcceptorBox::new(self)
     }
 
-    /// Unspecified version information about this implementation.
-    fn version() -> &'static str;
+    /// Implementation info.
+    fn info() -> ImplInfo;
 
     /// New builder from given server key.
     ///
@@ -80,9 +81,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         assert!(!Self::SUPPORTS_DER_KEYS);
 
         if !Self::SUPPORTS_PKCS12_KEYS {
-            return Err(crate::Error::new_other(
-                "construction from either DER key or PKCS #12 key is not implemented",
-            ));
+            Err(crate::CommonError::TlsBuilderFromFromDerOrPkcs12NotSupported(Self::TYPE_DYN))?;
         }
 
         let (pkcs12, pkcs12pass) = der_to_pkcs12(cert, key)?;
@@ -99,9 +98,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         assert!(!Self::SUPPORTS_PKCS12_KEYS);
 
         if !Self::SUPPORTS_DER_KEYS {
-            return Err(crate::Error::new_other(
-                "construction from either DER key or PKCS #12 key is not implemented",
-            ));
+            Err(crate::CommonError::TlsBuilderFromFromDerOrPkcs12NotSupported(Self::TYPE_DYN))?;
         }
 
         let (cert, key) = pkcs12_to_der(pkcs12, passphrase)?;

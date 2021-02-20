@@ -4,12 +4,16 @@
 //! simply return error.
 
 #![deny(broken_intra_doc_links)]
+#![cfg_attr(not(any(target_os = "macos", target_os = "ios")), allow(dead_code))]
 
 mod stream;
 
 mod acceptor;
 mod connector;
+mod error;
 mod handshake;
+
+use tls_api::ImplInfo;
 
 pub use acceptor::SecureTransportTlsAcceptorBuilder;
 pub use acceptor::TlsAcceptor;
@@ -17,22 +21,28 @@ pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
+pub(crate) use error::Error;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub(crate) use stream::TlsStream;
 
 #[allow(dead_code)]
 pub(crate) fn not_ios_or_macos<T>() -> tls_api::Result<T> {
-    Err(tls_api::Error::new_other("not iOS or macOS"))
+    Err(Error::NotIosOrMacos.into())
 }
 
-pub(crate) fn version() -> &'static str {
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
-    {
-        "unknown"
-    }
-    #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-    {
-        "not iOS or macOS"
+pub(crate) fn info() -> ImplInfo {
+    ImplInfo {
+        name: "security-framework",
+        version: {
+            #[cfg(any(target_os = "macos", target_os = "ios"))]
+            {
+                "unknown"
+            }
+            #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+            {
+                "not iOS or macOS"
+            }
+        },
     }
 }
 

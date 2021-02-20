@@ -24,6 +24,7 @@ pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
+use tls_api::ImplInfo;
 
 #[derive(Debug)]
 struct Error;
@@ -37,5 +38,12 @@ impl error::Error for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "stub implementation")
+    }
+}
+
+pub(crate) fn info() -> ImplInfo {
+    ImplInfo {
+        name: "stub",
+        version: "none",
     }
 }

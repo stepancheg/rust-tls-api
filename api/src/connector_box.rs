@@ -3,6 +3,7 @@ use std::marker;
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
+use crate::ImplInfo;
 use crate::TlsConnector;
 use crate::TlsConnectorBuilder;
 use crate::TlsStreamBox;
@@ -25,7 +26,7 @@ pub trait TlsConnectorType {
     fn supports_alpn(&self) -> bool;
 
     /// Implementation version.
-    fn version(&self) -> &'static str;
+    fn info(&self) -> ImplInfo;
 }
 
 pub(crate) struct TlsConnectorTypeImpl<C: TlsConnector>(pub marker::PhantomData<C>);
@@ -43,8 +44,8 @@ impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
         C::SUPPORTS_ALPN
     }
 
-    fn version(&self) -> &'static str {
-        C::version()
+    fn info(&self) -> ImplInfo {
+        C::info()
     }
 }
 

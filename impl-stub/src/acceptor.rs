@@ -2,6 +2,7 @@ use void::Void;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use crate::Error;
 
@@ -34,8 +35,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
-    fn version() -> &'static str {
-        "stub"
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn accept<'a, S>(&'a self, _stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>

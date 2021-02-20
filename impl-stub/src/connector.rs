@@ -1,5 +1,6 @@
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use void::Void;
 
@@ -40,8 +41,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = false;
     const SUPPORTS_ALPN: bool = false;
 
-    fn version() -> &'static str {
-        "stub"
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

@@ -7,6 +7,7 @@ use security_framework::import_export::Pkcs12ImportOptions;
 
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub struct SecureTransportTlsAcceptorBuilder {
@@ -25,9 +26,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Underlying = SecureTransportTlsAcceptorBuilder;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        return Err(tls_api::Error::new_other(
-            "security-framework does not support ALPN on acceptor side",
-        ));
+        Err(crate::Error::AlpnOnServer.into())
     }
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
@@ -56,14 +55,11 @@ fn pkcs12_to_sf_objects(
         })
         .collect();
     if identities.len() == 0 {
-        return Err(tls_api::Error::new_other("identities not found in pkcs12"));
+        Err(crate::Error::IdentitiesNotFoundInPkcs12.into())
     } else if identities.len() == 1 {
         Ok(identities.pop().unwrap())
     } else {
-        return Err(tls_api::Error::new_other(&format!(
-            "too many identities found in pkcs12: {}",
-            identities.len()
-        )));
+        Err(crate::Error::MoreThanOneIdentityInPkcs12(identities.len() as _).into())
     }
 }
 
@@ -75,8 +71,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<TlsAcceptorBuilder> {

@@ -1,6 +1,7 @@
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
@@ -34,9 +35,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     #[cfg(not(has_alpn))]
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new_other(
-            "openssl is compiled without alpn",
-        ))
+        Err(crate::Error::CompiledWithoutAlpn.into())
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
@@ -75,8 +74,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = HAS_ALPN;
 
-    fn version() -> &'static str {
-        openssl::version::version()
+    fn info() -> ImplInfo {
+        crate::into()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

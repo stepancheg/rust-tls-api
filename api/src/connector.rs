@@ -5,6 +5,7 @@ use crate::connector_box::TlsConnectorTypeImpl;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
+use crate::ImplInfo;
 use crate::TlsConnectorType;
 use crate::TlsStream;
 
@@ -56,8 +57,8 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Whether this implementation supports ALPN negotiation.
     const SUPPORTS_ALPN: bool;
 
-    /// Unspecified version of the underlying implementation.
-    fn version() -> &'static str;
+    /// Implementation info.
+    fn info() -> ImplInfo;
 
     /// New builder for the acceptor.
     fn builder() -> crate::Result<Self::Builder>;

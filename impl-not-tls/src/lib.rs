@@ -7,13 +7,20 @@
 
 mod acceptor;
 mod connector;
+mod error;
 mod stream;
+
+pub(crate) use error::Error;
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
+use tls_api::ImplInfo;
 
-pub(crate) fn version() -> &'static str {
-    "version"
+pub(crate) fn info() -> ImplInfo {
+    ImplInfo {
+        name: "not-tls",
+        version: "none",
+    }
 }

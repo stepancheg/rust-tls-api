@@ -7,6 +7,7 @@ use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
 
@@ -54,9 +55,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             self.verify_hostname = false;
         } else {
             if !self.verify_hostname {
-                return Err(tls_api::Error::new_other(
-                    "cannot set_verify_hostname(true) after set_verify_hostname(false)",
-                ));
+                return Err(crate::Error::VerifyHostnameTrue.into());
             }
         }
 
@@ -68,7 +67,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         self.config
             .root_store
             .add(&cert)
-            .map_err(|e| tls_api::Error::new_other(&format!("{:?}", e)))?;
+            .map_err(tls_api::Error::new)?;
         Ok(())
     }
 
@@ -90,8 +89,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = true;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

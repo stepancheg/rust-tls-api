@@ -41,9 +41,7 @@ pub(crate) fn der_to_pkcs12(cert: &[u8], key: &[u8]) -> crate::Result<(Vec<u8>, 
         .output()?;
 
     if !output.status.success() {
-        return Err(crate::Error::new_other(
-            "openssl command failed to convert DER to PKCS12",
-        ));
+        return Err(crate::CommonError::OpensslCommandFailedToConvert.into());
     }
 
     let pkcs12 = fs::read(pkcs12_file)?;
@@ -74,9 +72,7 @@ pub(crate) fn pkcs12_to_der(pkcs12: &[u8], passphrase: &str) -> crate::Result<(V
         .output()?;
 
     if !output.status.success() {
-        return Err(crate::Error::new_other(
-            "openssl command failed to convert DER to PKCS12",
-        ));
+        return Err(crate::CommonError::OpensslCommandFailedToConvert.into());
     }
 
     let cert_pem = fs::read_to_string(cert_pem_file)?;
@@ -96,10 +92,12 @@ pub(crate) fn pkcs12_to_der(pkcs12: &[u8], passphrase: &str) -> crate::Result<(V
         })
         .collect();
     if keys.len() != 1 || certificates.len() != 1 {
-        return Err(crate::Error::new_other(&format!(
-            "expecting single cert and key, got: {:?}",
-            pems.iter().map(|p| p.tag.as_str()).collect::<Vec<_>>()
-        )));
+        return Err(
+            crate::CommonError::PemFromPkcs12ContainsNotSingleCertKeyPair(
+                pems.iter().map(|p| p.tag.clone()).collect(),
+            )
+            .into(),
+        );
     }
     Ok((certificates.swap_remove(0), keys.swap_remove(0)))
 }

@@ -1,5 +1,6 @@
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 use tls_api::TlsStream;
 
 pub struct TlsConnectorBuilder(pub ());
@@ -14,9 +15,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         let _ = protocols;
-        Err(tls_api::Error::new_other(
-            "ALP is not implemented for plain socket API",
-        ))
+        Err(crate::Error::Alpn.into())
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
@@ -42,8 +41,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = false;
     const SUPPORTS_ALPN: bool = false;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

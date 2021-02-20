@@ -3,6 +3,7 @@ use crate::handshake::HandshakeFuture;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 pub struct TlsConnectorBuilder {
     pub builder: native_tls::TlsConnectorBuilder,
@@ -24,9 +25,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new_other(
-            "ALPN is not implemented in rust-native-tls",
-        ))
+        Err(crate::Error::AlpnNotSupported.into())
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
@@ -58,8 +57,8 @@ impl tls_api::TlsConnector for TlsConnector {
     const IMPLEMENTED: bool = true;
     const SUPPORTS_ALPN: bool = false;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder() -> tls_api::Result<TlsConnectorBuilder> {

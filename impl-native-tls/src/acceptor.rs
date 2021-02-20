@@ -3,6 +3,7 @@ use crate::handshake::HandshakeFuture;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 pub struct TlsAcceptorBuilder(pub native_tls::TlsAcceptorBuilder);
 pub struct TlsAcceptor(pub native_tls::TlsAcceptor);
@@ -15,9 +16,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Underlying = native_tls::TlsAcceptorBuilder;
 
     fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new_other(
-            "ALPN is not implemented in rust-native-tls",
-        ))
+        Err(crate::Error::AlpnNotSupported.into())
     }
 
     fn underlying_mut(&mut self) -> &mut native_tls::TlsAcceptorBuilder {
@@ -37,8 +36,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<Self::Builder> {

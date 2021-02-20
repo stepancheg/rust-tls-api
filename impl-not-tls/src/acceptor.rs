@@ -1,6 +1,7 @@
 use std::fmt;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
+use tls_api::ImplInfo;
 
 pub struct TlsAcceptorBuilder(pub ());
 
@@ -10,9 +11,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
         let _ = protocols;
-        Err(tls_api::Error::new_other(
-            "ALPN is not implemented in not-TLS implementation",
-        ))
+        Err(crate::Error::Alpn.into())
     }
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
@@ -34,8 +33,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_DER_KEYS: bool = false;
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
-    fn version() -> &'static str {
-        crate::version()
+    fn info() -> ImplInfo {
+        crate::info()
     }
 
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStream<S>>>

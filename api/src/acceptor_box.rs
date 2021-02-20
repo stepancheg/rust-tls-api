@@ -1,8 +1,10 @@
+use std::fmt;
 use std::marker;
 
 use crate::AsyncSocket;
 use crate::AsyncSocketBox;
 use crate::BoxFuture;
+use crate::ImplInfo;
 use crate::TlsAcceptor;
 use crate::TlsAcceptorBuilder;
 use crate::TlsStreamBox;
@@ -12,7 +14,7 @@ use crate::TlsStreamBox;
 /// [`TlsAcceptor`] as dynamic object.
 ///
 /// Created with [`TlsAcceptor::TYPE_DYN`].
-pub trait TlsAcceptorType {
+pub trait TlsAcceptorType: fmt::Debug + fmt::Display + Sync + 'static {
     /// Whether this acceptor type is implemented.
     ///
     /// For example, `tls-api-security-framework` is available on Linux,
@@ -28,7 +30,7 @@ pub trait TlsAcceptorType {
     /// PKCS #12 file.
     fn supports_pkcs12_keys(&self) -> bool;
     /// Unspecified version information about this implementation.
-    fn version(&self) -> &'static str;
+    fn info(&self) -> ImplInfo;
 
     /// New builder from given server key.
     ///
@@ -48,6 +50,18 @@ pub trait TlsAcceptorType {
 
 pub(crate) struct TlsAcceptorTypeImpl<A: TlsAcceptor>(pub marker::PhantomData<A>);
 
+impl<A: TlsAcceptor> fmt::Debug for TlsAcceptorTypeImpl<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&A::info(), f)
+    }
+}
+
+impl<A: TlsAcceptor> fmt::Display for TlsAcceptorTypeImpl<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&A::info(), f)
+    }
+}
+
 impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
     fn implemented(&self) -> bool {
         A::IMPLEMENTED
@@ -65,8 +79,8 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
         A::SUPPORTS_PKCS12_KEYS
     }
 
-    fn version(&self) -> &'static str {
-        A::version()
+    fn info(&self) -> ImplInfo {
+        A::info()
     }
 
     fn builder_from_der_key(
