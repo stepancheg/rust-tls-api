@@ -3,7 +3,7 @@
 //! The idea is that code can be written in generic fashion like:
 //!
 //! ```
-//! #![cfg(feature = "runtime-tokio")]
+//! # { #![cfg(feature = "runtime-tokio")]
 //! use tls_api::{TlsConnector, TlsConnectorBuilder};
 //! use tokio::net::TcpStream;
 //! # use tls_api::runtime::AsyncWriteExt;
@@ -17,12 +17,13 @@
 //!     stream.read_to_end(&mut buf).await?;
 //!     Ok(buf)
 //! }
+//! # }
 //! ```
 //!
 //! or the same code with dynamic connector:
 //!
 //! ```
-//! #![cfg(feature = "runtime-tokio")]
+//! # { #![cfg(feature = "runtime-tokio")]
 //! use tls_api::TlsConnectorType;
 //! use tokio::net::TcpStream;
 //! # use tls_api::runtime::AsyncWriteExt;
@@ -36,6 +37,7 @@
 //!     stream.read_to_end(&mut buf).await?;
 //!     Ok(buf)
 //! }
+//! # }
 //! ```
 //!
 //! (Full working example is
