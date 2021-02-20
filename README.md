@@ -50,22 +50,25 @@ which is invoked with four backends.
 | Server init from DER key | Yes     | Yes    | No                 | No         |
 | Server init from PKCS12  | Yes     | No     | Yes                | Yes        |
 
-## Why not simply use native-tls
+## Why not simply use XXX
 
-* native-tls uses security-framework on OSX, and security-framework does not support ALPN on the server side.
-* building OpenSSL on Linux might be not trivial
+### Why not simply use native-tls
 
-# Why not simply use openssl
+* does not support server side ALPN
+* requires PKCS #12 keys on the server side
+* building OpenSSL on Linux is not always trivial
 
-* Sometimes it's hard to compile it
-* Some concerns about OpenSSL safety
+### Why not simply use openssl
 
-# Why not simply use rustls
+* sometimes it's hard to compile it
+* some concerns about OpenSSL safety
 
-* Diagnostics of rustls is not perfect
-* Certain TLS features are not supported
+### Why not simply use rustls
 
-# Why not simply use security-framework
+* diagnostics of rustls is not perfect
+* certain TLS features are not supported
+
+### Why not simply use security-framework
 
 * only works on Apple
 * does not support server side ALPN
