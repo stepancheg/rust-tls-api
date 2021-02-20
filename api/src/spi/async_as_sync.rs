@@ -134,9 +134,6 @@ where
     /// Unwrap the wrapper.
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A>;
 
-    /// Loosely-defined shutdown operation.
-    fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()>;
-
     /// Get negotiated ALPN protocol.
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> crate::Result<Option<Vec<u8>>>;
 }
@@ -255,13 +252,13 @@ where
     #[cfg(feature = "runtime-tokio")]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async(cx, |stream| O::shutdown(&mut stream.stream))
+            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
     }
 
     #[cfg(feature = "runtime-async-std")]
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async(cx, |stream| O::shutdown(&mut stream.stream))
+            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
     }
 }
 

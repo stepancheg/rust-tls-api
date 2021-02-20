@@ -1,5 +1,4 @@
 use std::fmt;
-use std::io;
 use std::marker::PhantomData;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
@@ -32,14 +31,6 @@ where
 
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A> {
         w.get_ref()
-    }
-
-    fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()> {
-        match w.shutdown() {
-            Ok(_) => Ok(()),
-            Err(ref e) if e.code() == openssl::ssl::ErrorCode::ZERO_RETURN => Ok(()),
-            Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
-        }
     }
 
     #[cfg(has_alpn)]

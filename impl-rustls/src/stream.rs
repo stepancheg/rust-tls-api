@@ -1,6 +1,5 @@
 use std::fmt;
 use std::fmt::Debug;
-use std::io;
 use std::marker::PhantomData;
 
 use rustls::Session;
@@ -43,11 +42,6 @@ where
 
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A> {
         w.get_ref()
-    }
-
-    fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()> {
-        // TODO
-        w.sess.flush()
     }
 
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {

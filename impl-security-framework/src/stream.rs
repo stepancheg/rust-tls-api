@@ -1,8 +1,6 @@
 #![cfg(any(target_os = "macos", target_os = "ios"))]
 
 use std::fmt;
-use std::io;
-use std::io::Write;
 use std::marker::PhantomData;
 
 use security_framework::secure_transport::SslStream;
@@ -37,11 +35,6 @@ where
 
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A> {
         w.get_ref()
-    }
-
-    fn shutdown(w: &mut Self::SyncWrapper) -> io::Result<()> {
-        // TODO
-        w.flush()
     }
 
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
