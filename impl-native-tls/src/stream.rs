@@ -32,9 +32,7 @@ where
         w.get_ref()
     }
 
-    fn get_alpn_protocol(_w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
-        Ok(None)
-        // TODO
-        // w.negotiated_alpn()
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
+        w.negotiated_alpn().map_err(tls_api::Error::new)
     }
 }

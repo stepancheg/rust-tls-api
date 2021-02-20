@@ -1,3 +1,5 @@
+use std::str;
+
 use crate::handshake::HandshakeFuture;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
@@ -24,8 +26,13 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(crate::Error::AlpnNotSupported.into())
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+        let protocols: Vec<&str> = protocols
+            .iter()
+            .map(|p| str::from_utf8(p).map_err(|e| crate::Error::AlpnProtocolNotUtf8(e).into()))
+            .collect::<tls_api::Result<_>>()?;
+        self.builder.request_alpns(&protocols);
+        Ok(())
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
@@ -55,7 +62,7 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     const IMPLEMENTED: bool = true;
-    const SUPPORTS_ALPN: bool = false;
+    const SUPPORTS_ALPN: bool = true;
 
     fn info() -> ImplInfo {
         crate::info()
