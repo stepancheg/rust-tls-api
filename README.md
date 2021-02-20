@@ -2,13 +2,11 @@
 [![License](https://img.shields.io/crates/l/tls-api.svg)](https://github.com/stepancheg/rust-tls-api/blob/master/LICENSE)
 [![crates.io](https://img.shields.io/crates/v/tls-api.svg)](https://crates.io/crates/tls-api) 
 
-# Rust TLS API and implementations
-
-One TLS API to rule them all.
+# One TLS API to rule them all.
 
 Supports:
-* tokio and async-std
-* rustls, native-tls, openssl, security-framework
+* **tokio** and **async-std**
+* **rustls**, **native-tls**, **openssl**, **security-framework**
 
 ## Crates in this repository
 
@@ -24,6 +22,7 @@ Supports:
 * tls-api-schannel — _missing_ implementation of TLS API over
   [schannel](https://github.com/steffengy/schannel-rs) crate
 * tls-api-stub — stub API implementation which returns an error on any operation
+* tls-api-not-tls — stub API implementation which pretends to be TLS, but returns wrapped plain socket
 * test-cert-gen — utility to generate certificate for unit tests
 
 ## Why one might want to use TLS API instead of concrete implementation
