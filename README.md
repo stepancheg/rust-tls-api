@@ -49,16 +49,33 @@ use:
 * [openssl](https://github.com/stepancheg/rust-tls-api/blob/master/impl-openssl/tests/test.rs)
 * [rustls](https://github.com/stepancheg/rust-tls-api/blob/master/impl-rustls/tests/test.rs)
 
-## Status
+## Implementations comparison
 
-|                          | openssl | native-tls | rustls |
-| ------------------------ | ------- | ---------- | ------ |
-| Can fetch google.com:443 | Yes     | Yes        | Yes    |
-| Server works             | Yes     | Yes        | No     |
-| ALPN                     | Yes     | No         | No     |
+|                          | openssl | rustls | security-framework | native-tls |
+| ------------------------ | ------- | ------ |--------------------| ---------- |
+| Can fetch google.com:443 | Yes     | Yes    | Yes                | Yes        |
+| Server works             | Yes     | Yes    | Yes                | Yes        |
+| Client ALPN              | Yes     | Yes    | Yes                | Yes        |
+| Server ALPN              | Yes     | Yes    | No                 | No         |
+| Server init from DER key | Yes     | Yes    | No                 | No         |
+| Server init from PKCS12  | Yes     | No     | Yes                | Yes        |
 
 ## Why not simply use native-tls
 
-native-tls uses security-framework on OSX, and security-framework does not support ALPN.
+* native-tls uses security-framework on OSX, and security-framework does not support ALPN on the server side.
+* building OpenSSL on Linux might be not trivial
 
-Or you simply want to have an option to avoid building TLS library.
+# Why not simply use openssl
+
+* Sometimes it's hard to compile it
+* Some concerns about OpenSSL safety
+
+# Why not simply use rustls
+
+* Diagnostics of rustls is not perfect
+* Certain TLS features are not supported
+
+# Why not simply use security-framework
+
+* only works on Apple
+* does not support server side ALPN
