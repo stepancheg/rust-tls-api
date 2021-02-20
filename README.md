@@ -18,6 +18,7 @@ Several crates:
 * tls-api-schannel — _missing_ implementation of TLS API over
   [schannel](https://github.com/steffengy/schannel-rs) crate
 * tls-api-stub — stub API implementation which returns an error on any operation
+* test-cert-gen — utility to generate certificate for unit tests
 
 ## The problem
 
