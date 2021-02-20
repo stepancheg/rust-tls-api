@@ -4,6 +4,7 @@ use std::task::Context;
 use std::task::Poll;
 use tls_api::runtime::AsyncRead;
 use tls_api::runtime::AsyncWrite;
+use tls_api::spi::TlsStreamDyn;
 use tls_api::spi::TlsStreamImpl;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
@@ -19,13 +20,19 @@ impl<A: AsyncSocket> TlsStream<A> {
     }
 }
 
-impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
+impl<A: AsyncSocket> TlsStreamDyn for TlsStream<A> {
     fn impl_info(&self) -> ImplInfo {
         crate::info()
     }
 
     fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
         Err(crate::Error::Alpn.into())
+    }
+}
+
+impl<A: AsyncSocket> TlsStreamImpl<A> for TlsStream<A> {
+    fn upcast_box(self: Box<Self>) -> Box<dyn TlsStreamDyn> {
+        self
     }
 
     fn get_socket_mut(&mut self) -> &mut A {
