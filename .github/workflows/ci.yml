@@ -47,6 +47,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -81,7 +87,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-tokio-macos-stable:
         name: runtime-tokio macos stable
@@ -125,6 +131,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -159,7 +171,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-tokio-linux-beta:
         name: runtime-tokio linux beta
@@ -203,6 +215,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -237,7 +255,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-tokio-linux-nightly:
         name: runtime-tokio linux nightly
@@ -281,6 +299,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -315,7 +339,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-tokio-macos-nightly:
         name: runtime-tokio macos nightly
@@ -359,6 +383,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-tokio
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -393,7 +423,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-tokio
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-async-std-linux-stable:
         name: runtime-async-std linux stable
@@ -437,6 +467,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -471,7 +507,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-async-std-macos-stable:
         name: runtime-async-std macos stable
@@ -515,6 +551,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -549,7 +591,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-async-std-linux-beta:
         name: runtime-async-std linux beta
@@ -593,6 +635,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -627,7 +675,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-async-std-linux-nightly:
         name: runtime-async-std linux nightly
@@ -671,6 +719,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -705,7 +759,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     runtime-async-std-macos-nightly:
         name: runtime-async-std macos nightly
@@ -749,6 +803,12 @@ jobs:
                   command: test
                   args: --manifest-path=impl-native-tls/Cargo.toml --no-default-features --features=runtime-async-std
               timeout-minutes: 5
+            - name: cargo test impl-not-tls
+              uses: actions-rs/cargo@v1
+              with:
+                  command: test
+                  args: --manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std
+              timeout-minutes: 5
             - name: cargo test impl-openssl
               uses: actions-rs/cargo@v1
               with:
@@ -783,7 +843,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                   command: test
-                  args: --manifest-path=test-cert-gen/Cargo.toml --no-default-features --features=runtime-async-std
+                  args: --manifest-path=test-cert-gen/Cargo.toml
               timeout-minutes: 5
     cargo-doc:
         name: cargo doc

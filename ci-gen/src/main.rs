@@ -36,8 +36,11 @@ fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
     let mut r = vec![checkout_sources(), rust_install_toolchain(channel)];
     for c in crates_list() {
         let mut args = format!("--manifest-path={}/Cargo.toml", c);
-        if c != "ci-gen" {
-            args.push_str(&format!(" --no-default-features --features={}", rt));
+        match c.as_str() {
+            "ci-gen" | "test-cert-gen" => {}
+            _ => {
+                args.push_str(&format!(" --no-default-features --features={}", rt));
+            }
         }
         let mut step = cargo_test(&format!("cargo test {}", c), &args);
         step.timeout_minutes = Some(5);
