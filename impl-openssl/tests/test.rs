@@ -1,5 +1,3 @@
-use tls_api_test::AcceptorKeyKind;
-
 #[test]
 fn test_google() {
     tls_api_test::test_google::<tls_api_openssl::TlsConnector>();
@@ -20,18 +18,14 @@ fn connect_bad_hostname_ignored() {
 
 #[test]
 fn client_server_pkcs12() {
-    tls_api_test::client_server_force_keys::<
-        tls_api_openssl::TlsConnector,
-        tls_api_openssl::TlsAcceptor,
-    >(AcceptorKeyKind::Pkcs12);
+    tls_api_test::client_server_pkcs12::<tls_api_openssl::TlsConnector, tls_api_openssl::TlsAcceptor>(
+    );
 }
 
 #[test]
 fn client_server_der() {
-    tls_api_test::client_server_force_keys::<
-        tls_api_openssl::TlsConnector,
-        tls_api_openssl::TlsAcceptor,
-    >(AcceptorKeyKind::Der);
+    tls_api_test::client_server_der::<tls_api_openssl::TlsConnector, tls_api_openssl::TlsAcceptor>(
+    );
 }
 
 #[test]

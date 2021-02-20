@@ -1,5 +1,7 @@
 use crate::acceptor_box::TlsAcceptorType;
 use crate::acceptor_box::TlsAcceptorTypeImpl;
+use crate::openssl::der_to_pkcs12;
+use crate::openssl::pkcs12_to_der;
 use crate::socket::AsyncSocket;
 use crate::stream_box::TlsStreamBox;
 use crate::BoxFuture;
@@ -69,26 +71,42 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 
     /// New builder from given server key.
     ///
-    /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_DER_KEYS`].
-    ///
     /// Parameters are DER-encoded (binary) X509 cert and corresponding private key.
+    ///
+    /// Note if this implementation does not support DER keys directly,
+    /// `openssl` command is used to convert the certificate.
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> crate::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
-        Err(crate::Error::new_other(
-            "construction from DER key is not implemented",
-        ))
+
+        if !Self::SUPPORTS_PKCS12_KEYS {
+            return Err(crate::Error::new_other(
+                "construction from either DER key or PKCS #12 key is not implemented",
+            ));
+        }
+
+        let (pkcs12, pkcs12pass) = der_to_pkcs12(cert, key)?;
+
+        Self::builder_from_pkcs12(&pkcs12, &pkcs12pass)
     }
 
     /// New builder from given server key.
     ///
-    /// This operation is guaranteed to fail if not [`TlsAcceptor::SUPPORTS_PKCS12_KEYS`].
+    /// Note if this implementation does not support PKCS #12 keys directly,
+    /// `openssl` command is used to convert the certificate.
     fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> crate::Result<Self::Builder> {
         let _ = (pkcs12, passphrase);
         assert!(!Self::SUPPORTS_PKCS12_KEYS);
-        Err(crate::Error::new_other(
-            "construction from PKCS12 is not implemented",
-        ))
+
+        if !Self::SUPPORTS_DER_KEYS {
+            return Err(crate::Error::new_other(
+                "construction from either DER key or PKCS #12 key is not implemented",
+            ));
+        }
+
+        let (cert, key) = pkcs12_to_der(pkcs12, passphrase)?;
+
+        Self::builder_from_der_key(&cert, &key)
     }
 
     /// Accept a connection.

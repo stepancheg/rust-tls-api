@@ -141,7 +141,6 @@ fn new_acceptor_from_pkcs12_keys<A>() -> A::Builder
 where
     A: TlsAcceptor,
 {
-    assert!(A::SUPPORTS_PKCS12_KEYS);
     t!(A::builder_from_pkcs12(
         &test_cert_gen::keys().server.cert_and_key_pkcs12.pkcs12.0,
         &test_cert_gen::keys().server.cert_and_key_pkcs12.password,
@@ -152,7 +151,6 @@ fn new_acceptor_from_der_keys<A>() -> A::Builder
 where
     A: TlsAcceptor,
 {
-    assert!(A::SUPPORTS_DER_KEYS);
     let keys = &test_cert_gen::keys().server.cert_and_key;
     t!(A::builder_from_der_key(
         keys.cert.get_der(),
@@ -200,7 +198,7 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
 // https://travis-ci.org/stepancheg/rust-tls-api/jobs/312681800
 const BIND_HOST: &str = "127.0.0.1";
 
-async fn client_server_impl<C, A>(key: Option<AcceptorKeyKind>)
+async fn client_server_impl<C, A>(key: AcceptorKeyKind)
 where
     C: TlsConnector,
     A: TlsAcceptor,
@@ -223,7 +221,7 @@ where
         return;
     }
 
-    let acceptor = new_acceptor::<A>(key);
+    let acceptor = new_acceptor::<A>(Some(key));
 
     let acceptor: A = acceptor.build().expect("acceptor build");
     #[allow(unused_mut)]
@@ -262,20 +260,20 @@ where
     j.join().expect("thread join");
 }
 
-pub fn client_server<C, A>()
+pub fn client_server_der<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
 {
-    block_on(client_server_impl::<C, A>(None))
+    block_on(client_server_impl::<C, A>(AcceptorKeyKind::Der))
 }
 
-pub fn client_server_force_keys<C, A>(keys: AcceptorKeyKind)
+pub fn client_server_pkcs12<C, A>()
 where
     C: TlsConnector,
     A: TlsAcceptor,
 {
-    block_on(client_server_impl::<C, A>(Some(keys)))
+    block_on(client_server_impl::<C, A>(AcceptorKeyKind::Pkcs12))
 }
 
 async fn alpn_impl<C, A>()

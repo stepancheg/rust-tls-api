@@ -88,6 +88,7 @@ mod connector;
 mod connector_box;
 mod error;
 mod future;
+mod openssl;
 mod socket;
 mod socket_box;
 mod stream;
