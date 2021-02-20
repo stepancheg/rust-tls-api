@@ -143,15 +143,8 @@ where
 {
     assert!(A::SUPPORTS_PKCS12_KEYS);
     t!(A::builder_from_pkcs12(
-        &test_cert_gen::keys()
-            .server
-            .server_cert_and_key_pkcs12
-            .pkcs12
-            .0,
-        &test_cert_gen::keys()
-            .server
-            .server_cert_and_key_pkcs12
-            .password,
+        &test_cert_gen::keys().server.cert_and_key_pkcs12.pkcs12.0,
+        &test_cert_gen::keys().server.cert_and_key_pkcs12.password,
     ))
 }
 
@@ -160,7 +153,7 @@ where
     A: TlsAcceptor,
 {
     assert!(A::SUPPORTS_DER_KEYS);
-    let keys = &test_cert_gen::keys().server.server_cert_and_key;
+    let keys = &test_cert_gen::keys().server.cert_and_key;
     t!(A::builder_from_der_key(
         keys.cert.get_der(),
         keys.key.get_der()
@@ -196,7 +189,7 @@ where
 
 fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
-    let root_ca = &keys.client.ca_der;
+    let root_ca = &keys.client.ca;
 
     let mut connector = C::builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca.get_der()));

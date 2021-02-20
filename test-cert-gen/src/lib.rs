@@ -19,12 +19,12 @@ pub use cert::Pkcs12AndPassword;
 pub use cert::PrivateKey;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct CertAndKeyPem {
+pub struct CertAndPrivateKey {
     pub cert: Cert,
     pub key: PrivateKey,
 }
 
-impl CertAndKeyPem {
+impl CertAndPrivateKey {
     /// Incorrect because key is serialized incorrectly
     pub fn to_pem_incorrect(&self) -> String {
         self.cert.to_pem() + &self.key.to_pem_incorrect()
@@ -33,16 +33,16 @@ impl CertAndKeyPem {
 
 /// Client certificate
 pub struct ClientKeys {
-    pub ca_der: Cert,
+    pub ca: Cert,
 }
 
 /// Server keys
 pub struct ServerKeys {
     /// Server certificate
-    pub server_cert_and_key_pkcs12: Pkcs12AndPassword,
+    pub cert_and_key_pkcs12: Pkcs12AndPassword,
 
     /// Server certificate
-    pub server_cert_and_key: CertAndKeyPem,
+    pub cert_and_key: CertAndPrivateKey,
 }
 
 /// Client and server keys
@@ -53,7 +53,7 @@ pub struct Keys {
     pub server: ServerKeys,
 }
 
-fn gen_root_ca() -> CertAndKeyPem {
+fn gen_root_ca() -> CertAndPrivateKey {
     let temp_dir = tempdir::TempDir::new("rust-test-cert-gen-gen-root-ca").unwrap();
 
     let config = temp_dir.path().join("openssl.config");
@@ -109,13 +109,13 @@ fn gen_root_ca() -> CertAndKeyPem {
     assert_eq!(1, pem::parse_many(cert.as_bytes()).len());
     assert_eq!(1, pem::parse_many(key.as_bytes()).len());
 
-    CertAndKeyPem {
+    CertAndPrivateKey {
         cert: Cert::from_pem(&cert),
         key: PrivateKey::from_pem(&key),
     }
 }
 
-fn gen_cert_for_domain(domain: &str, ca: &CertAndKeyPem) -> CertAndKeyPem {
+fn gen_cert_for_domain(domain: &str, ca: &CertAndPrivateKey) -> CertAndPrivateKey {
     assert!(!domain.is_empty());
 
     let temp_dir = tempdir::TempDir::new("pem-to-der").unwrap();
@@ -224,7 +224,7 @@ fn gen_cert_for_domain(domain: &str, ca: &CertAndKeyPem) -> CertAndKeyPem {
     assert_eq!(1, pem::parse_many(cert.as_bytes()).len());
     assert_eq!(1, pem::parse_many(key.as_bytes()).len());
 
-    CertAndKeyPem {
+    CertAndPrivateKey {
         cert: Cert::from_pem(&cert),
         key: PrivateKey::from_pem(&key),
     }
@@ -239,11 +239,11 @@ pub fn gen_keys() -> Keys {
 
     Keys {
         client: ClientKeys {
-            ca_der: root_ca_pem.cert,
+            ca: root_ca_pem.cert,
         },
         server: ServerKeys {
-            server_cert_and_key: server_cert_pem,
-            server_cert_and_key_pkcs12: server_cert_pkcs12,
+            cert_and_key: server_cert_pem,
+            cert_and_key_pkcs12: server_cert_pkcs12,
         },
     }
 }
@@ -290,7 +290,7 @@ fn _pkcs12_to_pem(pkcs12: &Pkcs12, passin: &str) -> String {
     pem
 }
 
-fn pem_to_pkcs12(cert: &CertAndKeyPem, pass: &str) -> Pkcs12 {
+fn pem_to_pkcs12(cert: &CertAndPrivateKey, pass: &str) -> Pkcs12 {
     let temp_dir = tempdir::TempDir::new("pem-to-pkcs12").unwrap();
 
     let certfile = temp_dir.path().join("cert.pem");
@@ -315,7 +315,7 @@ fn pem_to_pkcs12(cert: &CertAndKeyPem, pass: &str) -> Pkcs12 {
     Pkcs12(pkcs12out.stdout)
 }
 
-fn pem_to_pkcs12_some_password(cert: &CertAndKeyPem) -> Pkcs12AndPassword {
+fn pem_to_pkcs12_some_password(cert: &CertAndPrivateKey) -> Pkcs12AndPassword {
     let password = "serp".to_owned();
     let pkcs12 = pem_to_pkcs12(cert, &password);
     Pkcs12AndPassword { pkcs12, password }
@@ -348,12 +348,8 @@ mod test {
         let ca_pem = temp_dir.path().join("ca.pem");
         let server_pem = temp_dir.path().join("server.pem");
 
-        fs::write(&ca_pem, keys.client.ca_der.to_pem()).unwrap();
-        fs::write(
-            &server_pem,
-            &keys.server.server_cert_and_key.to_pem_incorrect(),
-        )
-        .unwrap();
+        fs::write(&ca_pem, keys.client.ca.to_pem()).unwrap();
+        fs::write(&server_pem, &keys.server.cert_and_key.to_pem_incorrect()).unwrap();
 
         // error is, what does it mean?
         // ```
@@ -382,8 +378,8 @@ mod test {
         let client = temp_dir.path().join("client");
         let server = temp_dir.path().join("server.pem");
 
-        fs::write(&client, keys.client.ca_der.get_der()).unwrap();
-        fs::write(&server, keys.server.server_cert_and_key.to_pem_incorrect()).unwrap();
+        fs::write(&client, keys.client.ca.get_der()).unwrap();
+        fs::write(&server, keys.server.cert_and_key.to_pem_incorrect()).unwrap();
 
         let port = 1234;
 
