@@ -1,4 +1,14 @@
-//! Implementation neutral TLS API.
+//! # One TLS API to rule them all
+//!
+//! Support both:
+//! * `tokio`
+//! * `async-std`
+//!
+//! and four TLS implementations:
+//! * `tls-api-openssl`, wraps `openssl` crate
+//! * `tls-api-rustls`, wraps `rustls` crate
+//! * `tls-api-native-tls`, wraps `native-tls` crate
+//! * `tls-api-security-framework`, wraps `security-framework` crate
 //!
 //! The idea is that code can be written without the knowledge of the TLS implementation used,
 //! like this:
@@ -6,6 +16,7 @@
 //! ```
 //! # { #![cfg(feature = "runtime-tokio")]
 //! use tls_api::{TlsConnector, TlsConnectorBuilder};
+//! // or async_std::net::TcpStream;
 //! use tokio::net::TcpStream;
 //! # use tls_api::runtime::AsyncWriteExt;
 //! # use tls_api::runtime::AsyncReadExt;
@@ -26,6 +37,7 @@
 //! ```
 //! # { #![cfg(feature = "runtime-tokio")]
 //! use tls_api::TlsConnectorType;
+//! // or async_std::net::TcpStream;
 //! use tokio::net::TcpStream;
 //! # use tls_api::runtime::AsyncWriteExt;
 //! # use tls_api::runtime::AsyncReadExt;
@@ -40,12 +52,6 @@
 //! }
 //! # }
 //! ```
-//!
-//! And then this function can be executed with any API implementations. The implementations are:
-//! * `tls-api-openssl`, wraps `openssl` crate
-//! * `tls-api-rustls`, wraps `rustls` crate
-//! * `tls-api-native-tls`, wraps `native-tls` crate
-//! * `tls-api-security-framework`, wraps `security-framework` crate
 //!
 //! Have a look at working example invoking all implementation
 //! [on GitHub](https://github.com/stepancheg/rust-tls-api/blob/master/examples/examples/download-rust-lang-org.rs#L66).

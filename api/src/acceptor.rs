@@ -55,6 +55,10 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// ```ignore
     /// type TlsStream<S: TlsStreamDyn> : TlsStreamWithSocketDyn<S>;
     /// ```
+    ///
+    /// Note each implementation has `accept_impl` function
+    /// which returns more specific type, providing both access to implementation details
+    /// and the underlying socket.
     type TlsStream: TlsStreamDyn;
 
     /// Get the underlying acceptor.
@@ -147,6 +151,8 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// and the stream is ready to send and receive.
     ///
     /// This version of `accept` returns a stream parameterized by the underlying socket type.
+    ///
+    /// Practically, [`accept`](Self::accept) is usually enough.
     fn accept_impl_tls_stream<'a, S>(
         &'a self,
         stream: S,
@@ -158,6 +164,11 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
     /// and the stream is ready to send and receive.
+    ///
+    /// This version return a stream of the underlying implementation, which
+    /// might be useful to obtain some TLS implementation-specific data.
+    ///
+    /// Practically, [`accept`](Self::accept) is usually enough.
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,

@@ -16,6 +16,16 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
     type Connector: TlsConnector;
 
     /// Type of the underlying builder.
+    ///
+    /// In the world of HKT this would be:
+    ///
+    /// ```ignore
+    /// type TlsStream<S: TlsStreamDyn> : TlsStreamWithSocketDyn<S>;
+    /// ```
+    ///
+    /// Note each implementation has `accept_impl` function
+    /// which returns more specific type, providing both access to implementation details
+    /// and the underlying socket.
     type Underlying;
 
     /// Get the underlying builder.
@@ -39,7 +49,7 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
     /// Param is DER-encoded X.509 certificate.
     fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()>;
 
-    /// Finish the acceptor constructon.
+    /// Finish the acceptor construction.
     fn build(self) -> crate::Result<Self::Connector>;
 }
 
@@ -97,6 +107,10 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     ///
     /// Returned future is resolved when the TLS-negotiation completes,
     /// and the stream is ready to send and receive.
+    ///
+    /// This function returns a stream which provides access to the underlying socket.
+    ///
+    /// Practically, [`connect`](Self::connect) is usually needed.
     fn connect_with_socket<'a, S>(
         &'a self,
         domain: &'a str,
@@ -109,6 +123,8 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     ///
     /// Returned future is resolved when the TLS-negotiation completes,
     /// and the stream is ready to send and receive.
+    ///
+    /// This is like the function you want to use.
     fn connect<'a, S>(
         &'a self,
         domain: &'a str,
@@ -128,6 +144,11 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     ///
     /// Returned future is resolved when the TLS-negotiation completes,
     /// and the stream is ready to send and receive.
+    ///
+    /// This version returns a stream of type of the underlying implementation,
+    /// which may provide access to the implementation details.
+    ///
+    /// Practically, [`connect`](Self::connect) is usually needed.
     fn connect_impl_tls_stream<'a, S>(
         &'a self,
         domain: &'a str,
