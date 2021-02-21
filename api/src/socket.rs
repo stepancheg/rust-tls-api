@@ -11,3 +11,89 @@ pub trait AsyncSocket: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'sta
 
 /// Auto-implement for all socket types.
 impl<A: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static> AsyncSocket for A {}
+
+/// Delegate [`AsyncSocket`] implementation to the underlying socket.
+///
+/// This is meant to be used only by API implementations.
+///
+/// # See also
+/// * [PR in tokio](https://github.com/tokio-rs/tokio/pull/3540)
+/// * [PR in futures](https://github.com/rust-lang/futures-rs/pull/2352)
+#[macro_export]
+macro_rules! spi_async_socket_impl_delegate {
+    ( "AsyncRead" ) => {
+        #[cfg(feature = "runtime-tokio")]
+        fn poll_read(
+            self: Pin<&mut Self>,
+            cx: &mut Context<'_>,
+            buf: &mut tokio::io::ReadBuf,
+        ) -> Poll<io::Result<()>> {
+            self.get_socket_pin_for_delegate().poll_read(cx, buf)
+        }
+
+        #[cfg(feature = "runtime-async-std")]
+        fn poll_read(
+            self: Pin<&mut Self>,
+            cx: &mut Context<'_>,
+            buf: &mut [u8],
+        ) -> Poll<io::Result<usize>> {
+            self.get_socket_pin_for_delegate().poll_read(cx, buf)
+        }
+    };
+    ( "AsyncWrite" ) => {
+        fn poll_write(
+            self: Pin<&mut Self>,
+            cx: &mut Context<'_>,
+            buf: &[u8],
+        ) -> Poll<io::Result<usize>> {
+            self.get_socket_pin_for_delegate().poll_write(cx, buf)
+        }
+
+        #[cfg(feature = "runtime-tokio")]
+        fn poll_write_vectored(
+            self: Pin<&mut Self>,
+            cx: &mut Context<'_>,
+            bufs: &[std::io::IoSlice<'_>],
+        ) -> Poll<Result<usize, io::Error>> {
+            self.get_socket_pin_for_delegate()
+                .poll_write_vectored(cx, bufs)
+        }
+
+        #[cfg(feature = "runtime-tokio")]
+        fn is_write_vectored(&self) -> bool {
+            self.get_socket_ref_for_delegate().is_write_vectored()
+        }
+
+        fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+            self.get_socket_pin_for_delegate().poll_flush(cx)
+        }
+
+        #[cfg(feature = "runtime-async-std")]
+        fn poll_close(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
+            self.get_socket_pin_for_delegate().poll_close(ctx)
+        }
+
+        #[cfg(feature = "runtime-tokio")]
+        fn poll_shutdown(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
+            self.get_socket_pin_for_delegate().poll_shutdown(ctx)
+        }
+    };
+    ( $t:ident <S> ) => {
+        impl<S: $crate::AsyncSocket> $crate::runtime::AsyncRead for $t<S> {
+            spi_async_socket_impl_delegate!("AsyncRead");
+        }
+
+        impl<S: $crate::AsyncSocket> $crate::runtime::AsyncWrite for $t<S> {
+            spi_async_socket_impl_delegate!("AsyncWrite");
+        }
+    };
+    ( $t:ty ) => {
+        impl $crate::runtime::AsyncRead for $t {
+            spi_async_socket_impl_delegate!("AsyncRead");
+        }
+
+        impl $crate::runtime::AsyncWrite for $t {
+            spi_async_socket_impl_delegate!("AsyncWrite");
+        }
+    };
+}

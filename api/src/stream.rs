@@ -1,7 +1,6 @@
 use crate::assert_send;
-use crate::runtime::AsyncRead;
-use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
+use crate::spi_async_socket_impl_delegate;
 use crate::ImplInfo;
 use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
@@ -23,6 +22,14 @@ impl TlsStream {
     pub fn new<S: AsyncSocket>(stream: TlsStreamWithSocket<S>) -> TlsStream {
         TlsStream(stream.0.upcast_box())
     }
+
+    fn get_socket_pin_for_delegate(self: Pin<&mut Self>) -> Pin<&mut dyn AsyncSocket> {
+        Pin::new(&mut self.get_mut().0)
+    }
+
+    fn get_socket_ref_for_delegate(&self) -> &dyn AsyncSocket {
+        &self.0
+    }
 }
 
 impl TlsStreamDyn for TlsStream {
@@ -43,60 +50,4 @@ impl TlsStreamDyn for TlsStream {
     }
 }
 
-impl AsyncRead for TlsStream {
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_read(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut tokio::io::ReadBuf,
-    ) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.get_mut().0).poll_read(cx, buf)
-    }
-
-    #[cfg(feature = "runtime-async-std")]
-    fn poll_read(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<io::Result<usize>> {
-        Pin::new(&mut self.get_mut().0).poll_read(cx, buf)
-    }
-}
-
-impl AsyncWrite for TlsStream {
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<io::Result<usize>> {
-        Pin::new(&mut self.0).poll_write(cx, buf)
-    }
-
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_write_vectored(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        bufs: &[std::io::IoSlice<'_>],
-    ) -> Poll<Result<usize, io::Error>> {
-        Pin::new(&mut self.0).poll_write_vectored(cx, bufs)
-    }
-
-    #[cfg(feature = "runtime-tokio")]
-    fn is_write_vectored(&self) -> bool {
-        self.0.is_write_vectored()
-    }
-
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.0).poll_flush(cx)
-    }
-
-    #[cfg(feature = "runtime-async-std")]
-    fn poll_close(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.0).poll_close(ctx)
-    }
-
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_shutdown(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.0).poll_shutdown(ctx)
-    }
-}
+spi_async_socket_impl_delegate!(TlsStream);
