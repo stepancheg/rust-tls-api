@@ -2,6 +2,7 @@ use std::future::Future;
 
 use tls_api::spi_connector_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 pub struct TlsConnectorBuilder(pub ());
@@ -57,6 +58,7 @@ impl tls_api::TlsConnector for TlsConnector {
     const SUPPORTS_ALPN: bool = false;
 
     type Underlying = ();
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0

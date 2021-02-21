@@ -7,6 +7,7 @@ use crate::stream::TlsStream;
 use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsConnectorType;
+use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
 
 /// A builder for `TlsConnector`s.
@@ -49,6 +50,15 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
 
     /// Type of the underlying connector.
     type Underlying;
+
+    /// `crate::TlsStream<tls_api::AsyncSocketBox>`.
+    ///
+    /// In the world of HKT this would be:
+    ///
+    /// ```ignore
+    /// type TlsStream<S: TlsStreamDyn> : TlsStreamWithSocketDyn<S>;
+    /// ```
+    type TlsStream: TlsStreamDyn;
 
     /// Get the underlying builder.
     ///
@@ -113,6 +123,18 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
                 .map(TlsStream::new)
         })
     }
+
+    /// Connect.
+    ///
+    /// Returned future is resolved when the TLS-negotiation completes,
+    /// and the stream is ready to send and receive.
+    fn connect_impl_tls_stream<'a, S>(
+        &'a self,
+        domain: &'a str,
+        stream: S,
+    ) -> BoxFuture<'a, crate::Result<Self::TlsStream>>
+    where
+        S: AsyncSocket;
 }
 
 /// Common part of all connectors. Poor man replacement for HKT.
@@ -132,6 +154,17 @@ macro_rules! spi_connector_common {
                     self.connect_impl(domain, stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
+        }
+
+        fn connect_impl_tls_stream<'a, S>(
+            &'a self,
+            domain: &'a str,
+            stream: S,
+        ) -> tls_api::BoxFuture<'a, tls_api::Result<Self::TlsStream>>
+        where
+            S: AsyncSocket,
+        {
+            tls_api::BoxFuture::new(self.connect_impl(domain, tls_api::AsyncSocketBox::new(stream)))
         }
     };
 }

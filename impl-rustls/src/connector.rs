@@ -6,6 +6,7 @@ use webpki::DNSNameRef;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_connector_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
@@ -113,6 +114,7 @@ impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
     type Underlying = Arc<rustls::ClientConfig>;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.config
