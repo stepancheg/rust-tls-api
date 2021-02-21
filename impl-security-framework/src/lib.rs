@@ -1,4 +1,4 @@
-//! [`tls_api`] implementation for [`security_framework`].
+//! [`tls_api`] implementation for `security_framework`.
 //!
 //! This crate is available on non-iOS or non-macOS, but most operations
 //! simply return error. So code depending on this crate can be typechecked

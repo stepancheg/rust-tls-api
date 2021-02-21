@@ -17,7 +17,7 @@ pub struct SecureTransportTlsAcceptorBuilder {
     pub certs: Vec<SecCertificate>,
 }
 
-/// To be replaced with [`security_framework::secure_transport::ServerBuilder`]
+/// To be replaced with `security_framework::secure_transport::ServerBuilder`
 /// in the next version of the `security_framework`.
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 pub type SecureTransportTlsAcceptorBuilder = void::Void;
