@@ -8,7 +8,6 @@
 #![cfg_attr(not(any(target_os = "macos", target_os = "ios")), allow(dead_code))]
 
 mod stream;
-mod stream_stub;
 
 mod acceptor;
 mod connector;
@@ -28,7 +27,7 @@ pub(crate) use error::Error;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub(crate) use stream::TlsStream;
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-pub(crate) use stream_stub::TlsStream;
+pub(crate) use tls_api_stub::TlsStream;
 
 #[allow(dead_code)]
 pub(crate) fn not_ios_or_macos<T>() -> tls_api::Result<T> {

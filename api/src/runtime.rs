@@ -17,3 +17,5 @@ pub use tokio::io::AsyncReadExt;
 pub use tokio::io::AsyncWrite;
 #[cfg(feature = "runtime-tokio")]
 pub use tokio::io::AsyncWriteExt;
+#[cfg(feature = "runtime-tokio")]
+pub use tokio::io::ReadBuf;

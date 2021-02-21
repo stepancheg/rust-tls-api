@@ -13,6 +13,9 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 
 [dependencies]
 void    = "1.0.2"
+tokio = { version = "1.2.0", features = [], optional = true }
+async-std = { version = "1.9.0", features = ["attributes"], optional = true }
+
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
 
 # this is needed until package-features is stabelized (issue #5364)
@@ -20,8 +23,8 @@ tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features 
 
 [features]
 default = ["runtime-tokio"]
-runtime-async-std = ["tls-api/runtime-async-std", "tls-api-test/runtime-async-std"]
-runtime-tokio = ["tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
+runtime-async-std = ["tokio", "tls-api/runtime-async-std", "tls-api-test/runtime-async-std"]
+runtime-tokio = ["async-std", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }

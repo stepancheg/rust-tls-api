@@ -15,16 +15,18 @@
 use std::error;
 use std::fmt;
 
-mod stream;
-
-mod acceptor;
-mod connector;
-
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
+pub use stream::TlsStream;
+
 use tls_api::ImplInfo;
+
+mod stream;
+
+mod acceptor;
+mod connector;
 
 #[derive(Debug)]
 struct Error;

@@ -26,7 +26,7 @@ macro_rules! spi_async_socket_impl_delegate {
         fn poll_read(
             self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
-            buf: &mut tokio::io::ReadBuf,
+            buf: &mut $crate::runtime::ReadBuf,
         ) -> std::task::Poll<std::io::Result<()>> {
             self.deref_pin_mut_for_impl_socket().poll_read(cx, buf)
         }

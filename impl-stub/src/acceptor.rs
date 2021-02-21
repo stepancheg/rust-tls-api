@@ -1,10 +1,11 @@
 use void::Void;
 
+use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 use crate::Error;
+use std::future::Future;
 
 /// Non-instantiatable.
 pub struct TlsAcceptorBuilder(Void);
@@ -29,6 +30,18 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     }
 }
 
+impl TlsAcceptor {
+    fn accept_impl<'a, S>(
+        &'a self,
+        _stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        async { Err(tls_api::Error::new(Error)) }
+    }
+}
+
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
@@ -47,13 +60,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    fn accept_with_socket<'a, S>(
-        &'a self,
-        _stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        BoxFuture::new(async { Err(tls_api::Error::new(Error)) })
-    }
+    spi_acceptor_common!();
 }

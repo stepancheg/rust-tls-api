@@ -18,6 +18,7 @@ async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 void = "1.0.2"
 
 tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
+tls-api-stub = { path = "../impl-stub", version = "=0.5.0-pre", default-features = false }
 
 # this is needed until package-features is stabelized (issue #5364)
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
@@ -27,8 +28,18 @@ security-framework = { version = "2.0.0", features = ["alpn"] }
 
 [features]
 default = ["runtime-tokio"]
-runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-test/runtime-async-std"]
-runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
+runtime-async-std = [
+    "async-std",
+    "tls-api/runtime-async-std",
+    "tls-api-test/runtime-async-std",
+    "tls-api-stub/runtime-async-std",
+]
+runtime-tokio = [
+    "tokio",
+    "tls-api/runtime-tokio",
+    "tls-api-test/runtime-tokio",
+    "tls-api-stub/runtime-tokio",
+]
 
 [dev-dependencies]
 tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
