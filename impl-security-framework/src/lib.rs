@@ -23,6 +23,8 @@ pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
 pub(crate) use error::Error;
+
+// TODO: some dummy otherwise
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub(crate) use stream::TlsStream;
 

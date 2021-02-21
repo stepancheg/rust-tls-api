@@ -24,8 +24,22 @@ tls-api-openssl = { path = "../impl-openssl", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
-runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-native-tls/runtime-async-std"]
-runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-native-tls/runtime-tokio"]
+runtime-async-std = [
+    "async-std",
+    "tls-api/runtime-async-std",
+    "tls-api-native-tls/runtime-async-std",
+    "tls-api-rustls/runtime-async-std",
+    "tls-api-security-framework/runtime-async-std",
+    "tls-api-openssl/runtime-async-std",
+]
+runtime-tokio = [
+    "tokio",
+    "tls-api/runtime-tokio",
+    "tls-api-native-tls/runtime-tokio",
+    "tls-api-rustls/runtime-tokio",
+    "tls-api-security-framework/runtime-tokio",
+    "tls-api-openssl/runtime-tokio",
+]
 
 [dev-dependencies]
 env_logger = { version = "0.5", default-features = false }
