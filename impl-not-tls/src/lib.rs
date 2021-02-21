@@ -18,6 +18,8 @@ pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
+pub use stream::TlsStream;
+
 use tls_api::ImplInfo;
 
 pub(crate) fn info() -> ImplInfo {

@@ -11,7 +11,7 @@ use tls_api::TlsStreamDyn;
 use tls_api::TlsStreamWithSocketDyn;
 
 #[derive(Debug)]
-pub(crate) struct TlsStream<A>(pub A)
+pub struct TlsStream<A>(pub A)
 where
     A: AsyncSocket;
 
