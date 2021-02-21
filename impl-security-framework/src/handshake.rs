@@ -96,7 +96,7 @@ enum ServerHandshakeFuture<F, S: Unpin> {
 pub(crate) fn new_server_handshake<'a, S>(
     acceptor: &'a TlsAcceptor,
     stream: S,
-) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
+) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
 where
     S: AsyncSocket,
 {
@@ -118,7 +118,7 @@ where
     ) -> Result<SslStream<AsyncIoAsSyncIo<S>>, HandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<S>>;
+    type Output = tls_api::Result<crate::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -126,9 +126,7 @@ where
             match mem::replace(self_mut, ServerHandshakeFuture::Done) {
                 ServerHandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(HandshakeError::Interrupted(mid)) => {
                         *self_mut = ServerHandshakeFuture::MidHandshake(mid);
@@ -140,9 +138,7 @@ where
                 },
                 ServerHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(HandshakeError::Interrupted(mid)) => {
                         *self_mut = ServerHandshakeFuture::MidHandshake(mid);

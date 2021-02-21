@@ -7,6 +7,7 @@ use crate::stream::TlsStream;
 use crate::BoxFuture;
 use crate::ImplInfo;
 use crate::TlsAcceptorBox;
+use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
 use std::fmt;
 use std::marker;
@@ -46,6 +47,15 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 
     /// Type of the underlying acceptor.
     type Underlying;
+
+    /// `crate::TlsStream<tls_api::AsyncSocketBox>`.
+    ///
+    /// In the world of HKT this would be:
+    ///
+    /// ```ignore
+    /// type TlsStream<S: TlsStreamDyn> : TlsStreamWithSocketDyn<S>;
+    /// ```
+    type TlsStream: TlsStreamDyn;
 
     /// Get the underlying acceptor.
     ///
@@ -135,6 +145,19 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
     /// and the stream is ready to send and receive.
+    ///
+    /// This version of `accept` returns a stream parameterized by the underlying socket type.
+    fn accept_impl_tls_stream<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> BoxFuture<'a, crate::Result<Self::TlsStream>>
+    where
+        S: AsyncSocket;
+
+    /// Accept a connection.
+    ///
+    /// This operation returns a future which is resolved when the negotiation is complete,
+    /// and the stream is ready to send and receive.
     fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,
@@ -150,7 +173,7 @@ macro_rules! spi_acceptor_common {
         fn accept_with_socket<'a, S>(
             &'a self,
             stream: S,
-        ) -> $crate::BoxFuture<'a, $crate::Result<$crate::TlsStreamWithSocket<S>>>
+        ) -> $crate::BoxFuture<'a, tls_api::Result<$crate::TlsStreamWithSocket<S>>>
         where
             S: $crate::AsyncSocket,
         {
@@ -158,6 +181,16 @@ macro_rules! spi_acceptor_common {
                 let crate_tls_stream: crate::TlsStream<S> = self.accept_impl(stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
+        }
+
+        fn accept_impl_tls_stream<'a, S>(
+            &'a self,
+            stream: S,
+        ) -> tls_api::BoxFuture<'a, tls_api::Result<Self::TlsStream>>
+        where
+            S: AsyncSocket,
+        {
+            $crate::BoxFuture::new(self.accept_impl(tls_api::AsyncSocketBox::new(stream)))
         }
     };
 }

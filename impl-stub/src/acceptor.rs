@@ -2,6 +2,7 @@ use void::Void;
 
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 use crate::Error;
@@ -51,6 +52,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     const SUPPORTS_PKCS12_KEYS: bool = false;
 
     type Underlying = Void;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0

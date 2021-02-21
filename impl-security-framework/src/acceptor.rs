@@ -1,3 +1,5 @@
+use std::future::Future;
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::certificate::SecCertificate;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -5,8 +7,9 @@ use security_framework::identity::SecIdentity;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use security_framework::import_export::Pkcs12ImportOptions;
 
+use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 /// To be replaced with [`security_framework::secure_transport::ServerBuilder`]
@@ -67,10 +70,31 @@ fn pkcs12_to_sf_objects(
     }
 }
 
+impl TlsAcceptor {
+    fn accept_impl<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        #[cfg(any(target_os = "macos", target_os = "ios"))]
+        {
+            crate::handshake::new_server_handshake(self, stream)
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+        {
+            let _ = stream;
+            async { crate::not_ios_or_macos() }
+        }
+    }
+}
+
 impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
     type Underlying = SecureTransportTlsAcceptorBuilder;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0
@@ -102,21 +126,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
     }
 
-    fn accept_with_socket<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        #[cfg(any(target_os = "macos", target_os = "ios"))]
-        {
-            crate::handshake::new_server_handshake(self, stream)
-        }
-        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-        {
-            let _ = stream;
-            BoxFuture::new(async { crate::not_ios_or_macos() })
-        }
-    }
+    spi_acceptor_common!();
 }

@@ -4,6 +4,7 @@ use std::future::Future;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 pub struct TlsAcceptorBuilder(pub native_tls::TlsAcceptorBuilder);
@@ -45,6 +46,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
     type Underlying = native_tls::TlsAcceptor;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0

@@ -3,6 +3,7 @@ use openssl::pkcs12::ParsedPkcs12;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
@@ -76,6 +77,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
     type Underlying = openssl::ssl::SslAcceptor;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0

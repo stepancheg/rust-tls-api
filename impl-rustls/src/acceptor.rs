@@ -6,6 +6,7 @@ use rustls::StreamOwned;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
+use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
@@ -56,6 +57,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     type Builder = TlsAcceptorBuilder;
 
     type Underlying = Arc<rustls::ServerConfig>;
+    type TlsStream = crate::TlsStream<AsyncSocketBox>;
 
     fn underlying_mut(&mut self) -> &mut Self::Underlying {
         &mut self.0
