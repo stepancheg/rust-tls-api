@@ -12,11 +12,6 @@ use tls_api::spi_tls_stream_over_sync_io_wrapper;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
-#[derive(Debug)]
-pub(crate) struct TlsStream<A: AsyncSocket>(
-    pub(crate) TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>,
-);
-
 impl<A: AsyncSocket> TlsStream<A> {
     pub(crate) fn new(stream: RustlsStream<AsyncIoAsSyncIo<A>>) -> TlsStream<A> {
         TlsStream(TlsStreamOverSyncIo::new(stream))

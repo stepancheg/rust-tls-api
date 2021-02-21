@@ -338,6 +338,11 @@ where
 #[macro_export]
 macro_rules! spi_tls_stream_over_sync_io_wrapper {
     ( $t:ident ) => {
+        #[derive(Debug)]
+        pub(crate) struct TlsStream<A: AsyncSocket>(
+            pub(crate) TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>,
+        );
+
         spi_async_socket_impl_delegate!($t<S>);
 
         impl<A: tls_api::AsyncSocket> tls_api::TlsStreamDyn for $t<A> {
