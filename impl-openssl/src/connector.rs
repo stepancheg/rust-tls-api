@@ -1,4 +1,5 @@
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi_connector_common;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::ImplInfo;
@@ -6,6 +7,7 @@ use tls_api::ImplInfo;
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
 use crate::HAS_ALPN;
+use std::future::Future;
 
 pub struct TlsConnectorBuilder {
     pub builder: openssl::ssl::SslConnectorBuilder,
@@ -68,6 +70,27 @@ impl TlsConnectorBuilder {
     }
 }
 
+impl TlsConnector {
+    pub fn connect_impl<'a, S>(
+        &'a self,
+        domain: &'a str,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        let client_configuration = match self.connector.configure() {
+            Ok(client_configuration) => client_configuration,
+            Err(e) => return BoxFuture::new(async { Err(tls_api::Error::new(e)) }),
+        };
+        let client_configuration = client_configuration.verify_hostname(self.verify_hostname);
+        BoxFuture::new(HandshakeFuture::Initial(
+            move |stream| client_configuration.connect(domain, stream),
+            AsyncIoAsSyncIo::new(stream),
+        ))
+    }
+}
+
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
@@ -93,22 +116,5 @@ impl tls_api::TlsConnector for TlsConnector {
         })
     }
 
-    fn connect_with_socket<'a, S>(
-        &'a self,
-        domain: &'a str,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        let client_configuration = match self.connector.configure() {
-            Ok(client_configuration) => client_configuration,
-            Err(e) => return BoxFuture::new(async { Err(tls_api::Error::new(e)) }),
-        };
-        let client_configuration = client_configuration.verify_hostname(self.verify_hostname);
-        BoxFuture::new(HandshakeFuture::Initial(
-            move |stream| client_configuration.connect(domain, stream),
-            AsyncIoAsSyncIo::new(stream),
-        ))
-    }
+    spi_connector_common!();
 }

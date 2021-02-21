@@ -1,13 +1,14 @@
 use openssl::pkcs12::ParsedPkcs12;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
 use crate::HAS_ALPN;
+use std::future::Future;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 
@@ -53,6 +54,21 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 impl TlsAcceptorBuilder {
     pub fn builder_mut(&mut self) -> &mut openssl::ssl::SslAcceptorBuilder {
         &mut self.0
+    }
+}
+
+impl TlsAcceptor {
+    fn accept_impl<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        HandshakeFuture::Initial(
+            move |stream| self.0.accept(stream),
+            AsyncIoAsSyncIo::new(stream),
+        )
     }
 }
 
@@ -116,16 +132,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(builder))
     }
 
-    fn accept_with_socket<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        BoxFuture::new(HandshakeFuture::Initial(
-            move |stream| self.0.accept(stream),
-            AsyncIoAsSyncIo::new(stream),
-        ))
-    }
+    spi_acceptor_common!();
 }
