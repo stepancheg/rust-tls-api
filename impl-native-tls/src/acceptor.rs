@@ -1,8 +1,9 @@
 use crate::handshake::HandshakeFuture;
 
+use std::future::Future;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 pub struct TlsAcceptorBuilder(pub native_tls::TlsAcceptorBuilder);
@@ -25,6 +26,18 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     fn build(self) -> tls_api::Result<TlsAcceptor> {
         self.0.build().map(TlsAcceptor).map_err(tls_api::Error::new)
+    }
+}
+
+impl TlsAcceptor {
+    fn accept_impl<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        HandshakeFuture::Initial(move |s| self.0.accept(s), AsyncIoAsSyncIo::new(stream))
     }
 }
 
@@ -54,16 +67,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         )))
     }
 
-    fn accept_with_socket<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        BoxFuture::new(HandshakeFuture::Initial(
-            move |s| self.0.accept(s),
-            AsyncIoAsSyncIo::new(stream),
-        ))
-    }
+    spi_acceptor_common!();
 }

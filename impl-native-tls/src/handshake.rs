@@ -28,7 +28,7 @@ where
     >,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<A>>;
+    type Output = tls_api::Result<crate::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -36,9 +36,7 @@ where
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(native_tls::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);
@@ -50,9 +48,7 @@ where
                 },
                 HandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(native_tls::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);

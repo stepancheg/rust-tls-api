@@ -339,7 +339,7 @@ where
 macro_rules! spi_tls_stream_over_sync_io_wrapper {
     ( $t:ident, $n:ident ) => {
         #[derive(Debug)]
-        pub(crate) struct TlsStream<A: AsyncSocket>(
+        pub struct TlsStream<A: AsyncSocket>(
             pub(crate) TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>,
         );
 

@@ -14,7 +14,7 @@ pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
 pub(crate) use error::Error;
-pub(crate) use stream::TlsStream;
+pub use stream::TlsStream;
 use tls_api::ImplInfo;
 
 pub(crate) fn info() -> ImplInfo {

@@ -142,3 +142,22 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
         BoxFuture::new(async move { self.accept_with_socket(stream).await.map(TlsStream::new) })
     }
 }
+
+/// Common part of all connectors. Poor man replacement for HKT.
+#[macro_export]
+macro_rules! spi_acceptor_common {
+    () => {
+        fn accept_with_socket<'a, S>(
+            &'a self,
+            stream: S,
+        ) -> $crate::BoxFuture<'a, $crate::Result<$crate::TlsStreamWithSocket<S>>>
+        where
+            S: $crate::AsyncSocket,
+        {
+            $crate::BoxFuture::new(async move {
+                let crate_tls_stream: crate::TlsStream<S> = self.accept_impl(stream).await?;
+                Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
+            })
+        }
+    };
+}
