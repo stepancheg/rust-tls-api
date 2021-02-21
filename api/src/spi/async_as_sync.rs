@@ -333,3 +333,17 @@ where
         self
     }
 }
+
+/// Implement wrapper for [`TlsStreamOverSyncIo`].
+#[macro_export]
+macro_rules! spi_tls_stream_over_sync_io_wrapper {
+    ( $t:ident ) => {
+        spi_async_socket_impl_delegate!($t<S>);
+
+        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamDyn for $t<A> {}
+
+        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamWithSocketDyn<A> for $t<A> {}
+
+        impl<A: tls_api::AsyncSocket> tls_api::spi::TlsStreamWithUpcastDyn<A> for $t<A> {}
+    };
+}

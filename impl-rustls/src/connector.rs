@@ -121,7 +121,7 @@ impl tls_api::TlsConnector for TlsConnector {
                 Err(e) => return BoxFuture::new(async { Err(e) }),
             };
         let tls_stream: crate::TlsStream<S> =
-            TlsStreamOverSyncIo::new(RustlsStream::Client(StreamOwned {
+            crate::TlsStream::new(RustlsStream::Client(StreamOwned {
                 sess: rustls::ClientSession::new(&self.config, dns_name),
                 sock: AsyncIoAsSyncIo::new(stream),
             }));

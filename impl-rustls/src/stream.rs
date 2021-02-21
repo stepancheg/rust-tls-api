@@ -8,8 +8,18 @@ use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
+use tls_api::spi_tls_stream_over_sync_io_wrapper;
+use tls_api::spi_async_socket_impl_delegate;
 
-pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;
+pub(crate) struct TlsStream<A: AsyncSocket>(pub(crate) TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>);
+
+impl<A: AsyncSocket> TlsStream<A> {
+    pub(crate) fn new(stream: RustlsStream<AsyncIoAsSyncIo<A>>) -> TlsStream<A> {
+        TlsStream(TlsStreamOverSyncIo::new(stream))
+    }
+}
+
+spi_tls_stream_over_sync_io_wrapper!(TlsStream);
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)

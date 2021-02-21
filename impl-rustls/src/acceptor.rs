@@ -70,7 +70,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         S: AsyncSocket,
     {
         let tls_stream: crate::TlsStream<S> =
-            TlsStreamOverSyncIo::new(RustlsStream::Server(StreamOwned {
+            crate::TlsStream::new(RustlsStream::Server(StreamOwned {
                 sock: AsyncIoAsSyncIo::new(stream),
                 sess: rustls::ServerSession::new(&self.0),
             }));

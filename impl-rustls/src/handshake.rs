@@ -31,8 +31,8 @@ where
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::MidHandshake(mut stream) => {
                     // sanity check
-                    assert!(stream.stream.is_handshaking());
-                    match stream.stream.complete_io() {
+                    assert!(stream.0.stream.is_handshaking());
+                    match stream.0.stream.complete_io() {
                         Ok(_) => {
                             return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(stream)));
                         }
