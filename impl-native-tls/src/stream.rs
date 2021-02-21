@@ -1,12 +1,15 @@
+use native_tls::TlsStream as native_tls_TlsStream;
 use std::fmt;
 use std::marker::PhantomData;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
+use tls_api::spi_async_socket_impl_delegate;
+use tls_api::spi_tls_stream_over_sync_io_wrapper;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
-pub(crate) type TlsStream<A> = TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>;
+spi_tls_stream_over_sync_io_wrapper!(TlsStream, native_tls_TlsStream);
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)

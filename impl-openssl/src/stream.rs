@@ -2,7 +2,6 @@ use std::fmt;
 use std::marker::PhantomData;
 
 use openssl::ssl::SslStream;
-use std::pin::Pin;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
 use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;

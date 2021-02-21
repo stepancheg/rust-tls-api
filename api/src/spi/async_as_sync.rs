@@ -349,9 +349,11 @@ macro_rules! spi_tls_stream_over_sync_io_wrapper {
             }
 
             fn deref_pin_mut_for_impl_socket(
-                self: Pin<&mut Self>,
-            ) -> Pin<&mut TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>> {
-                Pin::new(&mut self.get_mut().0)
+                self: std::pin::Pin<&mut Self>,
+            ) -> std::pin::Pin<
+                &mut TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>,
+            > {
+                std::pin::Pin::new(&mut self.get_mut().0)
             }
 
             fn deref_for_impl_socket(
