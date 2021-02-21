@@ -1,5 +1,4 @@
 use std::any::TypeId;
-use std::io;
 use std::mem;
 use std::mem::MaybeUninit;
 use std::pin::Pin;

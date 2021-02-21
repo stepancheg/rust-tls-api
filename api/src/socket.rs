@@ -54,7 +54,7 @@ macro_rules! spi_async_socket_impl_delegate {
             self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
             bufs: &[std::io::IoSlice<'_>],
-        ) -> std::task::Poll<std::result::Result<usize, io::Error>> {
+        ) -> std::task::Poll<std::result::Result<usize, std::io::Error>> {
             self.get_socket_pin_for_delegate()
                 .poll_write_vectored(cx, bufs)
         }

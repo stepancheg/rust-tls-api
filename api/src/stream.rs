@@ -4,7 +4,6 @@ use crate::spi_async_socket_impl_delegate;
 use crate::ImplInfo;
 use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
-use std::io;
 use std::pin::Pin;
 
 /// Similar to [`TlsStreamWithSocket`], but without a socket type parameter.

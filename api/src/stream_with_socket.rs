@@ -1,5 +1,4 @@
 use std::fmt;
-use std::io;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::pin::Pin;
