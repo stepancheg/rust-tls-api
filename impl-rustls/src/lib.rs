@@ -18,7 +18,7 @@ pub use connector::TlsConnectorBuilder;
 
 pub(crate) use crate::rustls_utils::RustlsStream;
 pub(crate) use error::Error;
-pub(crate) use stream::TlsStream;
+pub use stream::TlsStream;
 
 pub(crate) fn info() -> ImplInfo {
     ImplInfo {

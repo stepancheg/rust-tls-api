@@ -4,12 +4,13 @@ use rustls::NoClientAuth;
 use rustls::StreamOwned;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
 use crate::RustlsStream;
+use std::future::Future;
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
@@ -30,6 +31,24 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     fn build(self) -> tls_api::Result<TlsAcceptor> {
         Ok(TlsAcceptor(Arc::new(self.0)))
+    }
+}
+
+impl TlsAcceptor {
+    pub fn accept_impl<'a, S>(
+        &'a self,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        let tls_stream: crate::TlsStream<S> =
+            crate::TlsStream::new(RustlsStream::Server(StreamOwned {
+                sock: AsyncIoAsSyncIo::new(stream),
+                sess: rustls::ServerSession::new(&self.0),
+            }));
+
+        HandshakeFuture::MidHandshake(tls_stream)
     }
 }
 
@@ -61,19 +80,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(config))
     }
 
-    fn accept_with_socket<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        let tls_stream: crate::TlsStream<S> =
-            crate::TlsStream::new(RustlsStream::Server(StreamOwned {
-                sock: AsyncIoAsSyncIo::new(stream),
-                sess: rustls::ServerSession::new(&self.0),
-            }));
-
-        BoxFuture::new(HandshakeFuture::MidHandshake(tls_stream))
-    }
+    spi_acceptor_common!();
 }

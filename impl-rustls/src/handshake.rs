@@ -23,7 +23,7 @@ impl<A> Future for HandshakeFuture<A>
 where
     A: AsyncSocket,
 {
-    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<A>>;
+    type Output = tls_api::Result<crate::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -34,7 +34,7 @@ where
                     assert!(stream.0.stream.is_handshaking());
                     match stream.0.stream.complete_io() {
                         Ok(_) => {
-                            return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(stream)));
+                            return Poll::Ready(Ok(stream));
                         }
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                             *self_mut = HandshakeFuture::MidHandshake(stream);
