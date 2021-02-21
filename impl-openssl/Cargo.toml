@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-openssl"
-version = "0.5.0-pre"
+version = "0.6.0-pre"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API implementation over openssl crate"
 license = "MIT/Apache-2.0"
@@ -16,12 +16,12 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 # To implement OpenSSL version check in build.rs
 openssl-sys = { version = "0.9.43" }
 openssl     = { version = "0.10.20", features = ["v102", "v110"] }
-tls-api = { path = "../api", version = "=0.5.0-pre", default-features = false }
+tls-api = { path = "../api", version = "=0.6.0-pre", default-features = false }
 tokio = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
 # this is needed until package-features is stabelized (issue #5364)
-tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", version = "=0.6.0-pre", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
@@ -29,8 +29,8 @@ runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-test/run
 runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
-test-cert-gen = { path = "../test-cert-gen", version = "=0.5.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", version = "=0.6.0-pre", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", version = "=0.6.0-pre", default-features = false }
 
 [build-dependencies]
-tls-api-test = { path = "../api-test", version = "=0.5.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", version = "=0.6.0-pre", default-features = false }
