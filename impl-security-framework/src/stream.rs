@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 use security_framework::secure_transport::SslContext;
 use security_framework::secure_transport::SslStream;
 
-use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::spi::async_as_sync::AsyncWrapperOps;
-use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::AsyncWrapperOps;
+use tls_api::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::spi_async_socket_impl_delegate;
 use tls_api::spi_tls_stream_over_sync_io_wrapper;
 use tls_api::AsyncSocket;

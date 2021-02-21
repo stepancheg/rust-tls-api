@@ -14,8 +14,8 @@ use std::task::Poll;
 
 use crate::runtime::AsyncRead;
 use crate::runtime::AsyncWrite;
-use crate::spi::thread_local_context::restore_context;
-use crate::spi::thread_local_context::save_context;
+use crate::spi::restore_context;
+use crate::spi::save_context;
 use crate::spi::TlsStreamWithUpcastDyn;
 use crate::AsyncSocket;
 use crate::ImplInfo;

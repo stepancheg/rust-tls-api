@@ -1,7 +1,7 @@
 use crate::handshake::HandshakeFuture;
 
 use std::future::Future;
-use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
 use tls_api::AsyncSocketBox;

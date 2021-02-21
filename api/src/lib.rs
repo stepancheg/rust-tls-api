@@ -74,7 +74,6 @@ pub use connector::TlsConnectorBuilder;
 pub use connector_box::TlsConnectorBox;
 pub use connector_box::TlsConnectorBuilderBox;
 pub use connector_box::TlsConnectorType;
-pub(crate) use error::CommonError;
 pub use error::Error;
 pub use error::Result;
 pub use future::BoxFuture;
@@ -89,13 +88,22 @@ pub use stream_with_socket::TlsStreamWithSocket;
 pub(crate) use crate::assert_kinds::assert_send;
 pub(crate) use crate::assert_kinds::assert_send_value;
 pub(crate) use crate::assert_kinds::assert_sync;
+pub(crate) use error::CommonError;
 
 pub mod runtime;
-pub mod spi;
+
+/// Interfaces needed by API implementor (like `tls-api-rustls`),
+/// and not needed by the users of API.
+pub mod spi {
+    pub use crate::stream_dyn::TlsStreamWithUpcastDyn;
+    pub use crate::thread_local_context::restore_context;
+    pub use crate::thread_local_context::save_context;
+}
 
 mod acceptor;
 mod acceptor_box;
 mod assert_kinds;
+pub mod async_as_sync;
 mod connector;
 mod connector_box;
 mod error;
@@ -107,6 +115,7 @@ mod socket_box;
 mod stream;
 mod stream_dyn;
 mod stream_with_socket;
+mod thread_local_context;
 
 fn _assert_kinds() {
     fn connect_future_is_send<C, S>(c: &C, s: S)

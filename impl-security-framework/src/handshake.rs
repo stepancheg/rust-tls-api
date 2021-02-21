@@ -15,7 +15,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 

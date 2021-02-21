@@ -1,6 +1,6 @@
 use openssl::pkcs12::ParsedPkcs12;
 
-use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
+use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
 use tls_api::AsyncSocketBox;
