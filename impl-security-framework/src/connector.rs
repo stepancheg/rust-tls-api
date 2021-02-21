@@ -5,8 +5,9 @@ use security_framework::secure_transport::ClientBuilder;
 
 use std::str;
 
+use std::future::Future;
+use tls_api::spi_connector_common;
 use tls_api::AsyncSocket;
-use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
@@ -76,6 +77,27 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 }
 
+impl TlsConnector {
+    pub fn connect_impl<'a, S>(
+        &'a self,
+        domain: &'a str,
+        stream: S,
+    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    where
+        S: AsyncSocket,
+    {
+        #[cfg(any(target_os = "macos", target_os = "ios"))]
+        {
+            crate::handshake::new_slient_handshake(self, domain, stream)
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+        {
+            let _ = (domain, stream);
+            async { crate::not_ios_or_macos() }
+        }
+    }
+}
+
 impl tls_api::TlsConnector for TlsConnector {
     type Builder = TlsConnectorBuilder;
 
@@ -103,22 +125,5 @@ impl tls_api::TlsConnector for TlsConnector {
         }
     }
 
-    fn connect_with_socket<'a, S>(
-        &'a self,
-        domain: &'a str,
-        stream: S,
-    ) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
-    where
-        S: AsyncSocket,
-    {
-        #[cfg(any(target_os = "macos", target_os = "ios"))]
-        {
-            crate::handshake::new_slient_handshake(self, domain, stream)
-        }
-        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
-        {
-            let _ = (domain, stream);
-            BoxFuture::new(async { crate::not_ios_or_macos() })
-        }
-    }
+    spi_connector_common!();
 }

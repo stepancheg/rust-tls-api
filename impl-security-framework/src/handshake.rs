@@ -32,14 +32,14 @@ pub(crate) fn new_slient_handshake<'a, S>(
     connector: &'a crate::TlsConnector,
     domain: &'a str,
     stream: S,
-) -> BoxFuture<'a, tls_api::Result<tls_api::TlsStreamWithSocket<S>>>
+) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
 where
     S: AsyncSocket,
 {
-    BoxFuture::new(ClientHandshakeFuture::Initial(
+    ClientHandshakeFuture::Initial(
         move |stream| connector.0.handshake(domain, stream),
         AsyncIoAsSyncIo::new(stream),
-    ))
+    )
 }
 
 impl<F, S> Future for ClientHandshakeFuture<F, S>
@@ -51,7 +51,7 @@ where
         -> Result<SslStream<AsyncIoAsSyncIo<S>>, ClientHandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<tls_api::TlsStreamWithSocket<S>>;
+    type Output = tls_api::Result<crate::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -59,9 +59,7 @@ where
             match mem::replace(self_mut, ClientHandshakeFuture::Done) {
                 ClientHandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(ClientHandshakeError::Interrupted(mid)) => {
                         *self_mut = ClientHandshakeFuture::MidHandshake(mid);
@@ -73,9 +71,7 @@ where
                 },
                 ClientHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(
-                            crate::TlsStream::new(stream),
-                        )));
+                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
                     }
                     Err(ClientHandshakeError::Interrupted(mid)) => {
                         *self_mut = ClientHandshakeFuture::MidHandshake(mid);
