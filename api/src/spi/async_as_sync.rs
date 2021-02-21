@@ -337,11 +337,29 @@ where
 /// Implement wrapper for [`TlsStreamOverSyncIo`].
 #[macro_export]
 macro_rules! spi_tls_stream_over_sync_io_wrapper {
-    ( $t:ident ) => {
+    ( $t:ident, $n:ident ) => {
         #[derive(Debug)]
         pub(crate) struct TlsStream<A: AsyncSocket>(
             pub(crate) TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>,
         );
+
+        impl<A: AsyncSocket> TlsStream<A> {
+            pub(crate) fn new(stream: $n<AsyncIoAsSyncIo<A>>) -> TlsStream<A> {
+                TlsStream(TlsStreamOverSyncIo::new(stream))
+            }
+
+            fn deref_pin_mut_for_impl_socket(
+                self: Pin<&mut Self>,
+            ) -> Pin<&mut TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>> {
+                Pin::new(&mut self.get_mut().0)
+            }
+
+            fn deref_for_impl_socket(
+                &self,
+            ) -> &TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>> {
+                &self.0
+            }
+        }
 
         spi_async_socket_impl_delegate!($t<S>);
 

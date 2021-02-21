@@ -1,6 +1,7 @@
 use std::fmt;
 use std::marker::PhantomData;
 
+use openssl::ssl::SslStream;
 use std::pin::Pin;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
@@ -10,25 +11,7 @@ use tls_api::spi_tls_stream_over_sync_io_wrapper;
 use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
-impl<A: AsyncSocket> TlsStream<A> {
-    pub(crate) fn new(stream: openssl::ssl::SslStream<AsyncIoAsSyncIo<A>>) -> TlsStream<A> {
-        TlsStream(TlsStreamOverSyncIo::new(stream))
-    }
-
-    fn deref_pin_mut_for_impl_socket(
-        self: Pin<&mut Self>,
-    ) -> Pin<&mut TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>> {
-        Pin::new(&mut self.get_mut().0)
-    }
-
-    fn deref_for_impl_socket(
-        &self,
-    ) -> &TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>> {
-        &self.0
-    }
-}
-
-spi_tls_stream_over_sync_io_wrapper!(TlsStream);
+spi_tls_stream_over_sync_io_wrapper!(TlsStream, SslStream);
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)
