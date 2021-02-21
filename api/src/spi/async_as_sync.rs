@@ -340,10 +340,38 @@ macro_rules! spi_tls_stream_over_sync_io_wrapper {
     ( $t:ident ) => {
         spi_async_socket_impl_delegate!($t<S>);
 
-        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamDyn for $t<A> {}
+        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamDyn for $t<A> {
+            fn get_alpn_protocol(&self) -> $crate::Result<Option<Vec<u8>>> {
+                self.0.get_alpn_protocol()
+            }
 
-        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamWithSocketDyn<A> for $t<A> {}
+            fn impl_info(&self) -> ImplInfo {
+                self.0.impl_info()
+            }
 
-        impl<A: tls_api::AsyncSocket> tls_api::spi::TlsStreamWithUpcastDyn<A> for $t<A> {}
+            fn get_socket_dyn_mut(&mut self) -> &mut dyn AsyncSocket {
+                self.0.get_socket_dyn_mut()
+            }
+
+            fn get_socket_dyn_ref(&self) -> &dyn AsyncSocket {
+                self.0.get_socket_dyn_ref()
+            }
+        }
+
+        impl<A: tls_api::AsyncSocket> tls_api::TlsStreamWithSocketDyn<A> for $t<A> {
+            fn get_socket_mut(&mut self) -> &mut A {
+                self.0.get_socket_mut()
+            }
+
+            fn get_socket_ref(&self) -> &A {
+                self.0.get_socket_ref()
+            }
+        }
+
+        impl<A: tls_api::AsyncSocket> tls_api::spi::TlsStreamWithUpcastDyn<A> for $t<A> {
+            fn upcast_box(self: Box<Self>) -> Box<dyn tls_api::TlsStreamDyn> {
+                self
+            }
+        }
     };
 }

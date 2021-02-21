@@ -4,7 +4,6 @@ use rustls::NoClientAuth;
 use rustls::StreamOwned;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
-use tls_api::spi::async_as_sync::TlsStreamOverSyncIo;
 use tls_api::AsyncSocket;
 use tls_api::BoxFuture;
 use tls_api::ImplInfo;
