@@ -28,7 +28,7 @@ macro_rules! spi_async_socket_impl_delegate {
             cx: &mut std::task::Context<'_>,
             buf: &mut tokio::io::ReadBuf,
         ) -> std::task::Poll<std::io::Result<()>> {
-            self.get_socket_pin_for_delegate().poll_read(cx, buf)
+            self.deref_pin_mut_for_impl_socket().poll_read(cx, buf)
         }
 
         #[cfg(feature = "runtime-async-std")]
@@ -37,7 +37,7 @@ macro_rules! spi_async_socket_impl_delegate {
             cx: &mut std::task::Context<'_>,
             buf: &mut [u8],
         ) -> std::task::Poll<std::io::Result<usize>> {
-            self.get_socket_pin_for_delegate().poll_read(cx, buf)
+            self.deref_pin_mut_for_impl_socket().poll_read(cx, buf)
         }
     };
     ( "AsyncWrite" ) => {
@@ -46,7 +46,7 @@ macro_rules! spi_async_socket_impl_delegate {
             cx: &mut std::task::Context<'_>,
             buf: &[u8],
         ) -> std::task::Poll<std::io::Result<usize>> {
-            self.get_socket_pin_for_delegate().poll_write(cx, buf)
+            self.deref_pin_mut_for_impl_socket().poll_write(cx, buf)
         }
 
         #[cfg(feature = "runtime-tokio")]
@@ -55,20 +55,20 @@ macro_rules! spi_async_socket_impl_delegate {
             cx: &mut std::task::Context<'_>,
             bufs: &[std::io::IoSlice<'_>],
         ) -> std::task::Poll<std::result::Result<usize, std::io::Error>> {
-            self.get_socket_pin_for_delegate()
+            self.deref_pin_mut_for_impl_socket()
                 .poll_write_vectored(cx, bufs)
         }
 
         #[cfg(feature = "runtime-tokio")]
         fn is_write_vectored(&self) -> bool {
-            self.get_socket_ref_for_delegate().is_write_vectored()
+            self.deref_for_impl_socket().is_write_vectored()
         }
 
         fn poll_flush(
             self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
         ) -> std::task::Poll<std::io::Result<()>> {
-            self.get_socket_pin_for_delegate().poll_flush(cx)
+            self.deref_pin_mut_for_impl_socket().poll_flush(cx)
         }
 
         #[cfg(feature = "runtime-async-std")]
@@ -76,7 +76,7 @@ macro_rules! spi_async_socket_impl_delegate {
             self: std::pin::Pin<&mut Self>,
             ctx: &mut std::task::Context<'_>,
         ) -> std::task::Poll<std::io::Result<()>> {
-            self.get_socket_pin_for_delegate().poll_close(ctx)
+            self.deref_pin_mut_for_impl_socket().poll_close(ctx)
         }
 
         #[cfg(feature = "runtime-tokio")]
@@ -84,7 +84,7 @@ macro_rules! spi_async_socket_impl_delegate {
             self: std::pin::Pin<&mut Self>,
             ctx: &mut std::task::Context<'_>,
         ) -> std::task::Poll<std::io::Result<()>> {
-            self.get_socket_pin_for_delegate().poll_shutdown(ctx)
+            self.deref_pin_mut_for_impl_socket().poll_shutdown(ctx)
         }
     };
     ( $t:ident <S> ) => {

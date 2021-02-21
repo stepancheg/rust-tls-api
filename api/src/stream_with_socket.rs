@@ -84,13 +84,13 @@ impl<S: AsyncSocket> TlsStreamWithSocket<S> {
         TlsStream::new(self)
     }
 
-    fn get_socket_pin_for_delegate(
+    fn deref_pin_mut_for_impl_socket(
         self: Pin<&mut Self>,
     ) -> Pin<&mut dyn TlsStreamWithUpcastDyn<S>> {
         Pin::new(&mut *self.get_mut().0)
     }
 
-    fn get_socket_ref_for_delegate(&self) -> &dyn TlsStreamWithUpcastDyn<S> {
+    fn deref_for_impl_socket(&self) -> &dyn TlsStreamWithUpcastDyn<S> {
         &*self.0
     }
 }

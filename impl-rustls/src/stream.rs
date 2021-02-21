@@ -22,13 +22,13 @@ impl<A: AsyncSocket> TlsStream<A> {
         TlsStream(TlsStreamOverSyncIo::new(stream))
     }
 
-    fn get_socket_pin_for_delegate(
+    fn deref_pin_mut_for_impl_socket(
         self: Pin<&mut Self>,
     ) -> Pin<&mut TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>>> {
         Pin::new(&mut self.get_mut().0)
     }
 
-    fn get_socket_ref_for_delegate(
+    fn deref_for_impl_socket(
         &self,
     ) -> &TlsStreamOverSyncIo<A, AsyncWrapperOpsImpl<AsyncIoAsSyncIo<A>, A>> {
         &self.0
