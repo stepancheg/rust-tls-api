@@ -2,8 +2,6 @@ use std::net::ToSocketAddrs;
 use tls_api::runtime::AsyncReadExt;
 use tls_api::runtime::AsyncWriteExt;
 
-use tls_api::TlsConnectorBuilder;
-
 // Users are not supposed to use tokio and async-std side by side.
 // Use both just as an example.
 
@@ -33,9 +31,10 @@ async fn download_impl<C: tls_api::TlsConnector>() {
         .unwrap();
 
     let socket = TcpStream::connect(&addr).await.unwrap();
-    let cx = C::builder().unwrap().build().unwrap();
 
-    let mut stream = cx.connect("www.rust-lang.org", socket).await.unwrap();
+    let mut stream = C::connect_default("www.rust-lang.org", socket)
+        .await
+        .unwrap();
     stream
         .write_all(
             "\

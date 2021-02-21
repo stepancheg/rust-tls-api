@@ -13,9 +13,9 @@ use crate::TlsStream;
 
 // Type
 
-/// [`TlsAcceptor`] as dynamic object.
+/// Similar to [`TlsAcceptor`], but it is dynamic, does not require type parameter.
 ///
-/// Created with [`TlsAcceptor::TYPE_DYN`].
+/// This can be obtained with [`TlsAcceptor::TYPE_DYN`].
 pub trait TlsAcceptorType: fmt::Debug + fmt::Display + Sync + 'static {
     /// Whether this acceptor type is implemented.
     ///

@@ -103,21 +103,18 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         TlsConnectorBox::new(self)
     }
 
-    /// Connect.
+    /// Connect using default settings.
     ///
-    /// Returned future is resolved when the TLS-negotiation completes,
-    /// and the stream is ready to send and receive.
-    ///
-    /// This function returns a stream which provides access to the underlying socket.
-    ///
-    /// Practically, [`connect`](Self::connect) is usually needed.
-    fn connect_with_socket<'a, S>(
-        &'a self,
-        domain: &'a str,
-        stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
+    /// Shortcut.
+    fn connect_default<'a, S>(domain: &'a str, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
     where
-        S: AsyncSocket;
+        S: AsyncSocket,
+    {
+        BoxFuture::new(async move {
+            let connector = Self::builder()?.build()?;
+            connector.connect(domain, stream).await
+        })
+    }
 
     /// Connect.
     ///
@@ -139,6 +136,22 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
                 .map(TlsStream::new)
         })
     }
+
+    /// Connect.
+    ///
+    /// Returned future is resolved when the TLS-negotiation completes,
+    /// and the stream is ready to send and receive.
+    ///
+    /// This function returns a stream which provides access to the underlying socket.
+    ///
+    /// Practically, [`connect`](Self::connect) is usually needed.
+    fn connect_with_socket<'a, S>(
+        &'a self,
+        domain: &'a str,
+        stream: S,
+    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
+    where
+        S: AsyncSocket;
 
     /// Connect.
     ///

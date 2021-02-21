@@ -15,7 +15,7 @@ use crate::TlsStream;
 
 /// Similar to [`TlsConnector`], but it is dynamic, does not require type parameter.
 ///
-/// Also it works slower.
+/// This can be obtained with [`TlsConnector::TYPE_DYN`].
 pub trait TlsConnectorType: fmt::Display + fmt::Debug + 'static {
     /// Constructor a builder dynamically.
     fn builder(&self) -> crate::Result<TlsConnectorBuilderBox>;
@@ -129,8 +129,7 @@ impl TlsConnectorBuilderBox {
         self.0.set_verify_hostname(verify)
     }
 
-    /// Should hostname verification be performed?
-    /// Use carefully, it opens the door to MITM attacks.
+    /// Add trusted certificate (e. g. CA).
     pub fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()> {
         self.0.add_root_certificate(cert)
     }

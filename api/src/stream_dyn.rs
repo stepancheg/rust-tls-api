@@ -1,13 +1,10 @@
-use std::fmt;
-
-use crate::runtime::AsyncRead;
-use crate::runtime::AsyncWrite;
 use crate::AsyncSocket;
 use crate::ImplInfo;
 
-/// Trait to be used by API implementors (like openssl),
-/// not meant to be used of implemented directly.
-pub trait TlsStreamDyn: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static {
+/// Trait implemented by all `TlsStream` objects.
+///
+/// Provide access to some TLS stream properties (only ALPN at the moment.)
+pub trait TlsStreamDyn: AsyncSocket {
     /// Get negotiated ALPN protocol negotiated.
     fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
 

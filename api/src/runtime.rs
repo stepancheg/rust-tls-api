@@ -1,4 +1,7 @@
 //! Tokio or async-std type reexports.
+//!
+//! Note rustdoc will likely show tokio types here (because tokio is default),
+//! but for async-std, async-std types are imported here.
 
 #[cfg(feature = "runtime-async-std")]
 pub use futures_util::io::AsyncRead;
