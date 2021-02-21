@@ -3,7 +3,10 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::pin::Pin;
 
+use crate::assert_kinds::assert_socket;
 use crate::assert_send;
+use crate::runtime::AsyncRead;
+use crate::runtime::AsyncWrite;
 use crate::socket::AsyncSocket;
 use crate::spi::TlsStreamWithUpcastDyn;
 use crate::spi_async_socket_impl_delegate;
@@ -28,10 +31,9 @@ use crate::TlsStreamWithSocketDyn;
 /// This type is parameterized by socket type, [`TlsStream`] is simpler version of this stream.
 pub struct TlsStreamWithSocket<S: AsyncSocket>(pub(crate) Box<dyn TlsStreamWithUpcastDyn<S>>);
 
-fn _assert_kinds() {
-    fn assert_tls_stream_send<S: AsyncSocket>() {
-        assert_send::<TlsStreamWithSocket<S>>();
-    }
+fn _assert_kinds<S: AsyncRead + AsyncWrite + fmt::Debug + Unpin + Send + 'static>() {
+    assert_send::<TlsStreamWithSocket<S>>();
+    assert_socket::<TlsStreamWithSocket<S>>();
 }
 
 impl<S: AsyncSocket> fmt::Debug for TlsStreamWithSocket<S> {

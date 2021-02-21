@@ -1,3 +1,4 @@
+use crate::assert_kinds::assert_socket;
 use crate::assert_send;
 use crate::socket::AsyncSocket;
 use crate::spi_async_socket_impl_delegate;
@@ -12,6 +13,7 @@ pub struct TlsStream(Box<dyn TlsStreamDyn>);
 
 fn _assert_kinds() {
     assert_send::<TlsStream>();
+    assert_socket::<TlsStream>();
 }
 
 impl TlsStream {
