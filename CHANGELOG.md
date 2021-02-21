@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2021-02-21
+
 - `async-std` support added
 - `security-framework` is implemented natively
 - update all dependencies to the latest versions
