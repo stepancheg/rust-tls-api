@@ -6,6 +6,7 @@ mod acceptor;
 mod connector;
 mod error;
 mod handshake;
+mod rustls;
 mod stream;
 
 use tls_api::ImplInfo;
@@ -15,6 +16,7 @@ pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
 
+pub(crate) use crate::rustls::RustlsStream;
 pub(crate) use error::Error;
 pub(crate) use stream::TlsStream;
 

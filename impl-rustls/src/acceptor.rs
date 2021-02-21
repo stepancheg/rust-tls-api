@@ -10,6 +10,7 @@ use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
+use crate::RustlsStream;
 
 pub struct TlsAcceptorBuilder(pub rustls::ServerConfig);
 pub struct TlsAcceptor(pub Arc<rustls::ServerConfig>);
@@ -68,10 +69,11 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     where
         S: AsyncSocket,
     {
-        let tls_stream: crate::TlsStream<S, _> = TlsStreamOverSyncIo::new(StreamOwned {
-            sock: AsyncIoAsSyncIo::new(stream),
-            sess: rustls::ServerSession::new(&self.0),
-        });
+        let tls_stream: crate::TlsStream<S> =
+            TlsStreamOverSyncIo::new(RustlsStream::Server(StreamOwned {
+                sock: AsyncIoAsSyncIo::new(stream),
+                sess: rustls::ServerSession::new(&self.0),
+            }));
 
         BoxFuture::new(HandshakeFuture::MidHandshake(tls_stream))
     }

@@ -1,7 +1,6 @@
 //! Handshake future
 
 use crate::TlsStream;
-use std::fmt;
 use std::future::Future;
 use std::io;
 use std::mem;
@@ -12,19 +11,17 @@ use std::task::Poll;
 use tls_api::spi::save_context;
 use tls_api::AsyncSocket;
 
-pub(crate) enum HandshakeFuture<A, T>
+pub(crate) enum HandshakeFuture<A>
 where
     A: AsyncSocket,
-    T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
-    MidHandshake(TlsStream<A, T>),
+    MidHandshake(TlsStream<A>),
     Done,
 }
 
-impl<A, T> Future for HandshakeFuture<A, T>
+impl<A> Future for HandshakeFuture<A>
 where
     A: AsyncSocket,
-    T: rustls::Session + fmt::Debug + Unpin + 'static,
 {
     type Output = tls_api::Result<tls_api::TlsStreamWithSocket<A>>;
 
@@ -34,8 +31,8 @@ where
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::MidHandshake(mut stream) => {
                     // sanity check
-                    assert!(stream.stream.sess.is_handshaking());
-                    match stream.stream.sess.complete_io(&mut stream.stream.sock) {
+                    assert!(stream.stream.is_handshaking());
+                    match stream.stream.complete_io() {
                         Ok(_) => {
                             return Poll::Ready(Ok(tls_api::TlsStreamWithSocket::new(stream)));
                         }
