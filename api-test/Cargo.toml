@@ -23,7 +23,7 @@ untrusted  = "0.6.*"
 tokio = { version = "1.2.0", features = ["net", "io-util", "rt", "rt-multi-thread"], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
-test-cert-gen = { version = "0.5.0-pre", path = "../test-cert-gen", default-features = false }
+test-cert-gen = { version = "=0.5.0-pre", path = "../test-cert-gen", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
