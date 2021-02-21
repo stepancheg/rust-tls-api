@@ -15,6 +15,7 @@ pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
+pub use rustls_utils::RustlsSessionRef;
 
 pub(crate) use crate::rustls_utils::RustlsStream;
 pub(crate) use error::Error;

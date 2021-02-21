@@ -9,10 +9,24 @@ use std::io::IoSliceMut;
 use std::io::Read;
 use std::io::Write;
 
+pub enum RustlsSessionRef<'a> {
+    Client(&'a ClientSession),
+    Server(&'a ServerSession),
+}
+
 /// Merge client and server stream into single interface
 pub(crate) enum RustlsStream<S: Read + Write> {
     Server(StreamOwned<ServerSession, S>),
     Client(StreamOwned<ClientSession, S>),
+}
+
+impl<S: Read + Write> RustlsStream<S> {
+    pub fn session(&self) -> RustlsSessionRef {
+        match self {
+            RustlsStream::Server(s) => RustlsSessionRef::Server(&s.sess),
+            RustlsStream::Client(s) => RustlsSessionRef::Client(&s.sess),
+        }
+    }
 }
 
 impl<S: Read + Write> RustlsStream<S> {

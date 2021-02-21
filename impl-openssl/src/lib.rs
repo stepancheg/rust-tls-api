@@ -12,9 +12,10 @@ pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
 pub use connector::TlsConnectorBuilder;
-pub(crate) use error::Error;
 
+pub(crate) use error::Error;
 pub(crate) use stream::TlsStream;
+
 use tls_api::ImplInfo;
 
 // TODO: https://github.com/sfackler/rust-openssl/pull/646

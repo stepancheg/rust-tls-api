@@ -3,6 +3,7 @@
 use std::fmt;
 use std::marker::PhantomData;
 
+use security_framework::secure_transport::SslContext;
 use security_framework::secure_transport::SslStream;
 
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
@@ -14,6 +15,13 @@ use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
 spi_tls_stream_over_sync_io_wrapper!(TlsStream, SslStream);
+
+impl<A: AsyncSocket> TlsStream<A> {
+    /// Get `SslContext` reference for this stream.
+    pub fn ssl_context(&self) -> &SslContext {
+        self.0.stream.context()
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)

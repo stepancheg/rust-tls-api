@@ -11,8 +11,16 @@ use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
 use crate::rustls_utils::RustlsStream;
+use crate::RustlsSessionRef;
 
 spi_tls_stream_over_sync_io_wrapper!(TlsStream, RustlsStream);
+
+impl<A: AsyncSocket> TlsStream<A> {
+    /// Get the `rustls` session.
+    pub fn session(&self) -> RustlsSessionRef {
+        self.0.stream.session()
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)

@@ -1,6 +1,7 @@
 use std::fmt;
 use std::marker::PhantomData;
 
+use openssl::ssl::SslRef;
 use openssl::ssl::SslStream;
 use tls_api::spi::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::async_as_sync::AsyncWrapperOps;
@@ -11,6 +12,13 @@ use tls_api::AsyncSocket;
 use tls_api::ImplInfo;
 
 spi_tls_stream_over_sync_io_wrapper!(TlsStream, SslStream);
+
+impl<A: AsyncSocket> TlsStream<A> {
+    /// Get the [`SslRef`] object for the stream.
+    pub fn get_ssl_ref(&self) -> &SslRef {
+        self.0.stream.ssl()
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct AsyncWrapperOpsImpl<S, A>(PhantomData<(S, A)>)
