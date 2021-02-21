@@ -3,8 +3,6 @@ use std::io;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
 
 use crate::assert_send;
 use crate::socket::AsyncSocket;

@@ -6,8 +6,6 @@ use crate::TlsStreamDyn;
 use crate::TlsStreamWithSocket;
 use std::io;
 use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
 
 /// Similar to [`TlsStreamWithSocket`], but without a socket type parameter.
 #[derive(Debug)]

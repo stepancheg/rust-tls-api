@@ -4,8 +4,6 @@ use std::mem;
 use std::mem::MaybeUninit;
 use std::pin::Pin;
 use std::ptr;
-use std::task::Context;
-use std::task::Poll;
 
 use crate::assert_send;
 use crate::spi_async_socket_impl_delegate;
