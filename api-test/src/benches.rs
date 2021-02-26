@@ -1,24 +1,19 @@
 #![cfg(all(rustc_nightly, feature = "runtime-tokio"))]
 
+use std::thread;
+
+use crate::new_acceptor_from_der_keys;
 use crate::new_connector_with_root_ca;
 use crate::TcpListener;
 use crate::TcpStream;
 use crate::BIND_HOST;
-use std::thread;
 use test::Bencher;
-use tls_api::TlsAcceptorBuilder;
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 use tokio::runtime::Runtime;
 
 pub fn bench_1<C: tls_api::TlsConnector, A: tls_api::TlsAcceptor>(bencher: &mut Bencher) {
-    let acceptor = A::builder_from_der_key(
-        test_cert_gen::keys().server.cert_and_key.cert.get_der(),
-        test_cert_gen::keys().server.cert_and_key.key.get_der(),
-    )
-    .unwrap()
-    .build()
-    .unwrap();
+    let acceptor = new_acceptor_from_der_keys::<A>();
 
     let server_rt = Runtime::new().unwrap();
 

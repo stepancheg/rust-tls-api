@@ -39,6 +39,7 @@ mod gen_rustc_nightly;
 pub(crate) use gen_rustc_nightly::gen_rustc_nightly;
 
 use tls_api::TlsAcceptor;
+use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsAcceptorBuilderBox;
 use tls_api::TlsAcceptorType;
 use tls_api::TlsConnector;
@@ -124,7 +125,7 @@ pub fn connect_bad_hostname_ignored<C: TlsConnector>() {
     block_on(connect_bad_hostname_ignored_impl::<C>())
 }
 
-fn new_acceptor_from_pkcs12_keys<A>() -> A::Builder
+fn new_acceptor_builder_from_pkcs12_keys<A>() -> A::Builder
 where
     A: TlsAcceptor,
 {
@@ -134,7 +135,7 @@ where
     ))
 }
 
-fn new_acceptor_from_der_keys<A>() -> A::Builder
+fn new_acceptor_builder_from_der_keys<A>() -> A::Builder
 where
     A: TlsAcceptor,
 {
@@ -143,6 +144,10 @@ where
         keys.cert.get_der(),
         keys.key.get_der()
     ))
+}
+
+fn new_acceptor_from_der_keys<A: TlsAcceptor>() -> A {
+    new_acceptor_builder_from_der_keys::<A>().build().unwrap()
 }
 
 fn new_acceptor_dyn_from_pkcs12_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
@@ -167,13 +172,13 @@ where
     A: TlsAcceptor,
 {
     match key {
-        Some(AcceptorKeyKind::Der) => new_acceptor_from_der_keys::<A>(),
-        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_from_pkcs12_keys::<A>(),
+        Some(AcceptorKeyKind::Der) => new_acceptor_builder_from_der_keys::<A>(),
+        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_builder_from_pkcs12_keys::<A>(),
         None => {
             if A::SUPPORTS_PKCS12_KEYS {
-                new_acceptor_from_pkcs12_keys::<A>()
+                new_acceptor_builder_from_pkcs12_keys::<A>()
             } else if A::SUPPORTS_DER_KEYS {
-                new_acceptor_from_der_keys::<A>()
+                new_acceptor_builder_from_der_keys::<A>()
             } else {
                 panic!(
                     "no constructor supported for acceptor {}",
