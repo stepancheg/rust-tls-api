@@ -195,13 +195,17 @@ fn new_acceptor_dyn(
     }
 }
 
-fn new_connector_with_root_ca<C: TlsConnector>() -> C::Builder {
+fn new_connector_builder_with_root_ca<C: TlsConnector>() -> C::Builder {
     let keys = test_cert_gen::keys();
     let root_ca = &keys.client.ca;
 
     let mut connector = C::builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca.get_der()));
     connector
+}
+
+fn new_connector_with_root_ca<C: TlsConnector>() -> C {
+    new_connector_builder_with_root_ca::<C>().build().unwrap()
 }
 
 fn new_connector_dyn_with_root_ca(connector: &dyn TlsConnectorType) -> TlsConnectorBuilderBox {

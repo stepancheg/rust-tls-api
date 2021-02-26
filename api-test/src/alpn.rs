@@ -11,7 +11,7 @@ use tls_api::TlsStreamDyn;
 
 use crate::block_on;
 use crate::new_acceptor;
-use crate::new_connector_with_root_ca;
+use crate::new_connector_builder_with_root_ca;
 use crate::TcpListener;
 use crate::TcpStream;
 use crate::BIND_HOST;
@@ -79,7 +79,7 @@ where
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
-    let mut connector: C::Builder = new_connector_with_root_ca::<C>();
+    let mut connector: C::Builder = new_connector_builder_with_root_ca::<C>();
 
     connector
         .set_alpn_protocols(&[b"xyz", b"de", b"u"])

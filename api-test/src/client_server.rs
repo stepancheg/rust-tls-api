@@ -6,7 +6,6 @@ use tls_api::runtime::AsyncWriteExt;
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsConnector;
-use tls_api::TlsConnectorBuilder;
 
 use crate::block_on;
 use crate::new_acceptor;
@@ -66,8 +65,7 @@ where
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
-    let connector: C::Builder = new_connector_with_root_ca::<C>();
-    let connector: C = connector.build().expect("acceptor build");
+    let connector: C = new_connector_with_root_ca();
     let mut socket = t!(connector.connect("localhost", socket).await);
 
     t!(socket.write_all(b"hello").await);
