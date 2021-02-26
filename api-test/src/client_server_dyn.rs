@@ -7,7 +7,7 @@ use tls_api::TlsConnectorType;
 
 use crate::block_on;
 use crate::new_acceptor_dyn;
-use crate::new_connector_dyn_with_root_ca;
+use crate::new_connector_builder_dyn_with_root_ca;
 use crate::AcceptorKeyKind;
 use crate::TcpListener;
 use crate::TcpStream;
@@ -57,7 +57,7 @@ async fn test_client_server_dyn_impl(
 
     let socket = t!(TcpStream::connect((BIND_HOST, port)).await);
 
-    let connector = new_connector_dyn_with_root_ca(connector);
+    let connector = new_connector_builder_dyn_with_root_ca(connector);
     let connector = connector.build().expect("acceptor build");
     let mut socket = t!(connector.connect("localhost", socket).await);
 

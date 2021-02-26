@@ -58,9 +58,21 @@ fn alpn() {
 const BENCHES_TEMPLATE: &str = "\
 extern crate test;
 
+use tls_api::TlsAcceptor;
+use tls_api::TlsConnector;
+
 #[bench]
 fn bench_1(b: &mut test::Bencher) {
     tls_api_test::benches::bench_1::<CRATE::TlsConnector, CRATE::TlsAcceptor>(b)
+}
+
+#[bench]
+fn bench_1_dyn(b: &mut test::Bencher) {
+    tls_api_test::benches::bench_1_dyn(
+        CRATE::TlsConnector::TYPE_DYN,
+        CRATE::TlsAcceptor::TYPE_DYN,
+        b,
+    )
 }
 ";
 

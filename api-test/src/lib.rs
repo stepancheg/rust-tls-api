@@ -39,10 +39,12 @@ mod gen_rustc_nightly;
 pub(crate) use gen_rustc_nightly::gen_rustc_nightly;
 
 use tls_api::TlsAcceptor;
+use tls_api::TlsAcceptorBox;
 use tls_api::TlsAcceptorBuilder;
 use tls_api::TlsAcceptorBuilderBox;
 use tls_api::TlsAcceptorType;
 use tls_api::TlsConnector;
+use tls_api::TlsConnectorBox;
 use tls_api::TlsConnectorBuilder;
 use tls_api::TlsConnectorBuilderBox;
 use tls_api::TlsConnectorType;
@@ -150,16 +152,24 @@ fn new_acceptor_from_der_keys<A: TlsAcceptor>() -> A {
     new_acceptor_builder_from_der_keys::<A>().build().unwrap()
 }
 
-fn new_acceptor_dyn_from_pkcs12_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
+fn new_acceptor_builder_dyn_from_pkcs12_keys(
+    acceptor: &dyn TlsAcceptorType,
+) -> TlsAcceptorBuilderBox {
     t!(acceptor.builder_from_pkcs12(
         &test_cert_gen::keys().server.cert_and_key_pkcs12.pkcs12.0,
         &test_cert_gen::keys().server.cert_and_key_pkcs12.password,
     ))
 }
 
-fn new_acceptor_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
+fn new_acceptor_builder_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBuilderBox {
     let keys = &test_cert_gen::keys().server.cert_and_key;
     t!(acceptor.builder_from_der_key(keys.cert.get_der(), keys.key.get_der()))
+}
+
+fn new_acceptor_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBox {
+    new_acceptor_builder_dyn_from_der_keys(acceptor)
+        .build()
+        .unwrap()
 }
 
 pub enum AcceptorKeyKind {
@@ -194,13 +204,13 @@ fn new_acceptor_dyn(
     key: Option<AcceptorKeyKind>,
 ) -> TlsAcceptorBuilderBox {
     match key {
-        Some(AcceptorKeyKind::Der) => new_acceptor_dyn_from_der_keys(acceptor),
-        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_dyn_from_pkcs12_keys(acceptor),
+        Some(AcceptorKeyKind::Der) => new_acceptor_builder_dyn_from_der_keys(acceptor),
+        Some(AcceptorKeyKind::Pkcs12) => new_acceptor_builder_dyn_from_pkcs12_keys(acceptor),
         None => {
             if acceptor.supports_pkcs12_keys() {
-                new_acceptor_dyn_from_pkcs12_keys(acceptor)
+                new_acceptor_builder_dyn_from_pkcs12_keys(acceptor)
             } else if acceptor.supports_der_keys() {
-                new_acceptor_dyn_from_der_keys(acceptor)
+                new_acceptor_builder_dyn_from_der_keys(acceptor)
             } else {
                 panic!("no constructor supported for acceptor {}", acceptor);
             }
@@ -221,13 +231,21 @@ fn new_connector_with_root_ca<C: TlsConnector>() -> C {
     new_connector_builder_with_root_ca::<C>().build().unwrap()
 }
 
-fn new_connector_dyn_with_root_ca(connector: &dyn TlsConnectorType) -> TlsConnectorBuilderBox {
+fn new_connector_builder_dyn_with_root_ca(
+    connector: &dyn TlsConnectorType,
+) -> TlsConnectorBuilderBox {
     let keys = test_cert_gen::keys();
     let root_ca = &keys.client.ca;
 
     let mut connector = connector.builder().expect("connector builder");
     t!(connector.add_root_certificate(root_ca.get_der()));
     connector
+}
+
+fn new_connector_dyn_with_root_ca(connector: &dyn TlsConnectorType) -> TlsConnectorBox {
+    new_connector_builder_dyn_with_root_ca(connector)
+        .build()
+        .unwrap()
 }
 
 // `::1` is broken on travis-ci
