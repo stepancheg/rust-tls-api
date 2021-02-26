@@ -9,6 +9,7 @@
 #[macro_use]
 extern crate log;
 
+#[cfg(rustc_nightly)]
 extern crate test;
 
 use std::any;
