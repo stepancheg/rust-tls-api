@@ -9,6 +9,9 @@ keywords = ["tls"]
 build = "build.rs"
 edition = "2018"
 
+[lib]
+bench = false
+
 [badges]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 

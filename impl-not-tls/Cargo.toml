@@ -8,6 +8,9 @@ repository = "https://github.com/stepancheg/rust-tls-api/"
 keywords = ["tls"]
 edition = "2018"
 
+[lib]
+bench = false
+
 [badges]
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 

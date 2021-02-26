@@ -6,6 +6,9 @@ publish = false
 edition = "2018"
 description = "Test different implementations compatible with each other"
 
+[lib]
+bench = false
+
 [features]
 default = ["runtime-tokio"]
 runtime-async-std = ["tls-api-test/runtime-async-std", "tls-api-openssl/runtime-async-std", "tls-api-rustls/runtime-async-std", "tls-api-native-tls/runtime-async-std"]

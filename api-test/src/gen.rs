@@ -1,7 +1,7 @@
 use std::env;
 use std::fs;
 
-const TEMPLATE: &str = "\
+const TESTS_TEMPLATE: &str = "\
 use tls_api::TlsAcceptor;
 use tls_api::TlsConnector;
 
@@ -55,14 +55,30 @@ fn alpn() {
 }
 ";
 
+const BENCHES_TEMPLATE: &str = "\
+extern crate test;
+
+#[bench]
+fn bench_1(b: &mut test::Bencher) {
+    tls_api_test::benches::bench_1::<CRATE::TlsConnector, CRATE::TlsAcceptor>(b)
+}
+";
+
 /// Called from impl crates to generate the common set of tests
-pub fn gen_tests() {
+pub fn gen_tests_and_benches() {
     let crate_name = env::var("CARGO_PKG_NAME").unwrap().replace("-", "_");
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
-    let g = TEMPLATE.replace("CRATE", &crate_name);
+    let g = TESTS_TEMPLATE.replace("CRATE", &crate_name);
     let g = format!("// {}generated\n\n{}", "@", g);
 
     fs::write(format!("{}/tests_generated.rs", out_dir), g).unwrap();
+
+    let g = BENCHES_TEMPLATE.replace("CRATE", &crate_name);
+    let g = format!("// {}generated\n\n{}", "@", g);
+
+    fs::write(format!("{}/benches_generated.rs", out_dir), g).unwrap();
+
+    crate::gen_rustc_nightly();
 }
