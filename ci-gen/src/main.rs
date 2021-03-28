@@ -4,13 +4,13 @@ use std::path::Path;
 use gh_actions_gen::actions::cargo_doc;
 use gh_actions_gen::actions::cargo_test;
 use gh_actions_gen::actions::checkout_sources;
-use gh_actions_gen::actions::checkout_sources_depth;
 use gh_actions_gen::actions::rust_install_toolchain;
 use gh_actions_gen::actions::RustToolchain;
 use gh_actions_gen::ghwf::Env;
 use gh_actions_gen::ghwf::Job;
 use gh_actions_gen::ghwf::Step;
 use gh_actions_gen::rustfmt::rustfmt_check_job;
+use gh_actions_gen::super_linter::super_linter_job;
 
 fn crates_list() -> Vec<String> {
     assert!(Path::new("./ci-gen").exists());
@@ -65,28 +65,6 @@ const _WINDOWS: Os = Os {
     name: "windows",
     ghwf: Env::WindowsLatest,
 };
-
-fn super_linter_job() -> Job {
-    let mut steps = Vec::new();
-    steps.push(checkout_sources_depth(Some(0)));
-    steps.push(
-        Step::uses("super-linter", "github/super-linter@v3")
-            .env("VALIDATE_ALL_CODEBASE", "false")
-            .env("DEFAULT_BRANCH", "master")
-            .env("GITHUB_TOKEN", "${{ secrets.GITHUB_TOKEN }}")
-            // Too many false positives
-            .env("VALIDATE_JSCPD", "false")
-            // Too many dull reports like how we should pluralise variable names
-            .env("VALIDATE_PROTOBUF", "false"),
-    );
-    Job {
-        id: "super-linter".to_owned(),
-        name: "super-linter".to_owned(),
-        runs_on: LINUX.ghwf,
-        steps,
-        ..Default::default()
-    }
-}
 
 fn cargo_doc_job() -> Job {
     let os = LINUX;
