@@ -61,7 +61,7 @@ const MACOS: Os = Os {
     name: "macos",
     ghwf: Env::MacosLatest,
 };
-const _WINDOWS: Os = Os {
+const WINDOWS: Os = Os {
     name: "windows",
     ghwf: Env::WindowsLatest,
 };
@@ -89,8 +89,8 @@ fn jobs() -> Vec<Job> {
             RustToolchain::Beta,
             RustToolchain::Nightly,
         ] {
-            for &os in &[LINUX, MACOS] {
-                if channel == RustToolchain::Beta && os == MACOS {
+            for &os in &[LINUX, MACOS, WINDOWS] {
+                if channel == RustToolchain::Beta && (os == MACOS || os == WINDOWS) {
                     // skip some jobs because macos is expensive
                     continue;
                 }
