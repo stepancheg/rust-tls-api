@@ -27,13 +27,19 @@ fn crates_list() -> Vec<String> {
     r
 }
 
-fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
+fn steps(rt: &str, os: Os, channel: RustToolchain) -> Vec<Step> {
     let mut r = vec![
         cargo_cache(),
         checkout_sources(),
         rust_install_toolchain(channel),
     ];
     for c in crates_list() {
+        if os == WINDOWS {
+            match c.as_str() {
+                "examples" => continue,
+                _ => {}
+            }
+        }
         let mut args = format!("--manifest-path={}/Cargo.toml", c);
         match c.as_str() {
             "ci-gen" | "test-cert-gen" => {}
@@ -104,7 +110,7 @@ fn jobs() -> Vec<Job> {
                     id: format!("{}-{}-{}", rt, os.name, channel),
                     name: format!("{} {} {}", rt, os.name, channel),
                     runs_on: os.ghwf,
-                    steps: steps(rt, channel),
+                    steps: steps(rt, os, channel),
                     ..Default::default()
                 });
             }
