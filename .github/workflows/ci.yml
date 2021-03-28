@@ -9,6 +9,8 @@ jobs:
   runtime-tokio-linux-stable:
     name: runtime-tokio linux stable
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -98,6 +100,8 @@ jobs:
   runtime-tokio-macos-stable:
     name: runtime-tokio macos stable
     runs-on: macos-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -187,6 +191,8 @@ jobs:
   runtime-tokio-windows-stable:
     name: runtime-tokio windows stable
     runs-on: windows-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -264,6 +270,8 @@ jobs:
   runtime-tokio-linux-beta:
     name: runtime-tokio linux beta
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -353,6 +361,8 @@ jobs:
   runtime-tokio-linux-nightly:
     name: runtime-tokio linux nightly
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -442,6 +452,8 @@ jobs:
   runtime-tokio-macos-nightly:
     name: runtime-tokio macos nightly
     runs-on: macos-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -531,6 +543,8 @@ jobs:
   runtime-tokio-windows-nightly:
     name: runtime-tokio windows nightly
     runs-on: windows-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -608,6 +622,8 @@ jobs:
   runtime-async-std-linux-stable:
     name: runtime-async-std linux stable
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -697,6 +713,8 @@ jobs:
   runtime-async-std-macos-stable:
     name: runtime-async-std macos stable
     runs-on: macos-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -786,6 +804,8 @@ jobs:
   runtime-async-std-windows-stable:
     name: runtime-async-std windows stable
     runs-on: windows-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -863,6 +883,8 @@ jobs:
   runtime-async-std-linux-beta:
     name: runtime-async-std linux beta
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -952,6 +974,8 @@ jobs:
   runtime-async-std-linux-nightly:
     name: runtime-async-std linux nightly
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -1041,6 +1065,8 @@ jobs:
   runtime-async-std-macos-nightly:
     name: runtime-async-std macos nightly
     runs-on: macos-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2
@@ -1130,6 +1156,8 @@ jobs:
   runtime-async-std-windows-nightly:
     name: runtime-async-std windows nightly
     runs-on: windows-latest
+    env:
+      RUST_BACKTRACE: "1"
     steps:
       - name: cargo cache
         uses: actions/cache@v2

@@ -111,6 +111,7 @@ fn jobs() -> Vec<Job> {
                     id: format!("{}-{}-{}", rt, os.name, channel),
                     name: format!("{} {} {}", rt, os.name, channel),
                     runs_on: os.ghwf,
+                    env: vec![("RUST_BACKTRACE".to_owned(), "1".to_owned())],
                     steps: steps(rt, os, channel),
                     ..Default::default()
                 });
