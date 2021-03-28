@@ -1,3 +1,4 @@
+use std::io;
 use std::thread;
 
 use tls_api::runtime::AsyncReadExt;
@@ -63,7 +64,13 @@ async fn test_client_server_dyn_impl(
 
     t!(socket.write_all(b"hello").await);
     let mut buf = vec![];
-    t!(socket.read_to_end(&mut buf).await);
+    match socket.read_to_end(&mut buf).await {
+        Ok(_) => {}
+        Err(e) if e.kind() == io::ErrorKind::ConnectionReset => {
+            // rustls on Windows does that
+        }
+        Err(e) => panic!("{}", e),
+    }
     assert_eq!(buf, b"world");
 
     j.join().expect("thread join");
