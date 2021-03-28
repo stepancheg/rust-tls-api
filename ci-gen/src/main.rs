@@ -10,6 +10,7 @@ use gh_actions_gen::actions::RustToolchain;
 use gh_actions_gen::ghwf::Env;
 use gh_actions_gen::ghwf::Job;
 use gh_actions_gen::ghwf::Step;
+use gh_actions_gen::rustfmt::rustfmt_check_job;
 
 fn crates_list() -> Vec<String> {
     assert!(Path::new("./ci-gen").exists());
@@ -87,19 +88,6 @@ fn super_linter_job() -> Job {
     }
 }
 
-fn rustfmt_job() -> Job {
-    let os = LINUX;
-    let mut steps = Vec::new();
-    steps.push(checkout_sources());
-    Job {
-        id: "rustfmt-check".to_owned(),
-        name: "rustfmt check".to_owned(),
-        runs_on: os.ghwf,
-        steps,
-        ..Default::default()
-    }
-}
-
 fn cargo_doc_job() -> Job {
     let os = LINUX;
     let mut steps = Vec::new();
@@ -141,7 +129,7 @@ fn jobs() -> Vec<Job> {
 
     r.push(cargo_doc_job());
 
-    r.push(rustfmt_job());
+    r.push(rustfmt_check_job());
     r.push(super_linter_job());
 
     r

@@ -868,6 +868,9 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+      - name: cargo fmt check
+        run: cargo fmt -- --check
+        shell: bash
   super-linter:
     name: super-linter
     runs-on: ubuntu-latest
