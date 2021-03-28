@@ -36,7 +36,8 @@ fn steps(rt: &str, os: Os, channel: RustToolchain) -> Vec<Step> {
     for c in crates_list() {
         if os == WINDOWS {
             match c.as_str() {
-                "examples" => continue,
+                // TODO: figure out how to enable openssl on windows
+                "examples" | "impl-openssl" => continue,
                 _ => {}
             }
         }

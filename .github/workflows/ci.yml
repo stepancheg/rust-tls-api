@@ -231,12 +231,6 @@ jobs:
           command: test
           args: "--manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio"
         timeout-minutes: 5
-      - name: cargo test impl-openssl
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: "--manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-tokio"
-        timeout-minutes: 5
       - name: cargo test impl-rustls
         uses: actions-rs/cargo@v1
         with:
@@ -581,12 +575,6 @@ jobs:
           command: test
           args: "--manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-tokio"
         timeout-minutes: 5
-      - name: cargo test impl-openssl
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: "--manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-tokio"
-        timeout-minutes: 5
       - name: cargo test impl-rustls
         uses: actions-rs/cargo@v1
         with:
@@ -841,12 +829,6 @@ jobs:
         with:
           command: test
           args: "--manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std"
-        timeout-minutes: 5
-      - name: cargo test impl-openssl
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: "--manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-async-std"
         timeout-minutes: 5
       - name: cargo test impl-rustls
         uses: actions-rs/cargo@v1
@@ -1191,12 +1173,6 @@ jobs:
         with:
           command: test
           args: "--manifest-path=impl-not-tls/Cargo.toml --no-default-features --features=runtime-async-std"
-        timeout-minutes: 5
-      - name: cargo test impl-openssl
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: "--manifest-path=impl-openssl/Cargo.toml --no-default-features --features=runtime-async-std"
         timeout-minutes: 5
       - name: cargo test impl-rustls
         uses: actions-rs/cargo@v1
