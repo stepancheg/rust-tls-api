@@ -1254,3 +1254,6 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           VALIDATE_JSCPD: "false"
           VALIDATE_PROTOBUF: "false"
+          VALIDATE_RUST_2015: "false"
+          VALIDATE_RUST_2018: "false"
+          VALIDATE_RUST_CLIPPY: "false"
