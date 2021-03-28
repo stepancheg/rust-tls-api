@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 
+use gh_actions_gen::actions::cargo_cache;
 use gh_actions_gen::actions::cargo_doc;
 use gh_actions_gen::actions::cargo_test;
 use gh_actions_gen::actions::checkout_sources;
@@ -27,7 +28,11 @@ fn crates_list() -> Vec<String> {
 }
 
 fn steps(rt: &str, channel: RustToolchain) -> Vec<Step> {
-    let mut r = vec![checkout_sources(), rust_install_toolchain(channel)];
+    let mut r = vec![
+        cargo_cache(),
+        checkout_sources(),
+        rust_install_toolchain(channel),
+    ];
     for c in crates_list() {
         let mut args = format!("--manifest-path={}/Cargo.toml", c);
         match c.as_str() {
@@ -69,6 +74,7 @@ const WINDOWS: Os = Os {
 fn cargo_doc_job() -> Job {
     let os = LINUX;
     let mut steps = Vec::new();
+    steps.push(cargo_cache());
     steps.push(checkout_sources());
     steps.push(rust_install_toolchain(RustToolchain::Stable));
     steps.push(cargo_doc("cargo doc", ""));

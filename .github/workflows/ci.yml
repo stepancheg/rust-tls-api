@@ -10,6 +10,11 @@ jobs:
     name: runtime-tokio linux stable
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -94,6 +99,11 @@ jobs:
     name: runtime-tokio macos stable
     runs-on: macos-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -178,6 +188,11 @@ jobs:
     name: runtime-tokio windows stable
     runs-on: windows-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -262,6 +277,11 @@ jobs:
     name: runtime-tokio linux beta
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -346,6 +366,11 @@ jobs:
     name: runtime-tokio linux nightly
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -430,6 +455,11 @@ jobs:
     name: runtime-tokio macos nightly
     runs-on: macos-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -514,6 +544,11 @@ jobs:
     name: runtime-tokio windows nightly
     runs-on: windows-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -598,6 +633,11 @@ jobs:
     name: runtime-async-std linux stable
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -682,6 +722,11 @@ jobs:
     name: runtime-async-std macos stable
     runs-on: macos-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -766,6 +811,11 @@ jobs:
     name: runtime-async-std windows stable
     runs-on: windows-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -850,6 +900,11 @@ jobs:
     name: runtime-async-std linux beta
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -934,6 +989,11 @@ jobs:
     name: runtime-async-std linux nightly
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1018,6 +1078,11 @@ jobs:
     name: runtime-async-std macos nightly
     runs-on: macos-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1102,6 +1167,11 @@ jobs:
     name: runtime-async-std windows nightly
     runs-on: windows-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1186,6 +1256,11 @@ jobs:
     name: cargo doc
     runs-on: ubuntu-latest
     steps:
+      - name: cargo cache
+        uses: actions/cache@v2
+        with:
+          path: "/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
