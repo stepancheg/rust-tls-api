@@ -55,6 +55,18 @@ impl Error {
     pub fn into_inner(self) -> Box<dyn error::Error + Send + Sync> {
         self.0
     }
+
+    /// Returns true if the boxed type is the same as E
+    pub fn is<E: error::Error + Send + Sync + 'static>(&self) -> bool {
+        self.0.is::<E>()
+    }
+    /// Returns some reference to the boxed value if it is of type E,
+    /// or None if it isn’t.
+    pub fn downcast_ref<E>(&self) -> Option<&E>
+        where E: error::Error + Send + Sync + 'static,
+    {
+        (*self.0).downcast_ref::<E>()
+    }
 }
 
 impl error::Error for Error {
