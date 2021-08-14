@@ -1,6 +1,5 @@
-use rustls::ClientSession;
-use rustls::ServerSession;
-use rustls::Session;
+use rustls::ClientConnection;
+use rustls::ServerConnection;
 use rustls::StreamOwned;
 use std::fmt::Arguments;
 use std::io;
@@ -10,21 +9,21 @@ use std::io::Read;
 use std::io::Write;
 
 pub enum RustlsSessionRef<'a> {
-    Client(&'a ClientSession),
-    Server(&'a ServerSession),
+    Client(&'a ClientConnection),
+    Server(&'a ServerConnection),
 }
 
 /// Merge client and server stream into single interface
 pub(crate) enum RustlsStream<S: Read + Write> {
-    Server(StreamOwned<ServerSession, S>),
-    Client(StreamOwned<ClientSession, S>),
+    Server(StreamOwned<ServerConnection, S>),
+    Client(StreamOwned<ClientConnection, S>),
 }
 
 impl<S: Read + Write> RustlsStream<S> {
     pub fn session(&self) -> RustlsSessionRef {
         match self {
-            RustlsStream::Server(s) => RustlsSessionRef::Server(&s.sess),
-            RustlsStream::Client(s) => RustlsSessionRef::Client(&s.sess),
+            RustlsStream::Server(s) => RustlsSessionRef::Server(&s.conn),
+            RustlsStream::Client(s) => RustlsSessionRef::Client(&s.conn),
         }
     }
 }
@@ -46,22 +45,22 @@ impl<S: Read + Write> RustlsStream<S> {
 
     pub fn is_handshaking(&self) -> bool {
         match self {
-            RustlsStream::Server(s) => s.sess.is_handshaking(),
-            RustlsStream::Client(s) => s.sess.is_handshaking(),
+            RustlsStream::Server(s) => s.conn.is_handshaking(),
+            RustlsStream::Client(s) => s.conn.is_handshaking(),
         }
     }
 
     pub fn complete_io(&mut self) -> io::Result<(usize, usize)> {
         match self {
-            RustlsStream::Server(s) => s.sess.complete_io(&mut s.sock),
-            RustlsStream::Client(s) => s.sess.complete_io(&mut s.sock),
+            RustlsStream::Server(s) => s.conn.complete_io(&mut s.sock),
+            RustlsStream::Client(s) => s.conn.complete_io(&mut s.sock),
         }
     }
 
     pub fn get_alpn_protocol(&self) -> Option<&[u8]> {
         match self {
-            RustlsStream::Server(s) => s.sess.get_alpn_protocol(),
-            RustlsStream::Client(s) => s.sess.get_alpn_protocol(),
+            RustlsStream::Server(s) => s.conn.alpn_protocol(),
+            RustlsStream::Client(s) => s.conn.alpn_protocol(),
         }
     }
 }
