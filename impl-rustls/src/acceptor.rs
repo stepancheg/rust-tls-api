@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use rustls::NoClientAuth;
 use rustls::StreamOwned;
 
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
 use tls_api::AsyncSocketBox;
+use tls_api::BoxFuture;
 use tls_api::ImplInfo;
 
 use crate::handshake::HandshakeFuture;
@@ -43,13 +43,19 @@ impl TlsAcceptor {
     where
         S: AsyncSocket,
     {
+        let conn = rustls::ServerConnection::new(self.0.clone());
+        let conn =
+            match conn.map_err(|e| tls_api::Error::new(e)) {
+                Ok(conn) => conn,
+                Err(e) => return BoxFuture::new(async { Err(e) }),
+            };
         let tls_stream: crate::TlsStream<S> =
             crate::TlsStream::new(RustlsStream::Server(StreamOwned {
                 sock: AsyncIoAsSyncIo::new(stream),
-                sess: rustls::ServerSession::new(&self.0),
+                conn,
             }));
 
-        HandshakeFuture::MidHandshake(tls_stream)
+        BoxFuture::new(HandshakeFuture::MidHandshake(tls_stream))
     }
 }
 
@@ -74,10 +80,11 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> tls_api::Result<TlsAcceptorBuilder> {
-        let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
         let cert = rustls::Certificate(cert.to_vec());
-        config
-            .set_single_cert(vec![cert], rustls::PrivateKey(key.to_vec()))
+        let config = rustls::ServerConfig::builder()
+            .with_safe_defaults()
+            .with_no_client_auth()
+            .with_single_cert(vec![cert], rustls::PrivateKey(key.to_vec()))
             .map_err(tls_api::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }

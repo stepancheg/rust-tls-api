@@ -4,13 +4,15 @@ use std::io;
 fn connect_bad_hostname() {
     tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector, _>(|err| {
         let err: Box<io::Error> = err.into_inner().downcast().expect("io::Error");
-        let err: &rustls::TLSError = err
+        let err: &rustls::Error = err
             .get_ref()
             .expect("cause")
             .downcast_ref()
             .expect("rustls::TLSError");
         match err {
-            rustls::TLSError::WebPKIError(webpki::Error::CertNotValidForName) => {}
+            rustls::Error::InvalidCertificateData(e) => {
+                assert_eq!(e, "invalid peer certificate: CertNotValidForName");
+            }
             err => panic!("wrong error: {:?}", err),
         }
     });
