@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- [Upgrade to rustls 0.20](https://github.com/stepancheg/rust-tls-api/pull/39)
+
 ## [0.5.0] - 2021-02-21
 
 - `async-std` support added
