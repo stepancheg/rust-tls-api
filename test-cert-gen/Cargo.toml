@@ -1,6 +1,6 @@
 [package]
 name = "test-cert-gen"
-version = "0.6.0-pre"
+version = "0.6.0"
 authors = ["Stiopa Koltsov <stepan.koltsov@gmail.com>"]
 edition = "2018"
 description = "Utility to generate certificates for tests (e. g. for TLS)"
