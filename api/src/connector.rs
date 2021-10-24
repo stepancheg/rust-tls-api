@@ -37,20 +37,20 @@ pub trait TlsConnectorBuilder: Sized + Sync + Send + 'static {
     /// Set ALPN-protocols to negotiate.
     ///
     /// This operations fails is not [`TlsConnector::SUPPORTS_ALPN`].
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()>;
 
     /// Should hostname verification be performed?
     /// Use carefully, it opens the door to MITM attacks.
-    fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()>;
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()>;
 
     /// Add trusted root certificate. By default connector supports only
     /// global trusted root.
     ///
     /// Param is DER-encoded X.509 certificate.
-    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()>;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()>;
 
     /// Finish the acceptor construction.
-    fn build(self) -> crate::Result<Self::Connector>;
+    fn build(self) -> anyhow::Result<Self::Connector>;
 }
 
 /// A builder for client-side TLS connections.
@@ -90,7 +90,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     fn info() -> ImplInfo;
 
     /// New builder for the acceptor.
-    fn builder() -> crate::Result<Self::Builder>;
+    fn builder() -> anyhow::Result<Self::Builder>;
 
     /// Dynamic (without type parameter) version of the connector.
     ///
@@ -106,7 +106,10 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Connect using default settings.
     ///
     /// Shortcut.
-    fn connect_default<'a, S>(domain: &'a str, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
+    fn connect_default<'a, S>(
+        domain: &'a str,
+        stream: S,
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket,
     {
@@ -126,7 +129,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>>
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket,
     {
@@ -149,7 +152,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
+    ) -> BoxFuture<'a, anyhow::Result<TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket;
 
@@ -166,7 +169,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<Self::TlsStream>>
+    ) -> BoxFuture<'a, anyhow::Result<Self::TlsStream>>
     where
         S: AsyncSocket;
 }
@@ -179,7 +182,7 @@ macro_rules! spi_connector_common {
             &'a self,
             domain: &'a str,
             stream: S,
-        ) -> $crate::BoxFuture<'a, $crate::Result<$crate::TlsStreamWithSocket<S>>>
+        ) -> $crate::BoxFuture<'a, anyhow::Result<$crate::TlsStreamWithSocket<S>>>
         where
             S: $crate::AsyncSocket,
         {
@@ -194,7 +197,7 @@ macro_rules! spi_connector_common {
             &'a self,
             domain: &'a str,
             stream: S,
-        ) -> tls_api::BoxFuture<'a, tls_api::Result<Self::TlsStream>>
+        ) -> tls_api::BoxFuture<'a, anyhow::Result<Self::TlsStream>>
         where
             S: AsyncSocket,
         {

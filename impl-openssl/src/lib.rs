@@ -24,7 +24,7 @@ pub(crate) const HAS_ALPN: bool = true;
 #[cfg(not(has_alpn))]
 pub(crate) const HAS_ALPN: bool = false;
 
-fn encode_alpn_protos(protos: &[&[u8]]) -> tls_api::Result<Vec<u8>> {
+fn encode_alpn_protos(protos: &[&[u8]]) -> anyhow::Result<Vec<u8>> {
     let mut r = Vec::new();
     for proto in protos {
         if proto.len() > 255 {

@@ -15,12 +15,14 @@ bench = false
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-rustls = { version = "0.19.0", features = ["dangerous_configuration"] }
-tls-api = { path = "../api", version = "=0.6.0-pre", default-features = false }
+rustls       = { version = "0.19.0", features = ["dangerous_configuration"] }
 webpki       = "0.21.4"
 webpki-roots = "0.21.0"
-tokio = { version = "1.2.0", features = [], optional = true }
-async-std = { version = "1.9.0", features = ["attributes"], optional = true }
+tokio        = { version = "1.2.0", features = [], optional = true }
+async-std    = { version = "1.9.0", features = ["attributes"], optional = true }
+anyhow       = "1.0.44"
+
+tls-api      = { path = "../api", version = "=0.6.0-pre", default-features = false }
 
 # this is needed until package-features is stabelized (issue #5364)
 tls-api-test = { path = "../api-test", version = "=0.6.0-pre", default-features = false }

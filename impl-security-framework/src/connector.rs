@@ -25,7 +25,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             let protocols: Vec<&str> = protocols
@@ -34,7 +34,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
                     str::from_utf8(p)
                         .map_err(|e| crate::Error::ReturnedAlpnProtocolIsNotUtf8(e).into())
                 })
-                .collect::<tls_api::Result<_>>()?;
+                .collect::<anyhow::Result<_>>()?;
             self.0.alpn_protocols(&protocols);
             Ok(())
         }
@@ -45,7 +45,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             self.0.danger_accept_invalid_hostnames(!verify);
@@ -58,10 +58,10 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            let cert = SecCertificate::from_der(cert).map_err(tls_api::Error::new)?;
+            let cert = SecCertificate::from_der(cert).map_err(anyhow::Error::new)?;
             // TODO: overrides, not adds: https://github.com/kornelski/rust-security-framework/pull/116
             self.0.anchor_certificates(&[cert]);
             Ok(())
@@ -73,7 +73,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         }
     }
 
-    fn build(self) -> tls_api::Result<TlsConnector> {
+    fn build(self) -> anyhow::Result<TlsConnector> {
         Ok(TlsConnector(self.0))
     }
 }
@@ -83,7 +83,7 @@ impl TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
@@ -116,7 +116,7 @@ impl tls_api::TlsConnector for TlsConnector {
         crate::info()
     }
 
-    fn builder() -> tls_api::Result<TlsConnectorBuilder> {
+    fn builder() -> anyhow::Result<TlsConnectorBuilder> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             Ok(TlsConnectorBuilder(ClientBuilder::new()))

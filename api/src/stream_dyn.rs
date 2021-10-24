@@ -6,7 +6,7 @@ use crate::ImplInfo;
 /// Provide access to some TLS stream properties (only ALPN at the moment.)
 pub trait TlsStreamDyn: AsyncSocket {
     /// Get negotiated ALPN protocol negotiated.
-    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>>;
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>>;
 
     /// Implementation info for this stream (e. g. which crate provides it).
     fn impl_info(&self) -> ImplInfo;

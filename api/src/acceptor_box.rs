@@ -37,8 +37,11 @@ pub trait TlsAcceptorType: fmt::Debug + fmt::Display + Sync + 'static {
     /// New builder from given server key.
     ///
     /// This operation is guaranteed to fail if not [`TlsAcceptorType::supports_der_keys`].
-    fn builder_from_der_key(&self, cert: &[u8], key: &[u8])
-        -> crate::Result<TlsAcceptorBuilderBox>;
+    fn builder_from_der_key(
+        &self,
+        cert: &[u8],
+        key: &[u8],
+    ) -> anyhow::Result<TlsAcceptorBuilderBox>;
 
     /// New builder from given server key.
     ///
@@ -47,7 +50,7 @@ pub trait TlsAcceptorType: fmt::Debug + fmt::Display + Sync + 'static {
         &self,
         pkcs12: &[u8],
         passphrase: &str,
-    ) -> crate::Result<TlsAcceptorBuilderBox>;
+    ) -> anyhow::Result<TlsAcceptorBuilderBox>;
 }
 
 pub(crate) struct TlsAcceptorTypeImpl<A: TlsAcceptor>(pub marker::PhantomData<A>);
@@ -89,7 +92,7 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
         &self,
         cert: &[u8],
         key: &[u8],
-    ) -> crate::Result<TlsAcceptorBuilderBox> {
+    ) -> anyhow::Result<TlsAcceptorBuilderBox> {
         let builder = A::builder_from_der_key(cert, key)?;
         Ok(TlsAcceptorBuilderBox(Box::new(builder)))
     }
@@ -98,7 +101,7 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
         &self,
         pkcs12: &[u8],
         passphrase: &str,
-    ) -> crate::Result<TlsAcceptorBuilderBox> {
+    ) -> anyhow::Result<TlsAcceptorBuilderBox> {
         let builder = A::builder_from_pkcs12(pkcs12, passphrase)?;
         Ok(TlsAcceptorBuilderBox(Box::new(builder)))
     }
@@ -109,9 +112,9 @@ impl<A: TlsAcceptor> TlsAcceptorType for TlsAcceptorTypeImpl<A> {
 trait TlsAcceptorBuilderDyn: Send + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()>;
 
-    fn build(self: Box<Self>) -> crate::Result<TlsAcceptorBox>;
+    fn build(self: Box<Self>) -> anyhow::Result<TlsAcceptorBox>;
 }
 
 impl<A: TlsAcceptorBuilder> TlsAcceptorBuilderDyn for A {
@@ -119,11 +122,11 @@ impl<A: TlsAcceptorBuilder> TlsAcceptorBuilderDyn for A {
         <A::Acceptor as TlsAcceptor>::TYPE_DYN
     }
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         (*self).set_alpn_protocols(protocols)
     }
 
-    fn build(self: Box<Self>) -> crate::Result<TlsAcceptorBox> {
+    fn build(self: Box<Self>) -> anyhow::Result<TlsAcceptorBox> {
         Ok(TlsAcceptorBox(Box::new((*self).build()?)))
     }
 }
@@ -144,12 +147,12 @@ impl TlsAcceptorBuilderBox {
     /// This operation returns an error if the implemenation does not support ALPN.
     ///
     /// Whether ALPN is supported, can be queried using [`TlsAcceptor::SUPPORTS_ALPN`].
-    pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
+    pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.0.set_alpn_protocols(protocols)
     }
 
     /// Finish the acceptor construction.
-    pub fn build(self) -> crate::Result<TlsAcceptorBox> {
+    pub fn build(self) -> anyhow::Result<TlsAcceptorBox> {
         self.0.build()
     }
 }
@@ -159,7 +162,7 @@ impl TlsAcceptorBuilderBox {
 trait TlsAcceptorDyn: Send + Sync + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStream>>;
+    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, anyhow::Result<TlsStream>>;
 }
 
 impl<A: TlsAcceptor> TlsAcceptorDyn for A {
@@ -167,7 +170,7 @@ impl<A: TlsAcceptor> TlsAcceptorDyn for A {
         A::TYPE_DYN
     }
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, crate::Result<TlsStream>> {
+    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
         self.accept(socket)
     }
 }
@@ -198,7 +201,7 @@ impl TlsAcceptorBox {
     pub fn accept<'a, S: AsyncSocket>(
         &'a self,
         socket: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
         self.0.accept(AsyncSocketBox::new(socket))
     }
 }

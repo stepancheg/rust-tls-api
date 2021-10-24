@@ -142,7 +142,7 @@ where
     fn get_ref(w: &Self::SyncWrapper) -> &AsyncIoAsSyncIo<A>;
 
     /// Get negotiated ALPN protocol.
-    fn get_alpn_protocol(w: &Self::SyncWrapper) -> crate::Result<Option<Vec<u8>>>;
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> anyhow::Result<Option<Vec<u8>>>;
 }
 
 /// Implementation of `TlsStreamImpl` for APIs using synchronous I/O.
@@ -297,7 +297,7 @@ where
         O::impl_info()
     }
 
-    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
         O::get_alpn_protocol(&self.stream)
     }
 
@@ -366,7 +366,7 @@ macro_rules! spi_tls_stream_over_sync_io_wrapper {
         spi_async_socket_impl_delegate!($t<S>);
 
         impl<A: tls_api::AsyncSocket> tls_api::TlsStreamDyn for $t<A> {
-            fn get_alpn_protocol(&self) -> $crate::Result<Option<Vec<u8>>> {
+            fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
                 self.0.get_alpn_protocol()
             }
 

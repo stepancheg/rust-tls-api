@@ -28,7 +28,7 @@ where
     >,
     Self: Unpin,
 {
-    type Output = tls_api::Result<crate::TlsStream<A>>;
+    type Output = anyhow::Result<crate::TlsStream<A>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -43,7 +43,7 @@ where
                         return Poll::Pending;
                     }
                     Err(native_tls::HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 HandshakeFuture::MidHandshake(stream) => match stream.handshake() {
@@ -55,7 +55,7 @@ where
                         return Poll::Pending;
                     }
                     Err(native_tls::HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),

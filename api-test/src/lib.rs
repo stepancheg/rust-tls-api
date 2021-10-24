@@ -73,7 +73,7 @@ where
     t!(tokio::runtime::Runtime::new()).block_on(future)
 }
 
-async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
+async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(anyhow::Error)>(check_error: F) {
     drop(env_logger::try_init());
 
     if !C::IMPLEMENTED {
@@ -96,7 +96,7 @@ async fn connect_bad_hostname_impl<C: TlsConnector, F: FnOnce(tls_api::Error)>(c
     check_error(error);
 }
 
-pub fn connect_bad_hostname<C: TlsConnector, F: FnOnce(tls_api::Error)>(check_error: F) {
+pub fn connect_bad_hostname<C: TlsConnector, F: FnOnce(anyhow::Error)>(check_error: F) {
     block_on(connect_bad_hostname_impl::<C, F>(check_error))
 }
 

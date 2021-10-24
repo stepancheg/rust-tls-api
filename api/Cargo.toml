@@ -21,6 +21,7 @@ pem        = "0.8.3"
 webpki     = "0.21.4"
 tempdir    = "0.3.7"
 void       = "1.0.2"
+anyhow     = "1.0.44"
 
 # Note technically there's no dependency on async-std
 futures-util = { version = "0.3.1", features = ["io"], optional = true }

@@ -17,7 +17,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     type Underlying = native_tls::TlsAcceptorBuilder;
 
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
         Err(crate::Error::AlpnNotSupported.into())
     }
 
@@ -25,8 +25,8 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    fn build(self) -> tls_api::Result<TlsAcceptor> {
-        self.0.build().map(TlsAcceptor).map_err(tls_api::Error::new)
+    fn build(self) -> anyhow::Result<TlsAcceptor> {
+        self.0.build().map(TlsAcceptor).map_err(anyhow::Error::new)
     }
 }
 
@@ -34,7 +34,7 @@ impl TlsAcceptor {
     fn accept_impl<'a, S>(
         &'a self,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
@@ -63,9 +63,9 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<Self::Builder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<Self::Builder> {
         Ok(TlsAcceptorBuilder(native_tls::TlsAcceptor::builder(
-            native_tls::Identity::from_pkcs12(pkcs12, passphrase).map_err(tls_api::Error::new)?,
+            native_tls::Identity::from_pkcs12(pkcs12, passphrase).map_err(anyhow::Error::new)?,
         )))
     }
 

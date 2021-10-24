@@ -15,9 +15,3 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {}
-
-impl Into<tls_api::Error> for Error {
-    fn into(self) -> tls_api::Error {
-        tls_api::Error::new(self)
-    }
-}

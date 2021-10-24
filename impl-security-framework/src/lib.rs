@@ -30,7 +30,7 @@ pub(crate) use stream::TlsStream;
 pub(crate) use tls_api_stub::TlsStream;
 
 #[allow(dead_code)]
-pub(crate) fn not_ios_or_macos<T>() -> tls_api::Result<T> {
+pub(crate) fn not_ios_or_macos<T>() -> anyhow::Result<T> {
     Err(Error::NotIosOrMacos.into())
 }
 

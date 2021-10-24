@@ -21,7 +21,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 
     type Underlying = rustls::ServerConfig;
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();
         Ok(())
     }
@@ -30,7 +30,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    fn build(self) -> tls_api::Result<TlsAcceptor> {
+    fn build(self) -> anyhow::Result<TlsAcceptor> {
         Ok(TlsAcceptor(Arc::new(self.0)))
     }
 }
@@ -39,7 +39,7 @@ impl TlsAcceptor {
     pub fn accept_impl<'a, S>(
         &'a self,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
@@ -73,12 +73,12 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> anyhow::Result<TlsAcceptorBuilder> {
         let mut config = rustls::ServerConfig::new(Arc::new(NoClientAuth));
         let cert = rustls::Certificate(cert.to_vec());
         config
             .set_single_cert(vec![cert], rustls::PrivateKey(key.to_vec()))
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }
 

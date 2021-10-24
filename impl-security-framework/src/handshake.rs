@@ -32,7 +32,7 @@ pub(crate) fn new_slient_handshake<'a, S>(
     connector: &'a crate::TlsConnector,
     domain: &'a str,
     stream: S,
-) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
 where
     S: AsyncSocket,
 {
@@ -51,7 +51,7 @@ where
         -> Result<SslStream<AsyncIoAsSyncIo<S>>, ClientHandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<crate::TlsStream<S>>;
+    type Output = anyhow::Result<crate::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -66,7 +66,7 @@ where
                         return Poll::Pending;
                     }
                     Err(ClientHandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 ClientHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
@@ -78,7 +78,7 @@ where
                         return Poll::Pending;
                     }
                     Err(ClientHandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 ClientHandshakeFuture::Done => panic!("Future must not be polled after ready"),
@@ -96,15 +96,15 @@ enum ServerHandshakeFuture<F, S: Unpin> {
 pub(crate) fn new_server_handshake<'a, S>(
     acceptor: &'a TlsAcceptor,
     stream: S,
-) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
 where
     S: AsyncSocket,
 {
     BoxFuture::new(async move {
         let mut ctx = SslContext::new(SslProtocolSide::SERVER, SslConnectionType::STREAM)
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
         ctx.set_certificate(&acceptor.0.identity, &acceptor.0.certs)
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
         ServerHandshakeFuture::Initial(move |s| ctx.handshake(s), AsyncIoAsSyncIo::new(stream))
             .await
     })
@@ -118,7 +118,7 @@ where
     ) -> Result<SslStream<AsyncIoAsSyncIo<S>>, HandshakeError<AsyncIoAsSyncIo<S>>>,
     Self: Unpin,
 {
-    type Output = tls_api::Result<crate::TlsStream<S>>;
+    type Output = anyhow::Result<crate::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -133,7 +133,7 @@ where
                         return Poll::Pending;
                     }
                     Err(HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 ServerHandshakeFuture::MidHandshake(stream) => match stream.handshake() {
@@ -145,7 +145,7 @@ where
                         return Poll::Pending;
                     }
                     Err(HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 ServerHandshakeFuture::Done => panic!("Future must not be polled after ready"),

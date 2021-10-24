@@ -28,31 +28,31 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         let protocols: Vec<&str> = protocols
             .iter()
             .map(|p| str::from_utf8(p).map_err(|e| crate::Error::AlpnProtocolNotUtf8(e).into()))
-            .collect::<tls_api::Result<_>>()?;
+            .collect::<anyhow::Result<_>>()?;
         self.builder.request_alpns(&protocols);
         Ok(())
     }
 
-    fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         self.builder.danger_accept_invalid_hostnames(!verify);
         self.verify_hostname = verify;
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
-        let cert = native_tls::Certificate::from_der(cert).map_err(tls_api::Error::new)?;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
+        let cert = native_tls::Certificate::from_der(cert).map_err(anyhow::Error::new)?;
 
         self.builder.add_root_certificate(cert);
 
         Ok(())
     }
 
-    fn build(self) -> tls_api::Result<TlsConnector> {
-        let connector = self.builder.build().map_err(tls_api::Error::new)?;
+    fn build(self) -> anyhow::Result<TlsConnector> {
+        let connector = self.builder.build().map_err(anyhow::Error::new)?;
         Ok(TlsConnector {
             connector,
             verify_hostname: self.verify_hostname,
@@ -65,7 +65,7 @@ impl TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
@@ -93,7 +93,7 @@ impl tls_api::TlsConnector for TlsConnector {
         crate::info()
     }
 
-    fn builder() -> tls_api::Result<TlsConnectorBuilder> {
+    fn builder() -> anyhow::Result<TlsConnectorBuilder> {
         let builder = native_tls::TlsConnector::builder();
         Ok(TlsConnectorBuilder {
             builder,

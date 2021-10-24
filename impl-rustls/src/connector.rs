@@ -31,12 +31,12 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.config
     }
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.config.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
         Ok(())
     }
 
-    fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         if !verify {
             struct NoCertificateVerifier;
 
@@ -65,16 +65,16 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
         let cert = rustls::Certificate(cert.to_vec());
         self.config
             .root_store
             .add(&cert)
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
         Ok(())
     }
 
-    fn build(mut self) -> tls_api::Result<TlsConnector> {
+    fn build(mut self) -> anyhow::Result<TlsConnector> {
         if self.config.root_store.is_empty() {
             self.config
                 .root_store
@@ -91,12 +91,12 @@ impl TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
         let dns_name =
-            match DNSNameRef::try_from_ascii_str(domain).map_err(|e| tls_api::Error::new(e)) {
+            match DNSNameRef::try_from_ascii_str(domain).map_err(|e| anyhow::Error::new(e)) {
                 Ok(dns_name) => dns_name,
                 Err(e) => return BoxFuture::new(async { Err(e) }),
             };
@@ -127,7 +127,7 @@ impl tls_api::TlsConnector for TlsConnector {
         crate::info()
     }
 
-    fn builder() -> tls_api::Result<TlsConnectorBuilder> {
+    fn builder() -> anyhow::Result<TlsConnectorBuilder> {
         Ok(TlsConnectorBuilder {
             config: rustls::ClientConfig::new(),
             verify_hostname: true,

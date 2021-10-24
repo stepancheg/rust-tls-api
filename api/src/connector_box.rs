@@ -18,7 +18,7 @@ use crate::TlsStream;
 /// This can be obtained with [`TlsConnector::TYPE_DYN`].
 pub trait TlsConnectorType: fmt::Display + fmt::Debug + 'static {
     /// Constructor a builder dynamically.
-    fn builder(&self) -> crate::Result<TlsConnectorBuilderBox>;
+    fn builder(&self) -> anyhow::Result<TlsConnectorBuilderBox>;
 
     /// It this connector implemented?
     ///
@@ -51,7 +51,7 @@ impl<A: TlsConnector> fmt::Display for TlsConnectorTypeImpl<A> {
 }
 
 impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
-    fn builder(&self) -> crate::Result<TlsConnectorBuilderBox> {
+    fn builder(&self) -> anyhow::Result<TlsConnectorBuilderBox> {
         Ok(TlsConnectorBuilderBox(Box::new(C::builder()?)))
     }
 
@@ -73,13 +73,13 @@ impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
 trait TlsConnectorBuilderDyn: Send + 'static {
     fn type_dyn(&self) -> &'static dyn TlsConnectorType;
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()>;
 
-    fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()>;
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()>;
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()>;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()>;
 
-    fn build(self: Box<Self>) -> crate::Result<TlsConnectorBox>;
+    fn build(self: Box<Self>) -> anyhow::Result<TlsConnectorBox>;
 }
 
 impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
@@ -87,19 +87,19 @@ impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
         <C::Connector as TlsConnector>::TYPE_DYN
     }
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.set_alpn_protocols(protocols)
     }
 
-    fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()> {
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         self.set_verify_hostname(verify)
     }
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()> {
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
         self.add_root_certificate(cert)
     }
 
-    fn build(self: Box<Self>) -> crate::Result<TlsConnectorBox> {
+    fn build(self: Box<Self>) -> anyhow::Result<TlsConnectorBox> {
         let connector = (*self).build()?;
         Ok(TlsConnectorBox(Box::new(connector)))
     }
@@ -112,25 +112,25 @@ pub struct TlsConnectorBuilderBox(Box<dyn TlsConnectorBuilderDyn>);
 
 impl TlsConnectorBuilderBox {
     /// Build a connector.
-    pub fn build(self) -> crate::Result<TlsConnectorBox> {
+    pub fn build(self) -> anyhow::Result<TlsConnectorBox> {
         self.0.build()
     }
 
     /// Set ALPN-protocols to negotiate.
     ///
     /// This operations fails is not [`TlsConnector::SUPPORTS_ALPN`].
-    pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()> {
+    pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.0.set_alpn_protocols(protocols)
     }
 
     /// Should hostname verification be performed?
     /// Use carefully, it opens the door to MITM attacks.
-    pub fn set_verify_hostname(&mut self, verify: bool) -> crate::Result<()> {
+    pub fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         self.0.set_verify_hostname(verify)
     }
 
     /// Add trusted certificate (e. g. CA).
-    pub fn add_root_certificate(&mut self, cert: &[u8]) -> crate::Result<()> {
+    pub fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
         self.0.add_root_certificate(cert)
     }
 }
@@ -144,7 +144,7 @@ trait TlsConnectorDyn: Send + Sync + 'static {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>>;
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>>;
 }
 
 impl<C: TlsConnector> TlsConnectorDyn for C {
@@ -156,7 +156,7 @@ impl<C: TlsConnector> TlsConnectorDyn for C {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
         self.connect(domain, stream)
     }
 }
@@ -180,7 +180,7 @@ impl TlsConnectorBox {
         &'a self,
         domain: &'a str,
         stream: AsyncSocketBox,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
         self.0.connect(domain, stream)
     }
 
@@ -189,7 +189,7 @@ impl TlsConnectorBox {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStream>> {
+    ) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
         self.connect_dyn(domain, AsyncSocketBox::new(stream))
     }
 }

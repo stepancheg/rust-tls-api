@@ -55,7 +55,7 @@ where
         w.get_socket_ref()
     }
 
-    fn get_alpn_protocol(w: &Self::SyncWrapper) -> tls_api::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(w: &Self::SyncWrapper) -> anyhow::Result<Option<Vec<u8>>> {
         Ok(w.get_alpn_protocol().map(Vec::from))
     }
 }

@@ -26,7 +26,7 @@ impl<A: AsyncSocket> TlsStreamDyn for TlsStream<A> {
         crate::info()
     }
 
-    fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
         Err(crate::Error::Alpn.into())
     }
 

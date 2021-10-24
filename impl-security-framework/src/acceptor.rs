@@ -32,7 +32,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
     type Underlying = SecureTransportTlsAcceptorBuilder;
 
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
         Err(crate::Error::AlpnOnServer.into())
     }
 
@@ -40,7 +40,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    fn build(self) -> tls_api::Result<Self::Acceptor> {
+    fn build(self) -> anyhow::Result<Self::Acceptor> {
         Ok(TlsAcceptor(self.0))
     }
 }
@@ -49,11 +49,11 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 fn pkcs12_to_sf_objects(
     pkcs12: &[u8],
     passphrase: &str,
-) -> tls_api::Result<(SecIdentity, Vec<SecCertificate>)> {
+) -> anyhow::Result<(SecIdentity, Vec<SecCertificate>)> {
     let imported_identities = Pkcs12ImportOptions::new()
         .passphrase(passphrase)
         .import(pkcs12)
-        .map_err(tls_api::Error::new)?;
+        .map_err(anyhow::Error::new)?;
     let mut identities: Vec<(SecIdentity, Vec<SecCertificate>)> = imported_identities
         .into_iter()
         .flat_map(|i| {
@@ -74,7 +74,7 @@ impl TlsAcceptor {
     fn accept_impl<'a, S>(
         &'a self,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
@@ -109,11 +109,10 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> tls_api::Result<TlsAcceptorBuilder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<TlsAcceptorBuilder> {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            let (identity, certs) =
-                pkcs12_to_sf_objects(pkcs12, passphrase).map_err(tls_api::Error::new)?;
+            let (identity, certs) = pkcs12_to_sf_objects(pkcs12, passphrase)?;
             Ok(TlsAcceptorBuilder(SecureTransportTlsAcceptorBuilder {
                 identity,
                 certs,

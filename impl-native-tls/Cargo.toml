@@ -16,11 +16,11 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 
 [dependencies]
 native-tls = { version ="0.2", features = ["alpn"] }
+tokio      = { version = "1.2.0", features = [], optional = true }
+async-std  = { version = "1.9.0", features = ["attributes"], optional = true }
+anyhow     = "1.0.44"
 
 tls-api = { path = "../api", version = "=0.6.0-pre", default-features = false }
-
-tokio = { version = "1.2.0", features = [], optional = true }
-async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
 # this is needed until package-features is stabelized (issue #5364)
 tls-api-test = { path = "../api-test", version = "=0.6.0-pre", default-features = false }

@@ -43,7 +43,7 @@ impl<S: AsyncSocket> fmt::Debug for TlsStreamWithSocket<S> {
 }
 
 impl<S: AsyncSocket> TlsStreamDyn for TlsStreamWithSocket<S> {
-    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
 

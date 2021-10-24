@@ -22,20 +22,20 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.0
     }
 
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new(Error))
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
+        Err(anyhow::Error::new(Error))
     }
 
-    fn set_verify_hostname(&mut self, _verify: bool) -> tls_api::Result<()> {
-        Err(tls_api::Error::new(Error))
+    fn set_verify_hostname(&mut self, _verify: bool) -> anyhow::Result<()> {
+        Err(anyhow::Error::new(Error))
     }
 
-    fn add_root_certificate(&mut self, _cert: &[u8]) -> tls_api::Result<()> {
-        Err(tls_api::Error::new(Error))
+    fn add_root_certificate(&mut self, _cert: &[u8]) -> anyhow::Result<()> {
+        Err(anyhow::Error::new(Error))
     }
 
-    fn build(self) -> tls_api::Result<TlsConnector> {
-        Err(tls_api::Error::new(Error))
+    fn build(self) -> anyhow::Result<TlsConnector> {
+        Err(anyhow::Error::new(Error))
     }
 }
 
@@ -44,11 +44,11 @@ impl TlsConnector {
         &'a self,
         _domain: &'a str,
         _stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
-        async { Err(tls_api::Error::new(Error)) }
+        async { Err(anyhow::Error::new(Error)) }
     }
 }
 
@@ -69,8 +69,8 @@ impl tls_api::TlsConnector for TlsConnector {
         crate::info()
     }
 
-    fn builder() -> tls_api::Result<TlsConnectorBuilder> {
-        Err(tls_api::Error::new(Error))
+    fn builder() -> anyhow::Result<TlsConnectorBuilder> {
+        Err(anyhow::Error::new(Error))
     }
 
     spi_connector_common!();

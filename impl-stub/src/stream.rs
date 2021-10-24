@@ -25,7 +25,7 @@ impl<S: AsyncSocket> TlsStream<S> {
 }
 
 impl<S: AsyncSocket> TlsStreamDyn for TlsStream<S> {
-    fn get_alpn_protocol(&self) -> tls_api::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
         void::unreachable(self.0)
     }
 

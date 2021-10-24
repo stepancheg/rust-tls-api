@@ -28,7 +28,7 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
     /// This operation returns an error if the implemenation does not support ALPN.
     ///
     /// Whether ALPN is supported, can be queried using [`TlsAcceptor::SUPPORTS_ALPN`].
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> crate::Result<()>;
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()>;
 
     /// Get the underlying builder.
     ///
@@ -37,7 +37,7 @@ pub trait TlsAcceptorBuilder: Sized + Sync + Send + 'static {
     fn underlying_mut(&mut self) -> &mut Self::Underlying;
 
     /// Finish the acceptor construction.
-    fn build(self) -> crate::Result<Self::Acceptor>;
+    fn build(self) -> anyhow::Result<Self::Acceptor>;
 }
 
 /// A builder for server-side TLS connections.
@@ -102,7 +102,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     ///
     /// Note if this implementation does not support DER keys directly,
     /// `openssl` command is used to convert the certificate.
-    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> crate::Result<Self::Builder> {
+    fn builder_from_der_key(cert: &[u8], key: &[u8]) -> anyhow::Result<Self::Builder> {
         let _ = (cert, key);
         assert!(!Self::SUPPORTS_DER_KEYS);
 
@@ -119,7 +119,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     ///
     /// Note if this implementation does not support PKCS #12 keys directly,
     /// `openssl` command is used to convert the certificate.
-    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> crate::Result<Self::Builder> {
+    fn builder_from_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<Self::Builder> {
         let _ = (pkcs12, passphrase);
         assert!(!Self::SUPPORTS_PKCS12_KEYS);
 
@@ -141,7 +141,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     fn accept_with_socket<'a, S>(
         &'a self,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<TlsStreamWithSocket<S>>>
+    ) -> BoxFuture<'a, anyhow::Result<TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket + fmt::Debug + Unpin;
 
@@ -156,7 +156,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     fn accept_impl_tls_stream<'a, S>(
         &'a self,
         stream: S,
-    ) -> BoxFuture<'a, crate::Result<Self::TlsStream>>
+    ) -> BoxFuture<'a, anyhow::Result<Self::TlsStream>>
     where
         S: AsyncSocket;
 
@@ -169,7 +169,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// might be useful to obtain some TLS implementation-specific data.
     ///
     /// Practically, [`accept`](Self::accept) is usually enough.
-    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, crate::Result<TlsStream>>
+    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,
     {
@@ -184,7 +184,7 @@ macro_rules! spi_acceptor_common {
         fn accept_with_socket<'a, S>(
             &'a self,
             stream: S,
-        ) -> $crate::BoxFuture<'a, tls_api::Result<$crate::TlsStreamWithSocket<S>>>
+        ) -> $crate::BoxFuture<'a, anyhow::Result<$crate::TlsStreamWithSocket<S>>>
         where
             S: $crate::AsyncSocket,
         {
@@ -197,7 +197,7 @@ macro_rules! spi_acceptor_common {
         fn accept_impl_tls_stream<'a, S>(
             &'a self,
             stream: S,
-        ) -> tls_api::BoxFuture<'a, tls_api::Result<Self::TlsStream>>
+        ) -> tls_api::BoxFuture<'a, anyhow::Result<Self::TlsStream>>
         where
             S: AsyncSocket,
         {

@@ -32,7 +32,7 @@ impl TlsStream {
 }
 
 impl TlsStreamDyn for TlsStream {
-    fn get_alpn_protocol(&self) -> crate::Result<Option<Vec<u8>>> {
+    fn get_alpn_protocol(&self) -> anyhow::Result<Option<Vec<u8>>> {
         self.0.get_alpn_protocol()
     }
 

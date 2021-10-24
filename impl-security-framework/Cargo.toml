@@ -15,10 +15,10 @@ bench = false
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tokio = { version = "1.2.0", features = [], optional = true }
+tokio     = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
-
-void = "1.0.2"
+void      = "1.0.2"
+anyhow    = "1.0.44"
 
 tls-api = { path = "../api", version = "=0.6.0-pre", default-features = false }
 tls-api-stub = { path = "../impl-stub", version = "=0.6.0-pre", default-features = false }

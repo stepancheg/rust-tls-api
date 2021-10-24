@@ -29,7 +29,7 @@ need to be parameterized by these types, for example:
 
 ```
 async fn create_listener<C: tls_api::TlsAcceptor>()
-    -> tls_api::Result<tls_api::TlsStream<async_std::net::TcpStream>>
+    -> anyhow::Result<tls_api::TlsStream<async_std::net::TcpStream>>
 { ... }
 ```
 
@@ -39,7 +39,7 @@ These types are not sized. Could be used like this:
 
 ```
 async fn create_listener(acceptor: &tls_api::TlsAcceptorType)
-    -> tls_api::Result<tls_api::TslStreamBox>
+    -> anyhow::Result<tls_api::TslStreamBox>
 { ... }
 ```
 

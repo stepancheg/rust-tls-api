@@ -21,7 +21,7 @@
 //! # use tls_api::runtime::AsyncWriteExt;
 //! # use tls_api::runtime::AsyncReadExt;
 //!
-//! async fn download_rust_lang_org<C: TlsConnector>() -> tls_api::Result<Vec<u8>> {
+//! async fn download_rust_lang_org<C: TlsConnector>() -> anyhow::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
 //!     let mut  stream = C::builder()?.build()?.connect("rust-lang.org", stream).await?;
 //!     stream.write_all(b"GET / HTTP/1.1\r\nHost: rust-lang.org\r\n\r\n").await?;
@@ -42,7 +42,7 @@
 //! # use tls_api::runtime::AsyncWriteExt;
 //! # use tls_api::runtime::AsyncReadExt;
 //!
-//! async fn download_rust_lang_org(connector_type: &dyn TlsConnectorType) -> tls_api::Result<Vec<u8>> {
+//! async fn download_rust_lang_org(connector_type: &dyn TlsConnectorType) -> anyhow::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
 //!     let mut  stream = connector_type.builder()?.build()?.connect("rust-lang.org", stream).await?;
 //!     stream.write_all(b"GET / HTTP/1.1\r\nHost: rust-lang.org\r\n\r\n").await?;
@@ -80,8 +80,6 @@ pub use connector::TlsConnectorBuilder;
 pub use connector_box::TlsConnectorBox;
 pub use connector_box::TlsConnectorBuilderBox;
 pub use connector_box::TlsConnectorType;
-pub use error::Error;
-pub use error::Result;
 pub use future::BoxFuture;
 pub use info::ImplInfo;
 pub use socket::AsyncSocket;

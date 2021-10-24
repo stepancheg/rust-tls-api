@@ -12,7 +12,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Acceptor = TlsAcceptor;
     type Underlying = ();
 
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         let _ = protocols;
         Err(crate::Error::Alpn.into())
     }
@@ -21,7 +21,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    fn build(self) -> tls_api::Result<TlsAcceptor> {
+    fn build(self) -> anyhow::Result<TlsAcceptor> {
         Ok(TlsAcceptor(self.0))
     }
 }
@@ -32,7 +32,7 @@ impl TlsAcceptor {
     fn accept_impl<'a, S>(
         &'a self,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket + fmt::Debug + Unpin,
     {

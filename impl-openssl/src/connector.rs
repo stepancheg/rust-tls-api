@@ -30,34 +30,34 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     #[cfg(has_alpn)]
-    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.builder
             .set_alpn_protos(&encode_alpn_protos(protocols)?)
-            .map_err(tls_api::Error::new)
+            .map_err(anyhow::Error::new)
     }
 
     #[cfg(not(has_alpn))]
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> tls_api::Result<()> {
+    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
         Err(crate::Error::CompiledWithoutAlpn.into())
     }
 
-    fn set_verify_hostname(&mut self, verify: bool) -> tls_api::Result<()> {
+    fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
         self.verify_hostname = verify;
         Ok(())
     }
 
-    fn add_root_certificate(&mut self, cert: &[u8]) -> tls_api::Result<()> {
-        let cert = openssl::x509::X509::from_der(cert).map_err(tls_api::Error::new)?;
+    fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
+        let cert = openssl::x509::X509::from_der(cert).map_err(anyhow::Error::new)?;
 
         self.builder
             .cert_store_mut()
             .add_cert(cert)
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
 
         Ok(())
     }
 
-    fn build(self) -> tls_api::Result<TlsConnector> {
+    fn build(self) -> anyhow::Result<TlsConnector> {
         Ok(TlsConnector {
             connector: self.builder.build(),
             verify_hostname: self.verify_hostname,
@@ -76,13 +76,13 @@ impl TlsConnector {
         &'a self,
         domain: &'a str,
         stream: S,
-    ) -> impl Future<Output = tls_api::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
     where
         S: AsyncSocket,
     {
         let client_configuration = match self.connector.configure() {
             Ok(client_configuration) => client_configuration,
-            Err(e) => return BoxFuture::new(async { Err(tls_api::Error::new(e)) }),
+            Err(e) => return BoxFuture::new(async { Err(anyhow::Error::new(e)) }),
         };
         let client_configuration = client_configuration.verify_hostname(self.verify_hostname);
         BoxFuture::new(HandshakeFuture::Initial(
@@ -109,9 +109,9 @@ impl tls_api::TlsConnector for TlsConnector {
         crate::into()
     }
 
-    fn builder() -> tls_api::Result<TlsConnectorBuilder> {
+    fn builder() -> anyhow::Result<TlsConnectorBuilder> {
         let builder = openssl::ssl::SslConnector::builder(openssl::ssl::SslMethod::tls())
-            .map_err(tls_api::Error::new)?;
+            .map_err(anyhow::Error::new)?;
         Ok(TlsConnectorBuilder {
             builder,
             verify_hostname: true,

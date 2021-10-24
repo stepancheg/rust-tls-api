@@ -28,7 +28,7 @@ where
     >,
     Self: Unpin,
 {
-    type Output = tls_api::Result<crate::TlsStream<S>>;
+    type Output = anyhow::Result<crate::TlsStream<S>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         save_context(cx, || {
@@ -43,10 +43,10 @@ where
                         return Poll::Pending;
                     }
                     Err(openssl::ssl::HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e.into_error())))
+                        return Poll::Ready(Err(anyhow::Error::new(e.into_error())))
                     }
                     Err(openssl::ssl::HandshakeError::SetupFailure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 HandshakeFuture::MidHandshake(stream) => match stream.handshake() {
@@ -58,10 +58,10 @@ where
                         return Poll::Pending;
                     }
                     Err(openssl::ssl::HandshakeError::Failure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e.into_error())))
+                        return Poll::Ready(Err(anyhow::Error::new(e.into_error())))
                     }
                     Err(openssl::ssl::HandshakeError::SetupFailure(e)) => {
-                        return Poll::Ready(Err(tls_api::Error::new(e)))
+                        return Poll::Ready(Err(anyhow::Error::new(e)))
                     }
                 },
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),
