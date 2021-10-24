@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-test"
-version = "0.6.0-pre"
+version = "0.7-pre"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
@@ -15,7 +15,7 @@ bench = false
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-tls-api = { path = "../api", version = "=0.6.0-pre", default-features = false }
+tls-api = { path = "../api", version = "=0.7-pre", default-features = false }
 log        = "0.4"
 env_logger = "0.5"
 anyhow     = "1.0.44"
@@ -27,7 +27,7 @@ untrusted  = "0.6.*"
 tokio = { version = "1.2.0", features = ["net", "io-util", "rt", "rt-multi-thread"], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
-test-cert-gen = { path = "../test-cert-gen", version = "=0.6.0-pre", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", version = "=0.7-pre", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
