@@ -12,9 +12,6 @@
 
 #![deny(broken_intra_doc_links)]
 
-use std::error;
-use std::fmt;
-
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;
 pub use connector::TlsConnector;
@@ -28,20 +25,9 @@ mod stream;
 mod acceptor;
 mod connector;
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
+#[error("stub implementation")]
 struct Error;
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        "stub implementation"
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "stub implementation")
-    }
-}
 
 pub(crate) fn info() -> ImplInfo {
     ImplInfo {

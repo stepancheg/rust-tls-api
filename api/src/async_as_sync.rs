@@ -2,7 +2,6 @@
 //!
 //! Not to be used by regular users of the library.
 
-use std::error;
 use std::fmt;
 use std::io;
 use std::io::Read;
@@ -89,16 +88,9 @@ fn result_to_poll<T>(r: io::Result<T>) -> Poll<io::Result<T>> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
+#[error("should not return WouldBlock from async API: {}", _0)]
 struct ShouldNotReturnWouldBlockFromAsync(io::Error);
-
-impl error::Error for ShouldNotReturnWouldBlockFromAsync {}
-
-impl fmt::Display for ShouldNotReturnWouldBlockFromAsync {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "should not return WouldBlock from async API: {}", self.0)
-    }
-}
 
 /// Convert nonblocking API to sync result
 fn poll_to_result<T>(r: Poll<io::Result<T>>) -> io::Result<T> {

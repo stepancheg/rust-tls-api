@@ -1,20 +1,8 @@
-use std::error;
-use std::fmt;
-
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub(crate) enum Error {
     #[allow(dead_code)]
+    #[error("openssl is compiled without ALPN")]
     CompiledWithoutAlpn,
+    #[error("incorrect ALPN protocol name length")]
     AlpnProtocolLen,
 }
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::CompiledWithoutAlpn => write!(f, "openssl is compiled without ALPN"),
-            Error::AlpnProtocolLen => write!(f, "incorrect ALPN protocol name length"),
-        }
-    }
-}
-
-impl error::Error for Error {}

@@ -1,17 +1,5 @@
-use std::error;
-use std::fmt;
-
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub(crate) enum Error {
+    #[error("ALPN makes no sense for not-tls implementation")]
     Alpn,
 }
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::Alpn => write!(f, "ALPN makes no sense for not-tls implementation"),
-        }
-    }
-}
-
-impl error::Error for Error {}
