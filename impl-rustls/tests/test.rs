@@ -3,7 +3,7 @@ use std::io;
 #[test]
 fn connect_bad_hostname() {
     tls_api_test::connect_bad_hostname::<tls_api_rustls::TlsConnector, _>(|err| {
-        let err: Box<io::Error> = err.downcast().expect("io::Error");
+        let err: io::Error = err.downcast().expect("io::Error");
         let err: &rustls::TLSError = err
             .get_ref()
             .expect("cause")
