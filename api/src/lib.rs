@@ -67,7 +67,7 @@
 //!
 //! Currently the features are mutually exclusive.
 
-#![deny(broken_intra_doc_links)]
+#![deny(rustdoc::broken_intra_doc_links)]
 #![deny(missing_docs)]
 
 pub use acceptor::TlsAcceptor;

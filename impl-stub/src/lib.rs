@@ -10,7 +10,7 @@
 //! let no_connector: Option<TlsConnector> = None;
 //! ```
 
-#![deny(broken_intra_doc_links)]
+#![deny(rustdoc::broken_intra_doc_links)]
 
 pub use acceptor::TlsAcceptor;
 pub use acceptor::TlsAcceptorBuilder;

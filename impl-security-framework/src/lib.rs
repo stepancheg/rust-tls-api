@@ -4,7 +4,7 @@
 //! simply return error. So code depending on this crate can be typechecked
 //! without cargo target-specific setup and conditional compilation.
 
-#![deny(broken_intra_doc_links)]
+#![deny(rustdoc::broken_intra_doc_links)]
 #![cfg_attr(not(any(target_os = "macos", target_os = "ios")), allow(dead_code))]
 
 mod stream;
