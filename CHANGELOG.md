@@ -1,6 +1,8 @@
 # Changelog
 
-## [0.7] - Unreleased
+## [0.8] - Unreleased
+
+## [0.7.0] - 2021-10-26
 
 - [Upgrade to rustls 0.20](https://github.com/stepancheg/rust-tls-api/pull/39)
 
