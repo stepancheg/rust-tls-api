@@ -2,9 +2,14 @@ use std::fs;
 use std::process::Command;
 use std::process::Stdio;
 
+use tempfile::Builder as TempBuilder;
+
 /// Convert DER certificate to PKCS #12 using openssl command.
 pub(crate) fn der_to_pkcs12(cert: &[u8], key: &[u8]) -> anyhow::Result<(Vec<u8>, String)> {
-    let temp_dir = tempdir::TempDir::new("tls-api-der-to-pkcs12").unwrap();
+    let temp_dir = TempBuilder::new()
+        .prefix("tls-api-der-to-pkcs12")
+        .tempdir()
+        .unwrap();
 
     let cert_file = temp_dir.path().join("cert.pem");
     let pkcs12_file = temp_dir.path().join("cert.pkcs12");
@@ -50,7 +55,10 @@ pub(crate) fn der_to_pkcs12(cert: &[u8], key: &[u8]) -> anyhow::Result<(Vec<u8>,
 
 /// PKCS #12 certificate to DER using openssl command.
 pub(crate) fn pkcs12_to_der(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<(Vec<u8>, Vec<u8>)> {
-    let temp_dir = tempdir::TempDir::new("tls-api-der-to-pkcs12").unwrap();
+    let temp_dir = TempBuilder::new()
+        .prefix("tls-api-der-to-pkcs12")
+        .tempdir()
+        .unwrap();
 
     let cert_pem_file = temp_dir.path().join("cert.pem");
     let pkcs12_file = temp_dir.path().join("cert.pkcs12");
