@@ -10,6 +10,8 @@ use std::process::Stdio;
 use std::ptr;
 use std::sync::Once;
 
+use tempfile::Builder as TempBuilder;
+
 mod cert;
 
 pub use cert::pem_to_cert_key_pair;
@@ -54,7 +56,10 @@ pub struct Keys {
 }
 
 fn gen_root_ca() -> CertAndPrivateKey {
-    let temp_dir = tempdir::TempDir::new("rust-test-cert-gen-gen-root-ca").unwrap();
+    let temp_dir = TempBuilder::new()
+        .prefix("rust-test-cert-gen-gen-root-ca")
+        .tempdir()
+        .unwrap();
 
     let config = temp_dir.path().join("openssl.config");
     let keyfile = temp_dir.path().join("root_ca.key");
@@ -118,7 +123,7 @@ fn gen_root_ca() -> CertAndPrivateKey {
 fn gen_cert_for_domain(domain: &str, ca: &CertAndPrivateKey) -> CertAndPrivateKey {
     assert!(!domain.is_empty());
 
-    let temp_dir = tempdir::TempDir::new("pem-to-der").unwrap();
+    let temp_dir = TempBuilder::new().prefix("pem-to-der").tempdir().unwrap();
     let privkey_pem_path = temp_dir.path().join("privkey.pem");
     let csr = temp_dir.path().join("csr.pem");
     let ca_pem = temp_dir.path().join("ca.pem");
@@ -291,7 +296,10 @@ fn _pkcs12_to_pem(pkcs12: &Pkcs12, passin: &str) -> String {
 }
 
 fn pem_to_pkcs12(cert: &CertAndPrivateKey, pass: &str) -> Pkcs12 {
-    let temp_dir = tempdir::TempDir::new("pem-to-pkcs12").unwrap();
+    let temp_dir = TempBuilder::new()
+        .prefix("pem-to-pkcs12")
+        .tempdir()
+        .unwrap();
 
     let certfile = temp_dir.path().join("cert.pem");
     let keyfile = temp_dir.path().join("key.pem");
@@ -333,6 +341,8 @@ mod test {
     use std::sync::mpsc;
     use std::thread;
 
+    use tempfile::Builder as TempBuilder;
+
     #[test]
     fn test() {
         // just check it does something
@@ -341,7 +351,10 @@ mod test {
 
     #[test]
     fn verify() {
-        let temp_dir = tempdir::TempDir::new("t").unwrap();
+        let temp_dir = TempBuilder::new()
+            .prefix("t")
+            .tempdir()
+            .unwrap();
 
         let keys = gen_keys();
 
@@ -371,7 +384,10 @@ mod test {
     #[test]
     #[ignore] // TODO: hangs on CI
     fn client_server() {
-        let temp_dir = tempdir::TempDir::new("client_server").unwrap();
+        let temp_dir = TempBuilder::new()
+            .prefix("client_server")
+            .tempdir()
+            .unwrap();
 
         let keys = gen_keys();
 
