@@ -351,10 +351,7 @@ mod test {
 
     #[test]
     fn verify() {
-        let temp_dir = TempBuilder::new()
-            .prefix("t")
-            .tempdir()
-            .unwrap();
+        let temp_dir = TempBuilder::new().prefix("t").tempdir().unwrap();
 
         let keys = gen_keys();
 
