@@ -15,8 +15,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -106,8 +106,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -197,8 +197,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -270,8 +270,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -361,8 +361,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -452,8 +452,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -543,8 +543,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -616,8 +616,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -707,8 +707,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -798,8 +798,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -871,8 +871,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -962,8 +962,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1053,8 +1053,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1144,8 +1144,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1215,8 +1215,8 @@ jobs:
       - name: cargo cache
         uses: actions/cache@v2
         with:
-          path: "/.cargo/registry\n~/.cargo/git\n"
-          key: "${{ runner.os }}-cargo"
+          path: "~/.cargo/registry\n~/.cargo/git\n"
+          key: "${{ runner.os }}-cargo-2"
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install toolchain
@@ -1235,6 +1235,15 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: print version
+        run: cargo fmt --version
+        shell: bash
       - name: cargo fmt check
         run: cargo fmt -- --check
         shell: bash
@@ -1247,12 +1256,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: super-linter
-        uses: github/super-linter@v3
+        uses: github/super-linter@v4
         env:
           VALIDATE_ALL_CODEBASE: "false"
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           VALIDATE_JSCPD: "false"
+          VALIDATE_COPYPASTE_JSCPD: "false"
           VALIDATE_PROTOBUF: "false"
           VALIDATE_RUST_2015: "false"
           VALIDATE_RUST_2018: "false"
