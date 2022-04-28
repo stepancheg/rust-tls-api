@@ -2,6 +2,8 @@
 
 ## [0.8] - Unreleased
 
+- Use `tempfile` crate instead of `tempdir`
+
 ## [0.7.0] - 2021-10-26
 
 - [Upgrade to rustls 0.20](https://github.com/stepancheg/rust-tls-api/pull/39)
