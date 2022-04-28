@@ -2,6 +2,8 @@
 
 ## [0.9] - Unreleased
 
+- Drop support of older `openssl` versions which do not implement ALPN
+
 ## [0.8.0] - 2022-04-28
 
 - Use `tempfile` crate instead of `tempdir`
