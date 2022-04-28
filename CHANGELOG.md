@@ -1,6 +1,8 @@
 # Changelog
 
-## [0.8] - Unreleased
+## [0.9] - Unreleased
+
+## [0.8.0] - 2022-04-28
 
 - Use `tempfile` crate instead of `tempdir`
 
