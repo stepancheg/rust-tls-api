@@ -87,20 +87,17 @@ fn gen_root_ca() -> CertAndPrivateKey {
         .arg("req")
         .arg("-nodes")
         .arg("-x509")
-        .arg("-newkey")
-        .arg("rsa:2048")
+        .args(["-newkey", "rsa:2048"])
         .arg("-config")
         .arg(&config)
-        .arg("-extensions")
-        .arg("ext")
+        .args(["-extensions", "ext"])
         .arg("-subj")
         .arg(subj)
         .arg("-keyout")
         .arg(&keyfile)
         .arg("-out")
         .arg(&certfile)
-        .arg("-days")
-        .arg("1")
+        .args(["-days", "1"])
         // TODO: print on error
         // .stderr(Stdio::inherit())
         .output()
@@ -173,11 +170,10 @@ fn gen_cert_for_domain(domain: &str, ca: &CertAndPrivateKey) -> CertAndPrivateKe
         .arg("-sha256")
         .arg("-out")
         .arg(&csr)
-        .arg("-subj")
-        .arg(format!(
-            "/C=US/ST=Utah/L=Provo/O=ACME Service/CN={}",
-            domain
-        ))
+        .args([
+            "-subj",
+            &format!("/C=US/ST=Utah/L=Provo/O=ACME Service/CN={}", domain)
+        ])
         .arg("-config")
         .arg(&conf_path)
         .stderr(Stdio::inherit())
@@ -213,8 +209,7 @@ fn gen_cert_for_domain(domain: &str, ca: &CertAndPrivateKey) -> CertAndPrivateKe
         .arg(&conf2_path)
         .arg("-out")
         .arg(&cert_path)
-        .arg("-days")
-        .arg("1")
+        .args(["-days", "1"])
         .arg("-sha256")
         .output()
         .unwrap()
@@ -261,8 +256,7 @@ pub fn keys() -> &'static Keys {
 fn _pkcs12_to_pem(pkcs12: &Pkcs12, passin: &str) -> String {
     let mut command = Command::new("openssl")
         .arg("pkcs12")
-        .arg("-passin")
-        .arg(&format!("pass:{}", passin))
+        .args(["-passin", &format!("pass:{}", passin)])
         .arg("-nodes")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -309,8 +303,7 @@ fn pem_to_pkcs12(cert: &CertAndPrivateKey, pass: &str) -> Pkcs12 {
         .arg(&keyfile)
         .arg("-in")
         .arg(&certfile)
-        .arg("-password")
-        .arg(format!("pass:{}", pass))
+        .args(["-password", &format!("pass:{}", pass)])
         .output()
         .unwrap();
     assert!(pkcs12out.status.success());
