@@ -304,7 +304,7 @@ fn pem_to_pkcs12(cert: &CertAndPrivateKey, pass: &str) -> Pkcs12 {
     let pkcs12out = Command::new("openssl")
         .arg("pkcs12")
         .arg("-export")
-        .arg("-nodes")
+        .arg("-descert")
         .arg("-inkey")
         .arg(&keyfile)
         .arg("-in")
