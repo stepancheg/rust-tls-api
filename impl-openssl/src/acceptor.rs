@@ -8,7 +8,6 @@ use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
-use crate::HAS_ALPN;
 use std::future::Future;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
@@ -29,7 +28,6 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
         &mut self.0
     }
 
-    #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         let protocols = encode_alpn_protos(protocols)?;
         self.0
@@ -40,11 +38,6 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
                 }
             });
         Ok(())
-    }
-
-    #[cfg(not(has_alpn))]
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
-        Err(anyhow::Error::new(crate::Error::CompiledWithoutAlpn))
     }
 
     fn build(self) -> anyhow::Result<TlsAcceptor> {
@@ -84,7 +77,7 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     const IMPLEMENTED: bool = true;
-    const SUPPORTS_ALPN: bool = HAS_ALPN;
+    const SUPPORTS_ALPN: bool = true;
     const SUPPORTS_DER_KEYS: bool = true;
     const SUPPORTS_PKCS12_KEYS: bool = true;
 

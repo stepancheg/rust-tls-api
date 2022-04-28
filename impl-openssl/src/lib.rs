@@ -18,12 +18,6 @@ pub(crate) use stream::TlsStream;
 
 use tls_api::ImplInfo;
 
-// TODO: https://github.com/sfackler/rust-openssl/pull/646
-#[cfg(has_alpn)]
-pub(crate) const HAS_ALPN: bool = true;
-#[cfg(not(has_alpn))]
-pub(crate) const HAS_ALPN: bool = false;
-
 fn encode_alpn_protos(protos: &[&[u8]]) -> anyhow::Result<Vec<u8>> {
     let mut r = Vec::new();
     for proto in protos {

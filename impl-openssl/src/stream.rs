@@ -45,14 +45,8 @@ where
         w.get_ref()
     }
 
-    #[cfg(has_alpn)]
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> anyhow::Result<Option<Vec<u8>>> {
         Ok(w.ssl().selected_alpn_protocol().map(Vec::from))
-    }
-
-    #[cfg(not(has_alpn))]
-    fn get_alpn_protocols(_w: &Self::SyncWrapper) -> anyhow::Result<Option<Vec<u8>>> {
-        Ok(None)
     }
 
     fn impl_info() -> ImplInfo {

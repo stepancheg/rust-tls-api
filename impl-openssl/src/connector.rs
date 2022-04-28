@@ -7,7 +7,6 @@ use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
-use crate::HAS_ALPN;
 use std::future::Future;
 
 pub struct TlsConnectorBuilder {
@@ -29,16 +28,10 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
         &mut self.builder
     }
 
-    #[cfg(has_alpn)]
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.builder
             .set_alpn_protos(&encode_alpn_protos(protocols)?)
             .map_err(anyhow::Error::new)
-    }
-
-    #[cfg(not(has_alpn))]
-    fn set_alpn_protocols(&mut self, _protocols: &[&[u8]]) -> anyhow::Result<()> {
-        Err(crate::Error::CompiledWithoutAlpn.into())
     }
 
     fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()> {
@@ -103,7 +96,7 @@ impl tls_api::TlsConnector for TlsConnector {
     }
 
     const IMPLEMENTED: bool = true;
-    const SUPPORTS_ALPN: bool = HAS_ALPN;
+    const SUPPORTS_ALPN: bool = true;
 
     fn info() -> ImplInfo {
         crate::into()
