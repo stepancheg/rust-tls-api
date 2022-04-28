@@ -8,6 +8,7 @@ use tls_api::ImplInfo;
 
 use crate::encode_alpn_protos;
 use crate::handshake::HandshakeFuture;
+use anyhow::Context;
 use std::future::Future;
 
 pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
@@ -16,7 +17,7 @@ pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
 fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<ParsedPkcs12> {
     let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12)?;
-    Ok(pkcs12.parse(passphrase)?)
+    Ok(pkcs12.parse(passphrase).context("Parse passphrase")?)
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
