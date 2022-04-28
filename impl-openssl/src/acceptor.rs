@@ -15,8 +15,8 @@ pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
 fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<ParsedPkcs12> {
-    let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12).map_err(anyhow::Error::new)?;
-    pkcs12.parse(passphrase).map_err(anyhow::Error::new)
+    let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12)?;
+    Ok(pkcs12.parse(passphrase)?)
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
