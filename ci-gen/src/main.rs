@@ -11,7 +11,7 @@ use gh_actions_gen::ghwf::Env;
 use gh_actions_gen::ghwf::Job;
 use gh_actions_gen::ghwf::Step;
 use gh_actions_gen::rustfmt::rustfmt_check_job;
-use gh_actions_gen::super_mega_linter::super_linter_job;
+use gh_actions_gen::super_mega_linter::mega_linter_job;
 
 fn crates_list() -> Vec<String> {
     assert!(Path::new("./ci-gen").exists());
@@ -122,7 +122,7 @@ fn jobs() -> Vec<Job> {
     r.push(cargo_doc_job());
 
     r.push(rustfmt_check_job());
-    r.push(super_linter_job());
+    r.push(mega_linter_job());
 
     r
 }
