@@ -22,7 +22,14 @@ fn main() {
                 println!("cargo:rustc-cfg=has_alpn");
             }
         }
-        (Err(_), Err(_)) => panic!("tls-api-openssl: Unable to detect OpenSSL version"),
+        (Err(_), Err(_)) => {
+            eprintln!("Could not find OpenSSL version from openssl crate");
+            eprintln!("Env:");
+            for (k, v) in env::vars() {
+                eprintln!("  {:?} = {:?}", k, v);
+            }
+            panic!("tls-api-openssl: Unable to detect OpenSSL version")
+        }
     }
 
     tls_api_test::gen_tests_and_benches();
