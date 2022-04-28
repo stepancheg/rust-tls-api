@@ -7,18 +7,17 @@ use std::io::Read;
 use std::io::Write;
 use std::process::Command;
 use std::process::Stdio;
-use std::ptr;
-use std::sync::Once;
 
 use tempfile::Builder as TempBuilder;
-
-mod cert;
 
 pub use cert::pem_to_cert_key_pair;
 pub use cert::Cert;
 pub use cert::Pkcs12;
 pub use cert::Pkcs12AndPassword;
 pub use cert::PrivateKey;
+use once_cell::sync::Lazy;
+
+mod cert;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CertAndPrivateKey {
@@ -255,13 +254,8 @@ pub fn gen_keys() -> Keys {
 
 /// Generate keys
 pub fn keys() -> &'static Keys {
-    static INIT: Once = Once::new();
-    static mut KEYS: *mut Keys = ptr::null_mut();
-
-    INIT.call_once(|| unsafe {
-        KEYS = Box::into_raw(Box::new(gen_keys()));
-    });
-    unsafe { &*KEYS }
+    static KEYS: Lazy<Keys> = Lazy::new(|| gen_keys());
+    &KEYS
 }
 
 fn _pkcs12_to_pem(pkcs12: &Pkcs12, passin: &str) -> String {
