@@ -16,11 +16,8 @@ bench = false
 travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
 
 [dependencies]
-log        = "0.4"
 pem        = "0.8.3"
-webpki     = "0.22.0"
 tempfile   = "3.3.0"
-void       = "1.0.2"
 anyhow     = "1.0.44"
 thiserror  = "1.0.30"
 
