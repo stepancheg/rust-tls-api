@@ -28,7 +28,7 @@ tls-api-stub = { path = "../impl-stub", version = "=0.10.0-pre", default-feature
 tls-api-test = { path = "../api-test", version = "=0.10.0-pre", default-features = false }
 
 [target."cfg(any(target_os = \"macos\", target_os = \"ios\"))".dependencies]
-security-framework = { version = "2.0.0", features = ["alpn"] }
+security-framework = { version = "2.9.2", features = ["alpn"] }
 
 [features]
 default = ["runtime-tokio"]
