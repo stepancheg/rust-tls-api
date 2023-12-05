@@ -3,6 +3,7 @@
 ## [0.9] - Unreleased
 
 - Drop support of older `openssl` versions which do not implement ALPN
+- [Remove unused dependency](https://github.com/stepancheg/rust-tls-api/pull/44) from `tls_api` crate
 
 ## [0.8.0] - 2022-04-28
 
