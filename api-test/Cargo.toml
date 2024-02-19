@@ -17,7 +17,7 @@ travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch
 [dependencies]
 tls-api = { path = "../api", version = "=0.10.0-pre", default-features = false }
 log        = "0.4"
-env_logger = "0.5"
+env_logger = "0.11.2"
 anyhow     = "1.0.44"
 
 pem        = "0.8.3"
