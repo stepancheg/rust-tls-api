@@ -69,7 +69,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn add_root_certificate(&mut self, cert: &[u8]) -> anyhow::Result<()> {
-        let cert = rustls::Certificate(cert.to_vec());
+        let cert = rustls::pki_types::CertificateDer::from(cert);
         self.root_store.add(&cert).map_err(anyhow::Error::new)?;
         Ok(())
     }
@@ -106,7 +106,7 @@ impl TlsConnector {
     where
         S: AsyncSocket,
     {
-        let dns_name = rustls::ServerName::try_from(domain);
+        let dns_name = rustls::pki_types::ServerName::try_from(domain);
         let dns_name = match dns_name.map_err(|_| anyhow::Error::new(webpki::InvalidDnsNameError)) {
             Ok(dns_name) => dns_name,
             Err(e) => return BoxFuture::new(async { Err(e) }),
@@ -145,13 +145,7 @@ impl tls_api::TlsConnector for TlsConnector {
 
     fn builder() -> anyhow::Result<TlsConnectorBuilder> {
         let mut roots = rustls::RootCertStore::empty();
-        roots.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-            rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-                ta.subject.as_ref(),
-                ta.subject_public_key_info.as_ref(),
-                ta.name_constraints.as_ref().map(|x| x.as_ref()),
-            )
-        }));
+        roots.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
         let config = rustls::ClientConfig::builder()
             .with_safe_defaults()
             .with_root_certificates(roots)
