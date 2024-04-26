@@ -11,6 +11,8 @@ use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi::save_context;
 use tls_api::AsyncSocket;
 
+use crate::stream::OpenSSLStream;
+
 pub(crate) enum HandshakeFuture<F, S: Unpin> {
     Initial(F, AsyncIoAsSyncIo<S>),
     MidHandshake(openssl::ssl::MidHandshakeSslStream<AsyncIoAsSyncIo<S>>),
@@ -36,7 +38,7 @@ where
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::Initial(f, stream) => match f(stream) {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
+                        return Poll::Ready(Ok(crate::TlsStream::new(OpenSSLStream(stream))));
                     }
                     Err(openssl::ssl::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);
@@ -51,7 +53,7 @@ where
                 },
                 HandshakeFuture::MidHandshake(stream) => match stream.handshake() {
                     Ok(stream) => {
-                        return Poll::Ready(Ok(crate::TlsStream::new(stream)));
+                        return Poll::Ready(Ok(crate::TlsStream::new(OpenSSLStream(stream))));
                     }
                     Err(openssl::ssl::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);

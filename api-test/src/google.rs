@@ -31,7 +31,18 @@ async fn test_google_impl<C: TlsConnector>() {
 
     t!(tls_stream.write_all(b"GET / HTTP/1.0\r\n\r\n").await);
     let mut result = vec![];
-    t!(tls_stream.read_to_end(&mut result).await);
+    let res = tls_stream.read_to_end(&mut result).await;
+
+    // Google will not send close_notify and just close the connection.
+    // This means that they are not confirming to TLS exactly, that connections to google.com
+    // are vulnerable to truncation attacks and that we need to suppress error about this here.
+    match res {
+        Ok(_) => {}
+        Err(e)
+            if e.to_string()
+                .contains("peer closed connection without sending TLS close_notify") => {}
+        Err(e) => panic!("{}", e),
+    }
 
     println!("{}", String::from_utf8_lossy(&result));
     assert!(

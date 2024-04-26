@@ -73,6 +73,7 @@ where
             assert_eq!(&buf, b"hello");
 
             t!(socket.write_all(b"world").await);
+            t!(socket.shutdown().await);
         };
         block_on(f);
     });

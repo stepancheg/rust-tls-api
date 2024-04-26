@@ -7,6 +7,7 @@ use std::io::IoSlice;
 use std::io::IoSliceMut;
 use std::io::Read;
 use std::io::Write;
+use tls_api::async_as_sync::WriteShutdown;
 
 pub enum RustlsSessionRef<'a> {
     Client(&'a ClientConnection),
@@ -99,6 +100,17 @@ impl<S: Read + Write> Write for RustlsStream<S> {
             RustlsStream::Server(s) => s.write_fmt(fmt),
             RustlsStream::Client(s) => s.write_fmt(fmt),
         }
+    }
+}
+
+impl<S: Read + Write> WriteShutdown for RustlsStream<S> {
+    fn shutdown(&mut self) -> Result<(), io::Error> {
+        match self {
+            RustlsStream::Server(s) => s.conn.send_close_notify(),
+            RustlsStream::Client(s) => s.conn.send_close_notify(),
+        }
+        self.flush()?;
+        Ok(())
     }
 }
 
