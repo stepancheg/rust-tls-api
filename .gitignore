@@ -7,5 +7,7 @@ Cargo.lock
 
 **/*.iml
 .idea
+.code
 
 .*.swp
+.direnv/
