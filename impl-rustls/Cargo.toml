@@ -17,7 +17,7 @@ travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "
 [dependencies]
 rustls       = { version = "0.20.0", features = ["dangerous_configuration"] }
 webpki       = "0.22.0"
-webpki-roots = "0.22.0"
+webpki-roots = "0.26.1"
 tokio        = { version = "1.2.0", features = [], optional = true }
 async-std    = { version = "1.9.0", features = ["attributes"], optional = true }
 anyhow       = "1.0.44"

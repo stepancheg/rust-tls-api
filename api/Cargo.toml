@@ -16,7 +16,7 @@ bench = false
 travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "master" }
 
 [dependencies]
-pem        = "0.8.3"
+pem = "3.0.4"
 tempfile   = "3.3.0"
 anyhow     = "1.0.44"
 thiserror  = "1.0.30"

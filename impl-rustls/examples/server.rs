@@ -12,7 +12,7 @@ use test_cert_gen::pem_to_cert_key_pair;
 use tls_api::runtime::AsyncWriteExt;
 
 async fn run() {
-    let (cert, key) = pem_to_cert_key_pair(fs::read_to_string("server.pem").unwrap().as_bytes());
+    let (cert, key) = pem_to_cert_key_pair(fs::read_to_string("server.pem").unwrap().as_bytes()).unwrap();
 
     let builder =
         tls_api_rustls_2::TlsAcceptor::builder_from_der_key(cert.get_der(), key.get_der()).unwrap();
