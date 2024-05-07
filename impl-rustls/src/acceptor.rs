@@ -85,7 +85,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
             .with_no_client_auth()
             .with_single_cert(
                 vec![cert],
-                rustls::pki_types::PrivateKeyDer::try_from(key.to_vec()).map_err(|x| anyhow::anyhow!(x))?
+                rustls::pki_types::PrivateKeyDer::try_from(key.to_vec())
+                    .map_err(|x| anyhow::anyhow!(x))?,
             )
             .map_err(anyhow::Error::new)?;
         Ok(TlsAcceptorBuilder(config))

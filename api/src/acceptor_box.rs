@@ -198,10 +198,7 @@ impl TlsAcceptorBox {
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
     /// and the stream is ready to send and receive.
-    pub fn accept<S: AsyncSocket>(
-        &self,
-        socket: S,
-    ) -> BoxFuture<'_, anyhow::Result<TlsStream>> {
+    pub fn accept<S: AsyncSocket>(&self, socket: S) -> BoxFuture<'_, anyhow::Result<TlsStream>> {
         self.0.accept(AsyncSocketBox::new(socket))
     }
 }

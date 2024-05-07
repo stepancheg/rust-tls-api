@@ -10,7 +10,7 @@ fn connect_bad_hostname() {
             .downcast_ref()
             .expect("rustls::TLSError");
         match err {
-            rustls::Error::InvalidCertificate(rustls::CertificateError::NotValidForName) => {},
+            rustls::Error::InvalidCertificate(rustls::CertificateError::NotValidForName) => {}
             err => panic!("wrong error: {:?}", err),
         }
     });
@@ -23,8 +23,10 @@ fn connect_bad_hostname_ignored() {
 
 #[test]
 fn client_server_der() {
-    tls_api_test::test_client_server_der::<tls_api_rustls_2::TlsConnector, tls_api_rustls_2::TlsAcceptor>(
-    );
+    tls_api_test::test_client_server_der::<
+        tls_api_rustls_2::TlsConnector,
+        tls_api_rustls_2::TlsAcceptor,
+    >();
 }
 
 #[test]

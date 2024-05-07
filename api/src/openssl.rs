@@ -18,7 +18,6 @@ pub(crate) fn der_to_pkcs12(cert: &[u8], key: &[u8]) -> anyhow::Result<(Vec<u8>,
 
     let pem_data = pem::encode_many(&[
         pem::Pem::new("CERTIFICATE", cert.to_vec()),
-
         // Technically it can be non-RSA PRIVATE KEY
         pem::Pem::new("RSA PRIVATE KEY", key.to_vec()),
     ]);
