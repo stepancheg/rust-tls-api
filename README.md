@@ -1,5 +1,7 @@
 # One TLS API to rule them all
 
+*This is a fork of [tls-api](https://crates.io/crates/tls-api) with updated dependencies.*
+
 Supports:
 * **tokio** and **async-std**
 * **rustls**, **native-tls**, **openssl**, **security-framework**

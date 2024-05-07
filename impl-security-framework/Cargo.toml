@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-security-framework-2"
-version = "0.10.0-pre"
+version = "0.11.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
 description = "TLS API implementation over rustls crate"
 license = "MIT/Apache-2.0"
@@ -21,11 +21,11 @@ void      = "1.0.2"
 anyhow    = "1.0.44"
 thiserror = "1.0.30"
 
-tls-api = { path = "../api", package = "tls-api-2", version = "=0.10.0-pre", default-features = false }
-tls-api-stub = { path = "../impl-stub", package = "tls-api-stub-2", version = "=0.10.0-pre", default-features = false }
+tls-api = { path = "../api", package = "tls-api-2", version = "=0.11.0", default-features = false }
+tls-api-stub = { path = "../impl-stub", package = "tls-api-stub-2", version = "=0.11.0", default-features = false }
 
 # this is needed until package-features is stabelized (issue #5364)
-tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.10.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.11.0", default-features = false }
 
 [target."cfg(any(target_os = \"macos\", target_os = \"ios\"))".dependencies]
 security-framework = { version = "2.9.2", features = ["alpn"] }
@@ -46,8 +46,8 @@ runtime-tokio = [
 ]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.10.0-pre", default-features = false }
-test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen-2", version = "=0.10.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.11.0", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen-2", version = "=0.11.0", default-features = false }
 
 [build-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.10.0-pre", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.11.0", default-features = false }

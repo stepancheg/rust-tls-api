@@ -1,6 +1,6 @@
 [package]
 name = "tls-api-2"
-version = "0.10.0-pre"
+version = "0.11.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
