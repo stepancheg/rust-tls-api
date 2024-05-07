@@ -1,10 +1,10 @@
 [package]
-name = "tls-api"
+name = "tls-api-2"
 version = "0.10.0-pre"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
 description = "TLS API without implementation"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/stepancheg/rust-tls-api/"
+repository = "https://github.com/edgedb/rust-tls-api/"
 readme = "../README.md"
 keywords = ["tls"]
 edition = "2018"
@@ -13,7 +13,7 @@ edition = "2018"
 bench = false
 
 [badges]
-travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
+travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "master" }
 
 [dependencies]
 pem        = "0.8.3"

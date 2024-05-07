@@ -15,7 +15,7 @@ async fn run() {
     let (cert, key) = pem_to_cert_key_pair(fs::read_to_string("server.pem").unwrap().as_bytes());
 
     let builder =
-        tls_api_rustls::TlsAcceptor::builder_from_der_key(cert.get_der(), key.get_der()).unwrap();
+        tls_api_rustls_2::TlsAcceptor::builder_from_der_key(cert.get_der(), key.get_der()).unwrap();
     let acceptor = builder.build().unwrap();
 
     #[allow(unused_mut)]

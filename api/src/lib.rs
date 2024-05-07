@@ -15,11 +15,11 @@
 //!
 //! ```
 //! # { #![cfg(feature = "runtime-tokio")]
-//! use tls_api::{TlsConnector, TlsConnectorBuilder};
+//! use tls_api_2::{TlsConnector, TlsConnectorBuilder};
 //! // or async_std::net::TcpStream;
 //! use tokio::net::TcpStream;
-//! # use tls_api::runtime::AsyncWriteExt;
-//! # use tls_api::runtime::AsyncReadExt;
+//! # use tls_api_2::runtime::AsyncWriteExt;
+//! # use tls_api_2::runtime::AsyncReadExt;
 //!
 //! async fn download_rust_lang_org<C: TlsConnector>() -> anyhow::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
@@ -36,11 +36,11 @@
 //!
 //! ```
 //! # { #![cfg(feature = "runtime-tokio")]
-//! use tls_api::TlsConnectorType;
+//! use tls_api_2::TlsConnectorType;
 //! // or async_std::net::TcpStream;
 //! use tokio::net::TcpStream;
-//! # use tls_api::runtime::AsyncWriteExt;
-//! # use tls_api::runtime::AsyncReadExt;
+//! # use tls_api_2::runtime::AsyncWriteExt;
+//! # use tls_api_2::runtime::AsyncReadExt;
 //!
 //! async fn download_rust_lang_org(connector_type: &dyn TlsConnectorType) -> anyhow::Result<Vec<u8>> {
 //!     let stream = TcpStream::connect(("rust-lang.org", 443)).await?;
@@ -54,7 +54,7 @@
 //! ```
 //!
 //! Have a look at working example invoking all implementation
-//! [on GitHub](https://github.com/stepancheg/rust-tls-api/blob/master/examples/examples/download-rust-lang-org.rs#L66).
+//! [on GitHub](https://github.com/edgedb/rust-tls-api/blob/master/examples/examples/download-rust-lang-org.rs#L66).
 //!
 //! There are also two fake implementations:
 //! * `tls-api-stub` crate which returns an error on any operations, useful to check code compiles

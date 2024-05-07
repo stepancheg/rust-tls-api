@@ -5,7 +5,7 @@
 //! Can be useful when you need a type parameter of type e. g. `TlsConnector`:
 //!
 //! ```
-//! use tls_api_stub::TlsConnector;
+//! use tls_api_stub_2::TlsConnector;
 //!
 //! let no_connector: Option<TlsConnector> = None;
 //! ```

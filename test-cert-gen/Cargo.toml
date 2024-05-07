@@ -1,5 +1,5 @@
 [package]
-name = "test-cert-gen"
+name = "test-cert-gen-2"
 version = "0.10.0-pre"
 authors = ["Stiopa Koltsov <stepan.koltsov@gmail.com>"]
 edition = "2018"
