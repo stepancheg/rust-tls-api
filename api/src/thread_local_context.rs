@@ -3,7 +3,7 @@ use std::ptr;
 use std::task::Context;
 
 thread_local! {
-    pub static CONTEXT: Cell<*mut ()> = Cell::new(ptr::null_mut());
+    pub static CONTEXT: Cell<*mut ()> = const { Cell::new(ptr::null_mut()) };
 }
 
 struct RestoreOnDrop(*mut ());

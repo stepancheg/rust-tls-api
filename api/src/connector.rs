@@ -106,10 +106,10 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Connect using default settings.
     ///
     /// Shortcut.
-    fn connect_default<'a, S>(
-        domain: &'a str,
+    fn connect_default<S>(
+        domain: &str,
         stream: S,
-    ) -> BoxFuture<'a, anyhow::Result<TlsStream>>
+    ) -> BoxFuture<'_, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket,
     {

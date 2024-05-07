@@ -37,7 +37,7 @@ impl Cert {
             })
             .collect();
         if certs.len() == 1 {
-            return certs.swap_remove(0);
+            certs.swap_remove(0)
         } else if certs.len() > 1 {
             panic!("PEM file contains {} certificates", certs.len());
         } else if count != 0 {
@@ -100,7 +100,7 @@ impl PrivateKey {
             })
             .collect();
         if keys.len() == 1 {
-            return keys.swap_remove(0);
+            keys.swap_remove(0)
         } else if keys.len() > 1 {
             panic!("PEM file contains {} private keys", keys.len());
         } else if count != 0 {

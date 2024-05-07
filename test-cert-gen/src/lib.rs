@@ -249,7 +249,7 @@ pub fn gen_keys() -> Keys {
 
 /// Generate keys
 pub fn keys() -> &'static Keys {
-    static KEYS: Lazy<Keys> = Lazy::new(|| gen_keys());
+    static KEYS: Lazy<Keys> = Lazy::new(gen_keys);
     &KEYS
 }
 
@@ -346,7 +346,7 @@ mod test {
         let server_pem = temp_dir.path().join("server.pem");
 
         fs::write(&ca_pem, keys.client.ca.to_pem()).unwrap();
-        fs::write(&server_pem, &keys.server.cert_and_key.to_pem_incorrect()).unwrap();
+        fs::write(&server_pem, keys.server.cert_and_key.to_pem_incorrect()).unwrap();
 
         // error is, what does it mean?
         // ```
@@ -378,7 +378,7 @@ mod test {
         let client = temp_dir.path().join("client");
         let server = temp_dir.path().join("server.pem");
 
-        fs::write(&client, keys.client.ca.get_der()).unwrap();
+        fs::write(client, keys.client.ca.get_der()).unwrap();
         fs::write(&server, keys.server.cert_and_key.to_pem_incorrect()).unwrap();
 
         let port = 1234;

@@ -71,8 +71,6 @@ impl<C: TlsConnector> TlsConnectorType for TlsConnectorTypeImpl<C> {
 // Connector builder.
 
 trait TlsConnectorBuilderDyn: Send + 'static {
-    fn type_dyn(&self) -> &'static dyn TlsConnectorType;
-
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()>;
 
     fn set_verify_hostname(&mut self, verify: bool) -> anyhow::Result<()>;
@@ -83,10 +81,6 @@ trait TlsConnectorBuilderDyn: Send + 'static {
 }
 
 impl<C: TlsConnectorBuilder> TlsConnectorBuilderDyn for C {
-    fn type_dyn(&self) -> &'static dyn TlsConnectorType {
-        <C::Connector as TlsConnector>::TYPE_DYN
-    }
-
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
         self.set_alpn_protocols(protocols)
     }
@@ -138,8 +132,6 @@ impl TlsConnectorBuilderBox {
 // Connector.
 
 trait TlsConnectorDyn: Send + Sync + 'static {
-    fn type_dyn(&self) -> &'static dyn TlsConnectorType;
-
     fn connect<'a>(
         &'a self,
         domain: &'a str,
@@ -148,10 +140,6 @@ trait TlsConnectorDyn: Send + Sync + 'static {
 }
 
 impl<C: TlsConnector> TlsConnectorDyn for C {
-    fn type_dyn(&self) -> &'static dyn TlsConnectorType {
-        C::TYPE_DYN
-    }
-
     fn connect<'a>(
         &'a self,
         domain: &'a str,
