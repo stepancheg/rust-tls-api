@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
 use std::sync::Arc;
 
-use rustls::crypto::aws_lc_rs;
 use rustls::crypto::verify_tls12_signature;
 use rustls::crypto::verify_tls13_signature;
 use rustls::crypto::WebPkiSupportedAlgorithms;
@@ -87,7 +86,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             }
 
             let no_cert_verifier = NoCertificateServerVerifier {
-                supported: aws_lc_rs::default_provider().signature_verification_algorithms,
+                supported: rustls::crypto::CryptoProvider::get_default().unwrap().signature_verification_algorithms,
             };
 
             self.config
