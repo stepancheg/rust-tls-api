@@ -4,12 +4,11 @@
 //!
 //! Probably you don't need this crate outside of `rust-tls-api` repository.
 
-#![cfg_attr(rustc_nightly, feature(test))]
+#![feature(test)]
 
 #[macro_use]
 extern crate log;
 
-#[cfg(rustc_nightly)]
 extern crate test;
 
 use std::any;
@@ -35,9 +34,6 @@ pub use version::test_version;
 
 mod gen;
 pub use gen::gen_tests_and_benches;
-
-mod gen_rustc_nightly;
-pub(crate) use gen_rustc_nightly::gen_rustc_nightly;
 
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBox;

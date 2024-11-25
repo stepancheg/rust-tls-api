@@ -91,6 +91,4 @@ pub fn gen_tests_and_benches() {
     let g = format!("// {}generated\n\n{}", "@", g);
 
     fs::write(format!("{}/benches_generated.rs", out_dir), g).unwrap();
-
-    crate::gen_rustc_nightly();
 }
