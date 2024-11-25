@@ -1,5 +1,5 @@
 [package]
-name = "tls-api-stub-2"
+name = "tls-api-stub"
 version = "0.11.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
 description = "TLS API implementation that returns error on any operation"
@@ -21,10 +21,10 @@ async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 anyhow    = "1.0.44"
 thiserror = "2"
 
-tls-api = { path = "../api", package = "tls-api-2", version = "=0.11.0", default-features = false }
+tls-api = { path = "../api", package = "tls-api", version = "=0.11.0", default-features = false }
 
 # this is needed until package-features is stabelized (issue #5364)
-tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.11.0", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
@@ -32,4 +32,4 @@ runtime-async-std = ["tokio", "tls-api/runtime-async-std", "tls-api-test/runtime
 runtime-tokio = ["async-std", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test-2", version = "=0.11.0", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }

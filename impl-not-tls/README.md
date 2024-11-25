@@ -1,4 +1,4 @@
-# tls-api-not-tls-2
+# tls-api-not-tls
 
 *This is a fork of [tls-api-not-tls](https://crates.io/crates/tls-api-not-tls) with updated dependencies.*
 

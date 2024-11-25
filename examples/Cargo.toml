@@ -13,14 +13,14 @@ publish = false
 edition = "2018"
 
 [dependencies]
-tls-api = { path = "../api", package = "tls-api-2", default-features = false }
+tls-api = { path = "../api", package = "tls-api", default-features = false }
 tokio = { version = "1.2.0", features = ["full"], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
-tls-api-native-tls = { path = "../impl-native-tls", package = "tls-api-native-tls-2", default-features = false }
-tls-api-rustls = { path = "../impl-rustls", package = "tls-api-rustls-2", default-features = false }
-tls-api-security-framework = { path = "../impl-security-framework", package = "tls-api-security-framework-2", default-features = false }
-tls-api-openssl = { path = "../impl-openssl", package = "tls-api-openssl-2", default-features = false }
+tls-api-native-tls = { path = "../impl-native-tls", package = "tls-api-native-tls", default-features = false }
+tls-api-rustls = { path = "../impl-rustls", package = "tls-api-rustls", default-features = false }
+tls-api-security-framework = { path = "../impl-security-framework", package = "tls-api-security-framework", default-features = false }
+tls-api-openssl = { path = "../impl-openssl", package = "tls-api-openssl", default-features = false }
 
 [features]
 default = ["runtime-tokio"]

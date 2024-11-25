@@ -15,7 +15,7 @@ async fn run() {
     let socket = TcpStream::connect(("127.0.0.1", 4433)).await.unwrap();
     println!("TCP connected");
 
-    let mut builder = tls_api_native_tls_2::TlsConnector::builder().unwrap();
+    let mut builder = tls_api_native_tls::TlsConnector::builder().unwrap();
     builder
         .add_root_certificate(Cert::from_der(fs::read("ca.der").unwrap()).get_der())
         .unwrap();

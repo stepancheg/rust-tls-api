@@ -1,4 +1,4 @@
-# tls-api-test-2
+# tls-api-test
 
 *This is a fork of [tls-api-test](https://crates.io/crates/tls-api-test) with updated dependencies.*
 

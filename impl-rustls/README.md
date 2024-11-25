@@ -1,4 +1,4 @@
-# tls-api-rustls-2
+# tls-api-rustls
 
 *This is a fork of [tls-api-rustls](https://crates.io/crates/tls-api-rustls) with updated dependencies.*
 

@@ -15,12 +15,12 @@ runtime-async-std = ["tls-api-test/runtime-async-std", "tls-api-openssl/runtime-
 runtime-tokio = ["tls-api-test/runtime-tokio", "tls-api-openssl/runtime-tokio", "tls-api-rustls/runtime-tokio", "tls-api-native-tls/runtime-tokio"]
 
 [dependencies]
-tls-api                    = { path = "../api", package = "tls-api-2", default-features = false }
-tls-api-test               = { path = "../api-test", package = "tls-api-test-2", default-features = false }
-tls-api-openssl            = { path = "../impl-openssl", package = "tls-api-openssl-2", default-features = false }
-tls-api-rustls             = { path = "../impl-rustls", package = "tls-api-rustls-2", default-features = false }
-tls-api-native-tls         = { path = "../impl-native-tls", package = "tls-api-native-tls-2", default-features = false }
-tls-api-security-framework = { path = "../impl-security-framework", package = "tls-api-security-framework-2", default-features = false }
-test-cert-gen              = { path = "../test-cert-gen", package = "test-cert-gen-2", default-features = false }
+tls-api                    = { path = "../api", package = "tls-api", default-features = false }
+tls-api-test               = { path = "../api-test", package = "tls-api-test", default-features = false }
+tls-api-openssl            = { path = "../impl-openssl", package = "tls-api-openssl", default-features = false }
+tls-api-rustls             = { path = "../impl-rustls", package = "tls-api-rustls", default-features = false }
+tls-api-native-tls         = { path = "../impl-native-tls", package = "tls-api-native-tls", default-features = false }
+tls-api-security-framework = { path = "../impl-security-framework", package = "tls-api-security-framework", default-features = false }
+test-cert-gen              = { path = "../test-cert-gen", package = "test-cert-gen", default-features = false }
 
 rustls = { version = "0.23.5", default-features = false, features = ["ring", "tls12"] }

@@ -1,4 +1,4 @@
-## tls-api-stub-2
+## tls-api-stub
 
 *This is a fork of [tls-api-stub](https://crates.io/crates/tls-api-stub) with updated dependencies.*
 

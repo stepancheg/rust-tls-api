@@ -1,4 +1,4 @@
-# tls-api-2
+# tls-api
 
 *This is a fork of [tls-api](https://crates.io/crates/tls-api) with updated dependencies.*
 

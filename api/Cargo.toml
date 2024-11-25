@@ -1,5 +1,5 @@
 [package]
-name = "tls-api-2"
+name = "tls-api"
 version = "0.11.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
 description = "TLS API without implementation"
