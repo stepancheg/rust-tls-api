@@ -51,11 +51,11 @@ async fn test_client_server_dyn_impl(
                 assert_eq!(&buf, b"hello");
 
                 t!(socket.write_all(b"world").await);
-                
-                #[cfg(feature="runtime-tokio")]
+
+                #[cfg(feature = "runtime-tokio")]
                 t!(socket.shutdown().await);
 
-                #[cfg(feature="runtime-async-std")]
+                #[cfg(feature = "runtime-async-std")]
                 t!(socket.close().await);
             };
             block_on(future);

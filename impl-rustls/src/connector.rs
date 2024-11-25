@@ -86,7 +86,9 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
             }
 
             let no_cert_verifier = NoCertificateServerVerifier {
-                supported: rustls::crypto::CryptoProvider::get_default().unwrap().signature_verification_algorithms,
+                supported: rustls::crypto::CryptoProvider::get_default()
+                    .unwrap()
+                    .signature_verification_algorithms,
             };
 
             self.config

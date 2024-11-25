@@ -37,9 +37,7 @@ where
             let self_mut = self.get_mut();
             match mem::replace(self_mut, HandshakeFuture::Done) {
                 HandshakeFuture::Initial(f, stream) => match f(stream) {
-                    Ok(stream) => {
-                        Poll::Ready(Ok(crate::TlsStream::new(NativeTlsStream(stream))))
-                    }
+                    Ok(stream) => Poll::Ready(Ok(crate::TlsStream::new(NativeTlsStream(stream)))),
                     Err(native_tls::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);
                         Poll::Pending
@@ -49,9 +47,7 @@ where
                     }
                 },
                 HandshakeFuture::MidHandshake(stream) => match stream.handshake() {
-                    Ok(stream) => {
-                        Poll::Ready(Ok(crate::TlsStream::new(NativeTlsStream(stream))))
-                    }
+                    Ok(stream) => Poll::Ready(Ok(crate::TlsStream::new(NativeTlsStream(stream)))),
                     Err(native_tls::HandshakeError::WouldBlock(mid)) => {
                         *self_mut = HandshakeFuture::MidHandshake(mid);
                         Poll::Pending

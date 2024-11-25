@@ -33,9 +33,7 @@ where
                     // sanity check
                     assert!(stream.0.stream.is_handshaking());
                     match stream.0.stream.complete_io() {
-                        Ok(_) => {
-                            Poll::Ready(Ok(stream))
-                        }
+                        Ok(_) => Poll::Ready(Ok(stream)),
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                             *self_mut = HandshakeFuture::MidHandshake(stream);
                             Poll::Pending

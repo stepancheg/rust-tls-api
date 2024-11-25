@@ -23,10 +23,8 @@ fn connect_bad_hostname_ignored() {
 
 #[test]
 fn client_server_der() {
-    tls_api_test::test_client_server_der::<
-        tls_api_rustls::TlsConnector,
-        tls_api_rustls::TlsAcceptor,
-    >();
+    tls_api_test::test_client_server_der::<tls_api_rustls::TlsConnector, tls_api_rustls::TlsAcceptor>(
+    );
 }
 
 #[test]

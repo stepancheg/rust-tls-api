@@ -184,8 +184,7 @@ macro_rules! spi_connector_common {
             S: $crate::AsyncSocket,
         {
             $crate::BoxFuture::new(async move {
-                let crate_tls_stream: $stream =
-                    self.connect_impl(domain, stream).await?;
+                let crate_tls_stream: $stream = self.connect_impl(domain, stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
         }

@@ -7,7 +7,6 @@ use void::Void;
 
 use crate::Error;
 
-
 /// Non-instantiatable.
 pub struct TlsConnectorBuilder(Void);
 /// Non-instantiatable.
@@ -47,7 +46,9 @@ impl TlsConnector {
     ) -> anyhow::Result<crate::TlsStream<S>>
     where
         S: AsyncSocket,
-    { Err(anyhow::Error::new(Error)) }
+    {
+        Err(anyhow::Error::new(Error))
+    }
 }
 
 impl tls_api::TlsConnector for TlsConnector {
