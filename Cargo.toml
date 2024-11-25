@@ -20,5 +20,6 @@ authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <alja
 license = "MIT/Apache-2.0"
 repository = "https://github.com/edgedb/rust-tls-api/"
 edition = "2018"
+keywords = ["tls"]
 
 [patch.crates-io]

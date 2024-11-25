@@ -1,12 +1,13 @@
 [package]
 name = "tls-api-security-framework"
+description = "TLS API implementation over rustls crate"
+
 version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
-description = "TLS API implementation over rustls crate"
-keywords = ["tls"]
+keywords = { workspace = true }
 
 [lib]
 bench = false
@@ -18,8 +19,8 @@ void = "1.0.2"
 anyhow = "1.0.44"
 thiserror = "2"
 
-tls-api = { path = "../api", default-features = false }
-tls-api-stub = { path = "../impl-stub", default-features = false }
+tls-api = { path = "../api", version = "0.12.0", default-features = false }
+tls-api-stub = { path = "../impl-stub", version = "0.12.0", default-features = false }
 
 [target."cfg(any(target_os = \"macos\", target_os = \"ios\"))".dependencies]
 security-framework = { version = "3.0.1", features = ["alpn"] }
@@ -40,8 +41,8 @@ runtime-tokio = [
 ]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", default-features = false }
-test-cert-gen = { path = "../test-cert-gen", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2",  version = "0.12.0", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen-2", version = "0.12.0", default-features = false }
 
 [build-dependencies]
-tls-api-test = { path = "../api-test", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2",  version = "0.12.0", default-features = false }

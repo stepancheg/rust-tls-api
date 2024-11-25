@@ -1,7 +1,5 @@
 # tls-api
 
-*This is a fork of [tls-api](https://crates.io/crates/tls-api) with updated dependencies.*
-
 Implementation neutral common denominator TLS API.
 
 A library working with TLS can be written with this crate

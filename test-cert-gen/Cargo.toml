@@ -1,10 +1,13 @@
 [package]
-name = "test-cert-gen"
+name = "test-cert-gen-2"
 description = "Utility to generate certificates for tests (e. g. for TLS)"
+
 version = { workspace = true }
 authors = { workspace = true }
-edition = { workspace = true }
 license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
+keywords = { workspace = true }
 
 [lib]
 bench = false

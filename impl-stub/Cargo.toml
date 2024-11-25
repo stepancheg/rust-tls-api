@@ -1,12 +1,13 @@
 [package]
 name = "tls-api-stub"
+description = "TLS API implementation that returns error on any operation"
+
 version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
-description = "TLS API implementation that returns error on any operation"
-keywords = ["tls"]
+keywords = { workspace = true }
 
 [lib]
 bench = false
@@ -18,7 +19,7 @@ async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 anyhow    = "1.0.44"
 thiserror = "2"
 
-tls-api = { path = "../api", default-features = false }
+tls-api = { path = "../api", version = "0.12.0",  default-features = false }
 
 [features]
 default = ["runtime-tokio"]
@@ -26,4 +27,4 @@ runtime-async-std = ["tokio", "tls-api/runtime-async-std", "tls-api-test/runtime
 runtime-tokio = ["async-std", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2",  version = "0.12.0",  default-features = false }

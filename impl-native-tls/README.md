@@ -1,3 +1,3 @@
 # tls-api-native-tls
 
-*This is a fork of [tls-api-native-tls](https://crates.io/crates/tls-api-native-tls) with updated dependencies.*
+Implementation of [`tls-api`](https://crates.io/crates/tls-api) over [native-tls](https://crates.io/crates/native-tls) crate.

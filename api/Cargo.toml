@@ -1,13 +1,13 @@
 [package]
 name = "tls-api"
+description = "TLS API without implementation"
+readme = "README.md"
 version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
-description = "TLS API without implementation"
-readme = "../README.md"
-keywords = ["tls"]
+keywords = { workspace = true }
 
 [lib]
 bench = false

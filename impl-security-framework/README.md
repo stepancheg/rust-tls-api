@@ -1,5 +1,3 @@
 # tls-api-security-framework
 
-*This is a fork of [tls-api-security-framework](https://crates.io/crates/tls-api-security-framework) with updated dependencies.*
-
-tls-api implementation over security-framework crate.
+Implementation of [`tls-api`](https://crates.io/crates/tls-api) over [security-framework](https://crates.io/crates/security-framework) crate.

@@ -1,7 +1,5 @@
 ## tls-api-stub
 
-*This is a fork of [tls-api-stub](https://crates.io/crates/tls-api-stub) with updated dependencies.*
-
 Stub implementation of tls-api. All operations return an error.
 
 Useful when you need an implementation of type like `TlsConnector`,

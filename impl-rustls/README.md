@@ -1,5 +1,3 @@
 # tls-api-rustls
 
-*This is a fork of [tls-api-rustls](https://crates.io/crates/tls-api-rustls) with updated dependencies.*
-
-Implementation of tls-api over [rustls](https://crates.io/crates/rustls).
+Implementation of [`tls-api`](https://crates.io/crates/tls-api) over [rustls](https://crates.io/crates/rustls) crate.

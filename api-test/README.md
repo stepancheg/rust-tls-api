@@ -1,7 +1,5 @@
 # tls-api-test
 
-*This is a fork of [tls-api-test](https://crates.io/crates/tls-api-test) with updated dependencies.*
-
 Test implementation the all tls-api implementations.
 
 Contain tests line `client_server` which accept

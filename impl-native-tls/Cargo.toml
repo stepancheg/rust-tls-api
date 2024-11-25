@@ -1,33 +1,38 @@
 [package]
 name = "tls-api-native-tls"
+description = "TLS API implementation over native-tls crate"
+
 version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
-description = "TLS API implementation over native-tls crate"
-keywords = ["tls"]
-edition = "2018"
+edition = { workspace = true }
+keywords = { workspace = true }
 
 [lib]
 bench = false
 
 [dependencies]
-native-tls = { version ="0.2", features = ["alpn"] }
-tokio      = { version = "1.2.0", features = [], optional = true }
-async-std  = { version = "1.9.0", features = ["attributes"], optional = true }
-anyhow     = "1.0.44"
-thiserror  = "2"
+native-tls = { version = "0.2", features = ["alpn"] }
+tokio = { version = "1.2.0", features = [], optional = true }
+async-std = { version = "1.9.0", features = ["attributes"], optional = true }
+anyhow = "1.0.44"
+thiserror = "2"
 
-tls-api = { path = "../api", default-features = false }
+tls-api = { path = "../api", version = "0.12.0", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
-runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-test/runtime-async-std"]
+runtime-async-std = [
+    "async-std",
+    "tls-api/runtime-async-std",
+    "tls-api-test/runtime-async-std",
+]
 runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", default-features = false }
-test-cert-gen = { path = "../test-cert-gen", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2",  version = "0.12.0", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen-2", version = "0.12.0", default-features = false }
 
 [build-dependencies]
-tls-api-test = { path = "../api-test", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test-2",  version = "0.12.0", default-features = false }
