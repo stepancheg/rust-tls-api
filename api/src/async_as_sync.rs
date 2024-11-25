@@ -317,7 +317,7 @@ where
     #[cfg(feature = "runtime-async-std")]
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
+            .with_context_sync_to_async(cx, |stream| stream.stream.shutdown())
     }
 }
 

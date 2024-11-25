@@ -8,6 +8,8 @@ Cargo.lock
 **/*.iml
 .idea
 .code
+.vscode
+.envrc
 
 .*.swp
 .direnv/
