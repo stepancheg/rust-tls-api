@@ -21,7 +21,7 @@ webpki-roots = "0.26.1"
 tokio        = { version = "1.2.0", features = [], optional = true }
 async-std    = { version = "1.9.0", features = ["attributes"], optional = true }
 anyhow       = "1.0.44"
-thiserror    = "1.0.30"
+thiserror    = "2"
 
 tls-api = { path = "../api", package = "tls-api-2", version = "=0.11.0", default-features = false }
 

@@ -19,7 +19,7 @@ travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "
 pem = "3.0.4"
 tempfile   = "3.3.0"
 anyhow     = "1.0.44"
-thiserror  = "1.0.30"
+thiserror  = "2"
 
 # Note technically there's no dependency on async-std
 futures-util = { version = "0.3.1", features = ["io"], optional = true }
