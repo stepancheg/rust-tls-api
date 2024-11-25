@@ -33,6 +33,7 @@
             buildInputs = [
               pkgs.openssl
               pkgs.pkg-config
+              pkgs.cargo-nextest
               rustToolchain
             ]
             ++ pkgs.lib.optional pkgs.stdenv.isDarwin [
