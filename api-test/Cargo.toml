@@ -1,21 +1,18 @@
 [package]
 name = "tls-api-test"
-version = "0.11.0"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 description = "TLS API without implementation"
-license = "MIT/Apache-2.0"
-repository = "https://github.com/edgedb/rust-tls-api/"
 keywords = ["tls"]
-edition = "2018"
 
 [lib]
 bench = false
 
-[badges]
-travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "master" }
-
 [dependencies]
-tls-api = { path = "../api", package = "tls-api", version = "=0.11.0", default-features = false }
+tls-api = { path = "../api", package = "tls-api", default-features = false }
 log        = "0.4"
 env_logger = "0.11.2"
 anyhow     = "1.0.44"
@@ -26,7 +23,7 @@ webpki     = "0.22.0"
 tokio = { version = "1.2.0", features = ["net", "io-util", "rt", "rt-multi-thread"], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
-test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen", version = "=0.11.0", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen", default-features = false }
 
 [features]
 default = ["runtime-tokio"]

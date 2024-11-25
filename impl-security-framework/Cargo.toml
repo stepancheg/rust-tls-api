@@ -1,31 +1,25 @@
 [package]
 name = "tls-api-security-framework"
-version = "0.11.0"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 description = "TLS API implementation over rustls crate"
-license = "MIT/Apache-2.0"
-repository = "https://github.com/edgedb/rust-tls-api/"
 keywords = ["tls"]
-edition = "2018"
 
 [lib]
 bench = false
 
-[badges]
-travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "master" }
-
 [dependencies]
-tokio     = { version = "1.2.0", features = [], optional = true }
+tokio = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
-void      = "1.0.2"
-anyhow    = "1.0.44"
+void = "1.0.2"
+anyhow = "1.0.44"
 thiserror = "2"
 
-tls-api = { path = "../api", package = "tls-api", version = "=0.11.0", default-features = false }
-tls-api-stub = { path = "../impl-stub", package = "tls-api-stub", version = "=0.11.0", default-features = false }
-
-# this is needed until package-features is stabelized (issue #5364)
-tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
+tls-api = { path = "../api", default-features = false }
+tls-api-stub = { path = "../impl-stub", default-features = false }
 
 [target."cfg(any(target_os = \"macos\", target_os = \"ios\"))".dependencies]
 security-framework = { version = "3.0.1", features = ["alpn"] }
@@ -46,8 +40,8 @@ runtime-tokio = [
 ]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
-test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen", version = "=0.11.0", default-features = false }
+tls-api-test = { path = "../api-test", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", default-features = false }
 
 [build-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
+tls-api-test = { path = "../api-test", default-features = false }

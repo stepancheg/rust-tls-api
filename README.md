@@ -1,7 +1,5 @@
 # One TLS API to rule them all
 
-*This is a fork of [tls-api](https://crates.io/crates/tls-api) with updated dependencies.*
-
 Supports:
 * **tokio** and **async-std**
 * **rustls**, **native-tls**, **openssl**, **security-framework**
@@ -70,3 +68,10 @@ which is invoked with four backends.
 
 * only works on Apple
 * does not support server side ALPN
+
+
+## Crate maintenance
+
+This set of crates is currently maintained by the team of EdgeDB.
+It has initially been written by 
+

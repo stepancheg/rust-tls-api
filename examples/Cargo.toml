@@ -3,7 +3,7 @@ name = "tls-api-examples"
 version = "0.0.0"
 authors = ["Carl Lerche <me@carllerche.com>",
            "Alex Crichton <alex@alexcrichton.com>"]
-license = "MIT/Apache-2.0"
+license = { workspace = true }
 repository = "https://github.com/edgedb/rust-tls-api"
 description = """
 Example of tls-api

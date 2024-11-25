@@ -1,29 +1,23 @@
 [package]
 name = "tls-api-not-tls"
-version = "0.11.0"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>", "Aljaž Mur Eržen <aljaz@edgedb.com>"]
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 description = "TLS API implementation which returns plain sockets. This is NOT TLS implementation."
-license = "MIT/Apache-2.0"
-repository = "https://github.com/edgedb/rust-tls-api/"
 keywords = ["tls"]
-edition = "2018"
 
 [lib]
 bench = false
 
-[badges]
-travis-ci = { repository = "https://github.com/edgedb/rust-tls-api/", branch = "master" }
-
 [dependencies]
-tls-api = { path = "../api", package = "tls-api", version = "=0.11.0", default-features = false }
+tls-api = { path = "../api", package = "tls-api", default-features = false }
 
 tokio     = { version = "1.2.0", features = [], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 anyhow    = "1.0.44"
 thiserror  = "2"
-
-# this is needed until package-features is stabelized (issue #5364)
-tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
 
 [features]
 default = ["runtime-tokio"]
@@ -31,4 +25,4 @@ runtime-async-std = ["async-std", "tls-api/runtime-async-std", "tls-api-test/run
 runtime-tokio = ["tokio", "tls-api/runtime-tokio", "tls-api-test/runtime-tokio"]
 
 [dev-dependencies]
-tls-api-test = { path = "../api-test", package = "tls-api-test", version = "=0.11.0", default-features = false }
+tls-api-test = { path = "../api-test", package = "tls-api-test", default-features = false }
