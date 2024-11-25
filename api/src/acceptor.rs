@@ -180,7 +180,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 /// Common part of all connectors. Poor man replacement for HKT.
 #[macro_export]
 macro_rules! spi_acceptor_common {
-    () => {
+    ($stream: ty) => {
         fn accept_with_socket<'a, S>(
             &'a self,
             stream: S,
@@ -189,7 +189,7 @@ macro_rules! spi_acceptor_common {
             S: $crate::AsyncSocket,
         {
             $crate::BoxFuture::new(async move {
-                let crate_tls_stream: crate::TlsStream<S> = self.accept_impl(stream).await?;
+                let crate_tls_stream: $stream = self.accept_impl(stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
         }

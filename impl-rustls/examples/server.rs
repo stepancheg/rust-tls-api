@@ -25,7 +25,7 @@ async fn run() {
 
     let socket = listener.accept().await.unwrap().0;
     let mut socket = acceptor.accept(socket).await.unwrap();
-    socket.write(b"hello\n").await.unwrap();
+    socket.write_all(b"hello\n").await.unwrap();
 }
 
 fn main() {

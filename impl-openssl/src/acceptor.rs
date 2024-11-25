@@ -17,7 +17,7 @@ pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
 fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<ParsedPkcs12> {
     let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12)?;
-    Ok(pkcs12.parse(passphrase).context("Parse passphrase")?)
+    pkcs12.parse(passphrase).context("Parse passphrase")
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
@@ -53,10 +53,10 @@ impl TlsAcceptorBuilder {
 }
 
 impl TlsAcceptor {
-    fn accept_impl<'a, S>(
-        &'a self,
+    fn accept_impl<S>(
+        &self,
         stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + '_
     where
         S: AsyncSocket,
     {
@@ -128,5 +128,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(builder))
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

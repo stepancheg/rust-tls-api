@@ -71,10 +71,10 @@ fn pkcs12_to_sf_objects(
 }
 
 impl TlsAcceptor {
-    fn accept_impl<'a, S>(
-        &'a self,
+    fn accept_impl<S>(
+        &self,
         stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + '_
     where
         S: AsyncSocket,
     {
@@ -125,5 +125,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         }
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

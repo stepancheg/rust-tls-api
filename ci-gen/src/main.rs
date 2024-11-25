@@ -80,11 +80,12 @@ const WINDOWS: Os = Os {
 
 fn cargo_doc_job() -> Job {
     let os = LINUX;
-    let mut steps = Vec::new();
-    steps.push(cargo_cache());
-    steps.push(checkout_sources());
-    steps.push(rust_install_toolchain(RustToolchain::Stable));
-    steps.push(cargo_doc("cargo doc", ""));
+    let steps = vec![
+        cargo_cache(),
+        checkout_sources(),
+        rust_install_toolchain(RustToolchain::Stable),
+        cargo_doc("cargo doc", ""),
+    ];
     Job {
         id: "cargo-doc".to_owned(),
         name: "cargo doc".to_owned(),
@@ -113,7 +114,6 @@ fn jobs() -> Vec<Job> {
                     runs_on: os.ghwf,
                     env: vec![("RUST_BACKTRACE".to_owned(), "1".to_owned())],
                     steps: steps(rt, os, channel),
-                    ..Default::default()
                 });
             }
         }

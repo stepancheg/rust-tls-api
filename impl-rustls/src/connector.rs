@@ -36,7 +36,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
-        self.config.alpn_protocols = protocols.into_iter().map(|p: &&[u8]| p.to_vec()).collect();
+        self.config.alpn_protocols = protocols.iter().map(|p: &&[u8]| p.to_vec()).collect();
         Ok(())
     }
 
@@ -93,10 +93,8 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
                 .dangerous()
                 .set_certificate_verifier(Arc::new(no_cert_verifier));
             self.verify_hostname = false;
-        } else {
-            if !self.verify_hostname {
-                return Err(crate::Error::VerifyHostnameTrue.into());
-            }
+        } else if !self.verify_hostname {
+            return Err(crate::Error::VerifyHostnameTrue.into());
         }
 
         Ok(())
@@ -144,7 +142,7 @@ impl TlsConnector {
             Err(e) => return BoxFuture::new(async { Err(anyhow::anyhow!(e)) }),
         };
         let conn = rustls::ClientConnection::new(self.config.clone(), dns_name);
-        let conn = match conn.map_err(|e| anyhow::Error::new(e)) {
+        let conn = match conn.map_err(anyhow::Error::new) {
             Ok(conn) => conn,
             Err(e) => return BoxFuture::new(async { Err(e) }),
         };
@@ -188,5 +186,5 @@ impl tls_api::TlsConnector for TlsConnector {
         })
     }
 
-    spi_connector_common!();
+    spi_connector_common!(crate::TlsStream<S>);
 }

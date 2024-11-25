@@ -34,13 +34,13 @@ where
                     assert!(stream.0.stream.is_handshaking());
                     match stream.0.stream.complete_io() {
                         Ok(_) => {
-                            return Poll::Ready(Ok(stream));
+                            Poll::Ready(Ok(stream))
                         }
                         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                             *self_mut = HandshakeFuture::MidHandshake(stream);
-                            return Poll::Pending;
+                            Poll::Pending
                         }
-                        Err(e) => return Poll::Ready(Err(anyhow::Error::new(e))),
+                        Err(e) => Poll::Ready(Err(anyhow::Error::new(e))),
                     }
                 }
                 HandshakeFuture::Done => panic!("Future must not be polled after ready"),

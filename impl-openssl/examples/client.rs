@@ -13,7 +13,7 @@ async fn run() {
 
     let mut builder = tls_api_openssl_2::TlsConnector::builder().unwrap();
     builder
-        .add_root_certificate(&Cert::from_der(fs::read("ca.der").unwrap()).get_der())
+        .add_root_certificate(Cert::from_der(fs::read("ca.der").unwrap()).get_der())
         .unwrap();
     let connector = builder.build().unwrap();
     connector.connect("localhost", socket).await.unwrap();

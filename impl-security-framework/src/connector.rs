@@ -127,5 +127,5 @@ impl tls_api::TlsConnector for TlsConnector {
         }
     }
 
-    spi_connector_common!();
+    spi_connector_common!(crate::TlsStream<S>);
 }

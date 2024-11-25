@@ -23,7 +23,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Underlying = rustls::ServerConfig;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
-        self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();
+        self.0.alpn_protocols = protocols.iter().map(|p| p.to_vec()).collect();
         Ok(())
     }
 
@@ -37,15 +37,15 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 }
 
 impl TlsAcceptor {
-    pub fn accept_impl<'a, S>(
-        &'a self,
+    pub fn accept_impl<S>(
+        &self,
         stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + '_
     where
         S: AsyncSocket,
     {
         let conn = rustls::ServerConnection::new(self.0.clone());
-        let conn = match conn.map_err(|e| anyhow::Error::new(e)) {
+        let conn = match conn.map_err(anyhow::Error::new) {
             Ok(conn) => conn,
             Err(e) => return BoxFuture::new(async { Err(e) }),
         };
@@ -92,5 +92,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         Ok(TlsAcceptorBuilder(config))
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }
