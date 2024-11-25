@@ -31,7 +31,7 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
     }
 
     fn build(self) -> anyhow::Result<Self::Connector> {
-        Ok(TlsConnector(self.0))
+        Ok(TlsConnector(()))
     }
 }
 
@@ -72,5 +72,5 @@ impl tls_api::TlsConnector for TlsConnector {
         Ok(TlsConnectorBuilder(()))
     }
 
-    spi_connector_common!();
+    spi_connector_common!(crate::TlsStream<S>);
 }

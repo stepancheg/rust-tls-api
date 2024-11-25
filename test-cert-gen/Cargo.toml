@@ -1,15 +1,18 @@
 [package]
-name = "test-cert-gen"
-version = "0.10.0-pre"
-authors = ["Stiopa Koltsov <stepan.koltsov@gmail.com>"]
-edition = "2018"
+name = "test-cert-gen-2"
 description = "Utility to generate certificates for tests (e. g. for TLS)"
-license = "MIT/Apache-2.0"
+
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
+keywords = { workspace = true }
 
 [lib]
 bench = false
 
 [dependencies]
 tempfile = "3.3.0"
-pem = "0.8.3"
+pem = "3.0.4"
 once_cell = "1.10.0"

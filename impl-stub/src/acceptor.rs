@@ -6,7 +6,6 @@ use tls_api::AsyncSocketBox;
 use tls_api::ImplInfo;
 
 use crate::Error;
-use std::future::Future;
 
 /// Non-instantiatable.
 pub struct TlsAcceptorBuilder(Void);
@@ -32,14 +31,11 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 }
 
 impl TlsAcceptor {
-    fn accept_impl<'a, S>(
-        &'a self,
-        _stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    async fn accept_impl<S>(&self, _stream: S) -> anyhow::Result<crate::TlsStream<S>>
     where
         S: AsyncSocket,
     {
-        async { Err(anyhow::Error::new(Error)) }
+        Err(anyhow::Error::new(Error))
     }
 }
 
@@ -62,5 +58,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

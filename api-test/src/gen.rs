@@ -78,7 +78,7 @@ fn bench_1_dyn(b: &mut test::Bencher) {
 
 /// Called from impl crates to generate the common set of tests
 pub fn gen_tests_and_benches() {
-    let crate_name = env::var("CARGO_PKG_NAME").unwrap().replace("-", "_");
+    let crate_name = env::var("CARGO_PKG_NAME").unwrap().replace('-', "_");
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
@@ -91,6 +91,4 @@ pub fn gen_tests_and_benches() {
     let g = format!("// {}generated\n\n{}", "@", g);
 
     fs::write(format!("{}/benches_generated.rs", out_dir), g).unwrap();
-
-    crate::gen_rustc_nightly();
 }

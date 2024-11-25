@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use std::fmt;
 use tls_api::spi_acceptor_common;
 use tls_api::AsyncSocket;
@@ -22,21 +20,18 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     }
 
     fn build(self) -> anyhow::Result<TlsAcceptor> {
-        Ok(TlsAcceptor(self.0))
+        Ok(TlsAcceptor(()))
     }
 }
 
 pub struct TlsAcceptor(pub ());
 
 impl TlsAcceptor {
-    fn accept_impl<'a, S>(
-        &'a self,
-        stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    async fn accept_impl<S>(&self, stream: S) -> anyhow::Result<crate::TlsStream<S>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,
     {
-        async { Ok(crate::stream::TlsStream(stream)) }
+        Ok(crate::stream::TlsStream(stream))
     }
 }
 
@@ -59,5 +54,5 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
         crate::info()
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

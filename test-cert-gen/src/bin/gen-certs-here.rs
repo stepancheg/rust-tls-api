@@ -1,7 +1,7 @@
 use std::fs;
 
 fn main() {
-    let keys = test_cert_gen::gen_keys();
+    let keys = test_cert_gen_2::gen_keys();
 
     println!("writing server cert to server.pem");
     fs::write("server.pem", keys.server.cert_and_key.to_pem_incorrect()).unwrap();

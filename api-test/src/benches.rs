@@ -1,4 +1,4 @@
-#![cfg(all(rustc_nightly, feature = "runtime-tokio"))]
+#![cfg(feature = "runtime-tokio")]
 
 use std::thread;
 

@@ -1,33 +1,30 @@
 [package]
-name = "tls-api-test"
-version = "0.10.0-pre"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+name = "tls-api-test-2"
 description = "TLS API without implementation"
-license = "MIT/Apache-2.0"
-repository = "https://github.com/stepancheg/rust-tls-api/"
-keywords = ["tls"]
-edition = "2018"
+
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
+keywords = { workspace = true }
 
 [lib]
 bench = false
 
-[badges]
-travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
-
 [dependencies]
-tls-api = { path = "../api", version = "=0.10.0-pre", default-features = false }
+tls-api = { path = "../api", version = "0.12.0", default-features = false }
 log        = "0.4"
-env_logger = "0.5"
+env_logger = "0.11.2"
 anyhow     = "1.0.44"
 
-pem        = "0.8.3"
+pem = "3.0.4"
 webpki     = "0.22.0"
-untrusted  = "0.6.*"
 
 tokio = { version = "1.2.0", features = ["net", "io-util", "rt", "rt-multi-thread"], optional = true }
 async-std = { version = "1.9.0", features = ["attributes"], optional = true }
 
-test-cert-gen = { path = "../test-cert-gen", version = "=0.10.0-pre", default-features = false }
+test-cert-gen = { path = "../test-cert-gen", package = "test-cert-gen-2", version = "0.12.0", default-features = false }
 
 [features]
 default = ["runtime-tokio"]

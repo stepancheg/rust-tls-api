@@ -106,10 +106,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
     /// Connect using default settings.
     ///
     /// Shortcut.
-    fn connect_default<'a, S>(
-        domain: &'a str,
-        stream: S,
-    ) -> BoxFuture<'a, anyhow::Result<TlsStream>>
+    fn connect_default<S>(domain: &str, stream: S) -> BoxFuture<'_, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket,
     {
@@ -177,7 +174,7 @@ pub trait TlsConnector: Sized + Sync + Send + 'static {
 /// Common part of all connectors. Poor man replacement for HKT.
 #[macro_export]
 macro_rules! spi_connector_common {
-    () => {
+    ($stream: ty) => {
         fn connect_with_socket<'a, S>(
             &'a self,
             domain: &'a str,
@@ -187,8 +184,7 @@ macro_rules! spi_connector_common {
             S: $crate::AsyncSocket,
         {
             $crate::BoxFuture::new(async move {
-                let crate_tls_stream: crate::TlsStream<S> =
-                    self.connect_impl(domain, stream).await?;
+                let crate_tls_stream: $stream = self.connect_impl(domain, stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
         }

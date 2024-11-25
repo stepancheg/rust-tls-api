@@ -138,10 +138,10 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// and the stream is ready to send and receive.
     ///
     /// This version of `accept` returns a stream parameterized by the underlying socket type.
-    fn accept_with_socket<'a, S>(
-        &'a self,
+    fn accept_with_socket<S>(
+        &self,
         stream: S,
-    ) -> BoxFuture<'a, anyhow::Result<TlsStreamWithSocket<S>>>
+    ) -> BoxFuture<'_, anyhow::Result<TlsStreamWithSocket<S>>>
     where
         S: AsyncSocket + fmt::Debug + Unpin;
 
@@ -153,10 +153,10 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// This version of `accept` returns a stream parameterized by the underlying socket type.
     ///
     /// Practically, [`accept`](Self::accept) is usually enough.
-    fn accept_impl_tls_stream<'a, S>(
-        &'a self,
+    fn accept_impl_tls_stream<S>(
+        &self,
         stream: S,
-    ) -> BoxFuture<'a, anyhow::Result<Self::TlsStream>>
+    ) -> BoxFuture<'_, anyhow::Result<Self::TlsStream>>
     where
         S: AsyncSocket;
 
@@ -169,7 +169,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
     /// might be useful to obtain some TLS implementation-specific data.
     ///
     /// Practically, [`accept`](Self::accept) is usually enough.
-    fn accept<'a, S>(&'a self, stream: S) -> BoxFuture<'a, anyhow::Result<TlsStream>>
+    fn accept<S>(&self, stream: S) -> BoxFuture<'_, anyhow::Result<TlsStream>>
     where
         S: AsyncSocket + fmt::Debug + Unpin,
     {
@@ -180,7 +180,7 @@ pub trait TlsAcceptor: Sized + Sync + Send + 'static {
 /// Common part of all connectors. Poor man replacement for HKT.
 #[macro_export]
 macro_rules! spi_acceptor_common {
-    () => {
+    ($stream: ty) => {
         fn accept_with_socket<'a, S>(
             &'a self,
             stream: S,
@@ -189,7 +189,7 @@ macro_rules! spi_acceptor_common {
             S: $crate::AsyncSocket,
         {
             $crate::BoxFuture::new(async move {
-                let crate_tls_stream: crate::TlsStream<S> = self.accept_impl(stream).await?;
+                let crate_tls_stream: $stream = self.accept_impl(stream).await?;
                 Ok($crate::TlsStreamWithSocket::new(crate_tls_stream))
             })
         }

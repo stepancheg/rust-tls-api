@@ -1,4 +1,4 @@
-use openssl::pkcs12::ParsedPkcs12;
+use openssl::pkcs12::ParsedPkcs12_2;
 
 use tls_api::async_as_sync::AsyncIoAsSyncIo;
 use tls_api::spi_acceptor_common;
@@ -15,9 +15,9 @@ pub struct TlsAcceptorBuilder(pub openssl::ssl::SslAcceptorBuilder);
 
 pub struct TlsAcceptor(pub openssl::ssl::SslAcceptor);
 
-fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<ParsedPkcs12> {
+fn to_openssl_pkcs12(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<ParsedPkcs12_2> {
     let pkcs12 = openssl::pkcs12::Pkcs12::from_der(pkcs12)?;
-    Ok(pkcs12.parse(passphrase).context("Parse passphrase")?)
+    pkcs12.parse2(passphrase).context("Parse passphrase")
 }
 
 impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
@@ -53,10 +53,10 @@ impl TlsAcceptorBuilder {
 }
 
 impl TlsAcceptor {
-    fn accept_impl<'a, S>(
-        &'a self,
+    fn accept_impl<S>(
+        &self,
         stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + '_
     where
         S: AsyncSocket,
     {
@@ -110,7 +110,15 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
                 .map_err(anyhow::Error::new)?;
 
         let pkcs12 = to_openssl_pkcs12(pkcs12, passphrase)?;
-        if let Some(chain) = pkcs12.chain {
+
+        if let Some(cert) = &pkcs12.cert {
+            builder.set_certificate(cert).map_err(anyhow::Error::new)?;
+        }
+        if let Some(pkey) = &pkcs12.pkey {
+            builder.set_private_key(pkey).map_err(anyhow::Error::new)?;
+        }
+
+        if let Some(chain) = pkcs12.ca {
             for x509 in chain {
                 builder
                     .add_extra_chain_cert(x509)
@@ -118,15 +126,8 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
             }
         }
 
-        builder
-            .set_certificate(&pkcs12.cert)
-            .map_err(anyhow::Error::new)?;
-        builder
-            .set_private_key(&pkcs12.pkey)
-            .map_err(anyhow::Error::new)?;
-
         Ok(TlsAcceptorBuilder(builder))
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

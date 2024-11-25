@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::sync::Arc;
 
 use rustls::StreamOwned;
@@ -22,7 +23,7 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
     type Underlying = rustls::ServerConfig;
 
     fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> anyhow::Result<()> {
-        self.0.alpn_protocols = protocols.into_iter().map(|p| p.to_vec()).collect();
+        self.0.alpn_protocols = protocols.iter().map(|p| p.to_vec()).collect();
         Ok(())
     }
 
@@ -36,15 +37,15 @@ impl tls_api::TlsAcceptorBuilder for TlsAcceptorBuilder {
 }
 
 impl TlsAcceptor {
-    pub fn accept_impl<'a, S>(
-        &'a self,
+    pub fn accept_impl<S>(
+        &self,
         stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + '_
     where
         S: AsyncSocket,
     {
         let conn = rustls::ServerConnection::new(self.0.clone());
-        let conn = match conn.map_err(|e| anyhow::Error::new(e)) {
+        let conn = match conn.map_err(anyhow::Error::new) {
             Ok(conn) => conn,
             Err(e) => return BoxFuture::new(async { Err(e) }),
         };
@@ -79,14 +80,17 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> anyhow::Result<TlsAcceptorBuilder> {
-        let cert = rustls::Certificate(cert.to_vec());
+        let cert = rustls::pki_types::CertificateDer::from(cert.to_vec());
         let config = rustls::ServerConfig::builder()
-            .with_safe_defaults()
             .with_no_client_auth()
-            .with_single_cert(vec![cert], rustls::PrivateKey(key.to_vec()))
+            .with_single_cert(
+                vec![cert],
+                rustls::pki_types::PrivateKeyDer::try_from(key.to_vec())
+                    .map_err(|x| anyhow::anyhow!(x))?,
+            )
             .map_err(anyhow::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }
 
-    spi_acceptor_common!();
+    spi_acceptor_common!(crate::TlsStream<S>);
 }

@@ -162,7 +162,7 @@ impl TlsAcceptorBuilderBox {
 trait TlsAcceptorDyn: Send + Sync + 'static {
     fn type_dyn(&self) -> &'static dyn TlsAcceptorType;
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, anyhow::Result<TlsStream>>;
+    fn accept(&self, socket: AsyncSocketBox) -> BoxFuture<'_, anyhow::Result<TlsStream>>;
 }
 
 impl<A: TlsAcceptor> TlsAcceptorDyn for A {
@@ -170,7 +170,7 @@ impl<A: TlsAcceptor> TlsAcceptorDyn for A {
         A::TYPE_DYN
     }
 
-    fn accept<'a>(&'a self, socket: AsyncSocketBox) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
+    fn accept(&self, socket: AsyncSocketBox) -> BoxFuture<'_, anyhow::Result<TlsStream>> {
         self.accept(socket)
     }
 }
@@ -198,10 +198,7 @@ impl TlsAcceptorBox {
     ///
     /// This operation returns a future which is resolved when the negotiation is complete,
     /// and the stream is ready to send and receive.
-    pub fn accept<'a, S: AsyncSocket>(
-        &'a self,
-        socket: S,
-    ) -> BoxFuture<'a, anyhow::Result<TlsStream>> {
+    pub fn accept<S: AsyncSocket>(&self, socket: S) -> BoxFuture<'_, anyhow::Result<TlsStream>> {
         self.0.accept(AsyncSocketBox::new(socket))
     }
 }

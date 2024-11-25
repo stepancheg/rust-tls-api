@@ -6,7 +6,6 @@ use tls_api::ImplInfo;
 use void::Void;
 
 use crate::Error;
-use std::future::Future;
 
 /// Non-instantiatable.
 pub struct TlsConnectorBuilder(Void);
@@ -40,15 +39,15 @@ impl tls_api::TlsConnectorBuilder for TlsConnectorBuilder {
 }
 
 impl TlsConnector {
-    fn connect_impl<'a, S>(
+    async fn connect_impl<'a, S>(
         &'a self,
         _domain: &'a str,
         _stream: S,
-    ) -> impl Future<Output = anyhow::Result<crate::TlsStream<S>>> + 'a
+    ) -> anyhow::Result<crate::TlsStream<S>>
     where
         S: AsyncSocket,
     {
-        async { Err(anyhow::Error::new(Error)) }
+        Err(anyhow::Error::new(Error))
     }
 }
 
@@ -73,5 +72,5 @@ impl tls_api::TlsConnector for TlsConnector {
         Err(anyhow::Error::new(Error))
     }
 
-    spi_connector_common!();
+    spi_connector_common!(crate::TlsStream<S>);
 }

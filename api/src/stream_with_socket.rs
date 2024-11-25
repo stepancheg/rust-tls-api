@@ -92,6 +92,7 @@ impl<S: AsyncSocket> TlsStreamWithSocket<S> {
         Pin::new(&mut *self.get_mut().0)
     }
 
+    #[allow(dead_code)]
     fn deref_for_impl_socket(&self) -> &dyn TlsStreamWithUpcastDyn<S> {
         &*self.0
     }

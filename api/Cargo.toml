@@ -1,25 +1,22 @@
 [package]
 name = "tls-api"
-version = "0.10.0-pre"
-authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 description = "TLS API without implementation"
-license = "MIT/Apache-2.0"
-repository = "https://github.com/stepancheg/rust-tls-api/"
-readme = "../README.md"
-keywords = ["tls"]
-edition = "2018"
+readme = "README.md"
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
+keywords = { workspace = true }
 
 [lib]
 bench = false
 
-[badges]
-travis-ci = { repository = "https://github.com/stepancheg/rust-tls-api/", branch = "master" }
-
 [dependencies]
-pem        = "0.8.3"
+pem = "3.0.4"
 tempfile   = "3.3.0"
 anyhow     = "1.0.44"
-thiserror  = "1.0.30"
+thiserror  = "2"
 
 # Note technically there's no dependency on async-std
 futures-util = { version = "0.3.1", features = ["io"], optional = true }

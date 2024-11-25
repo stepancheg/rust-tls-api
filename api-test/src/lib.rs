@@ -4,12 +4,11 @@
 //!
 //! Probably you don't need this crate outside of `rust-tls-api` repository.
 
-#![cfg_attr(rustc_nightly, feature(test))]
+#![feature(test)]
 
 #[macro_use]
 extern crate log;
 
-#[cfg(rustc_nightly)]
 extern crate test;
 
 use std::any;
@@ -35,9 +34,6 @@ pub use version::test_version;
 
 mod gen;
 pub use gen::gen_tests_and_benches;
-
-mod gen_rustc_nightly;
-pub(crate) use gen_rustc_nightly::gen_rustc_nightly;
 
 use tls_api::TlsAcceptor;
 use tls_api::TlsAcceptorBox;
@@ -149,6 +145,7 @@ where
     ))
 }
 
+#[allow(dead_code)]
 fn new_acceptor_from_der_keys<A: TlsAcceptor>() -> A {
     new_acceptor_builder_from_der_keys::<A>().build().unwrap()
 }
@@ -167,6 +164,7 @@ fn new_acceptor_builder_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> Tls
     t!(acceptor.builder_from_der_key(keys.cert.get_der(), keys.key.get_der()))
 }
 
+#[allow(dead_code)]
 fn new_acceptor_dyn_from_der_keys(acceptor: &dyn TlsAcceptorType) -> TlsAcceptorBox {
     new_acceptor_builder_dyn_from_der_keys(acceptor)
         .build()
@@ -243,6 +241,7 @@ fn new_connector_builder_dyn_with_root_ca(
     connector
 }
 
+#[allow(dead_code)]
 fn new_connector_dyn_with_root_ca(connector: &dyn TlsConnectorType) -> TlsConnectorBox {
     new_connector_builder_dyn_with_root_ca(connector)
         .build()

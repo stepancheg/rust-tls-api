@@ -119,7 +119,7 @@ where
     /// API-implementation of wrapper stream.
     ///
     /// Wrapped object is always [`AsyncIoAsSyncIo`].
-    type SyncWrapper: Read + Write + Unpin + Send + 'static;
+    type SyncWrapper: Read + Write + WriteShutdown + Unpin + Send + 'static;
 
     /// Which crates imlpements this?
     fn impl_info() -> ImplInfo;
@@ -135,6 +135,47 @@ where
 
     /// Get negotiated ALPN protocol.
     fn get_alpn_protocol(w: &Self::SyncWrapper) -> anyhow::Result<Option<Vec<u8>>>;
+}
+
+/// Notify the writer that there will be no more data written.
+/// In context of TLS providers, this is great time to send notify_close message.
+pub trait WriteShutdown: Write {
+    /// Initiates or attempts to shut down this writer, returning when
+    /// the I/O connection has completely shut down.
+    ///
+    /// For example this is suitable for implementing shutdown of a
+    /// TLS connection or calling `TcpStream::shutdown` on a proxied connection.
+    /// Protocols sometimes need to flush out final pieces of data or otherwise
+    /// perform a graceful shutdown handshake, reading/writing more data as
+    /// appropriate. This method is the hook for such protocols to implement the
+    /// graceful shutdown logic.
+    ///
+    /// This `shutdown` method is required by implementers of the
+    /// `AsyncWrite` trait. Wrappers typically just want to proxy this call
+    /// through to the wrapped type, and base types will typically implement
+    /// shutdown logic here or just return `Ok(().into())`. Note that if you're
+    /// wrapping an underlying `AsyncWrite` a call to `shutdown` implies that
+    /// transitively the entire stream has been shut down. After your wrapper's
+    /// shutdown logic has been executed you should shut down the underlying
+    /// stream.
+    ///
+    /// Invocation of a `shutdown` implies an invocation of `flush`. Once this
+    /// method returns it implies that a flush successfully happened
+    /// before the shutdown happened. That is, callers don't need to call
+    /// `flush` before calling `shutdown`. They can rely that by calling
+    /// `shutdown` any pending buffered data will be written out.
+    ///
+    /// # Errors
+    ///
+    /// This function can return normal I/O errors through `Err`, described
+    /// above. Additionally this method may also render the underlying
+    /// `Write::write` method no longer usable (e.g. will return errors in the
+    /// future). It's recommended that once `shutdown` is called the
+    /// `write` method is no longer called.
+    fn shutdown(&mut self) -> Result<(), io::Error> {
+        self.flush()?;
+        Ok(())
+    }
 }
 
 /// Implementation of `TlsStreamImpl` for APIs using synchronous I/O.
@@ -270,13 +311,13 @@ where
     #[cfg(feature = "runtime-tokio")]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
+            .with_context_sync_to_async(cx, |stream| stream.stream.shutdown())
     }
 
     #[cfg(feature = "runtime-async-std")]
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.get_mut()
-            .with_context_sync_to_async(cx, |stream| stream.stream.flush())
+            .with_context_sync_to_async(cx, |stream| stream.stream.shutdown())
     }
 }
 
