@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::sync::Arc;
 
 use rustls::StreamOwned;
@@ -79,11 +80,13 @@ impl tls_api::TlsAcceptor for TlsAcceptor {
     }
 
     fn builder_from_der_key(cert: &[u8], key: &[u8]) -> anyhow::Result<TlsAcceptorBuilder> {
-        let cert = rustls::Certificate(cert.to_vec());
+        let cert = rustls::pki_types::CertificateDer::from(cert.to_vec());
         let config = rustls::ServerConfig::builder()
-            .with_safe_defaults()
             .with_no_client_auth()
-            .with_single_cert(vec![cert], rustls::PrivateKey(key.to_vec()))
+            .with_single_cert(
+                vec![cert],
+                rustls::pki_types::PrivateKeyDer::try_from(key.to_vec()).map_err(|x| anyhow::anyhow!(x))?
+            )
             .map_err(anyhow::Error::new)?;
         Ok(TlsAcceptorBuilder(config))
     }
