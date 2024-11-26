@@ -51,6 +51,7 @@ async fn test_client_server_dyn_impl(
                 assert_eq!(&buf, b"hello");
 
                 t!(socket.write_all(b"world").await);
+                t!(socket.shutdown().await);
             };
             block_on(future);
         })
