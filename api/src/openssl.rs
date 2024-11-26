@@ -17,15 +17,10 @@ pub(crate) fn der_to_pkcs12(cert: &[u8], key: &[u8]) -> anyhow::Result<(Vec<u8>,
     let passphrase = "tls-api-123";
 
     let pem_data = pem::encode_many(&[
-        pem::Pem {
-            tag: "CERTIFICATE".to_owned(),
-            contents: cert.to_owned(),
-        },
-        pem::Pem {
-            // Technically it can be non-RSA PRIVATE KEY
-            tag: "RSA PRIVATE KEY".to_owned(),
-            contents: key.to_owned(),
-        },
+        pem::Pem::new("CERTIFICATE", cert.to_vec()),
+
+        // Technically it can be non-RSA PRIVATE KEY
+        pem::Pem::new("RSA PRIVATE KEY", key.to_vec()),
     ]);
 
     fs::write(&cert_file, pem_data)?;
@@ -84,25 +79,25 @@ pub(crate) fn pkcs12_to_der(pkcs12: &[u8], passphrase: &str) -> anyhow::Result<(
     }
 
     let cert_pem = fs::read_to_string(cert_pem_file)?;
-    let pems = pem::parse_many(cert_pem);
+    let pems = pem::parse_many(cert_pem)?;
     let mut certificates: Vec<Vec<u8>> = pems
         .iter()
-        .flat_map(|p| match p.tag.as_str() {
-            "CERTIFICATE" => Some(p.contents.clone()),
+        .flat_map(|p| match p.tag() {
+            "CERTIFICATE" => Some(p.contents().to_vec()),
             _ => None,
         })
         .collect();
     let mut keys: Vec<Vec<u8>> = pems
         .iter()
-        .flat_map(|p| match p.tag.as_str() {
-            "PRIVATE KEY" | "RSA PRIVATE KEY" => Some(p.contents.clone()),
+        .flat_map(|p| match p.tag() {
+            "PRIVATE KEY" | "RSA PRIVATE KEY" => Some(p.contents().to_vec()),
             _ => None,
         })
         .collect();
     if keys.len() != 1 || certificates.len() != 1 {
         return Err(
             crate::CommonError::PemFromPkcs12ContainsNotSingleCertKeyPair(
-                pems.iter().map(|p| p.tag.clone()).collect(),
+                pems.iter().map(|p| p.tag().to_string()).collect(),
             )
             .into(),
         );

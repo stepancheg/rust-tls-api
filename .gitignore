@@ -7,5 +7,11 @@ Cargo.lock
 
 **/*.iml
 .idea
+.vscode
 
 .*.swp
+
+flake.nix
+flake.lock
+.envrc
+.direnv/
